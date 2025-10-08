@@ -1,0 +1,23 @@
+.rdp-day_weekend {
+  @apply border-[3px] border-dashed border-green-500;
+}
+
+.rdp-day_selected {
+  @apply !bg-primary !text-primary-foreground after:absolute after:inset-0 after:m-auto after:block after:h-1.5 after:w-1.5 after:rounded-full after:bg-white;
+}
+
+.rdp-day_longestChain {
+  @apply !bg-green-500 !text-white after:absolute after:inset-0 after:m-auto after:block after:h-1.5 after:w-1.5 after:rounded-full after:bg-white;
+}
+
+.rdp-day_shortestChain {
+  @apply !bg-blue-500 !text-white;
+}
+
+.rdp-day_longestLeave {
+  @apply !bg-yellow-500 !text-white;
+}
+
+.rdp-day_shortestLeave {
+  @apply !bg-orange-500 !text-white;
+}
