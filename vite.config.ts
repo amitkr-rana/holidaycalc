@@ -5,11 +5,20 @@ import tailwindcss from "@tailwindcss/vite"
 
 // https://vite.dev/config/
 export default defineConfig({
-    plugins: [react(), tailwindcss()],
-    base: "holidaycalc",
+  plugins: [react(), tailwindcss()],
+  base: "/holidaycalc/",
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+    },
+  },
+  server: {
+    proxy: {
+      "/pexels": {
+        target: "https://api.pexels.com",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/pexels/, ""),
+      },
     },
   },
 })

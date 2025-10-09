@@ -1,4 +1,6 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
+import type { ComponentProps } from "react"
+import type { DayClickEventHandler } from "react-day-picker"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import { ThemeProvider } from "@/components/theme-provider"
@@ -27,11 +29,16 @@ const YEAR_OPTIONS = Array.from(
 const SPINNER_DURATION_MS = 2800
 const RESULT_LEAD_MS = 500
 const CALCULATION_DELAY_MS = Math.max(0, SPINNER_DURATION_MS - RESULT_LEAD_MS)
+const LEGEND_TOP_PADDING_PX = 16
 
 const HOLIDAY_CACHE_PREFIX = "holiday-cache"
 const HOLIDAY_CACHE_VERSION = 2
 const CALENDARIFIC_API_KEY = "g2hJuLniy4J5YI5WTkxVw37Lynk72Wuu"
 const CALENDARIFIC_ENDPOINT = "https://calendarific.com/api/v2/holidays"
+const RAW_PEXELS_SEARCH_URL = (import.meta.env.VITE_PEXELS_SEARCH_URL ?? "").trim()
+const PEXELS_SEARCH_ENDPOINT =
+  RAW_PEXELS_SEARCH_URL || (import.meta.env.DEV ? "/pexels/v1/search" : "https://api.pexels.com/v1/search")
+const PEXELS_API_KEY = (import.meta.env.VITE_PEXELS_API_KEY ?? "").trim()
 
 const DEFAULT_COUNTRY = (
   (COUNTRIES.find((country) => country.code === "US")?.code ?? COUNTRIES[0]?.code) || "US"
@@ -69,6 +76,22 @@ type CalendarificResponse = {
   response?: {
     holidays?: CalendarificHoliday[]
   }
+}
+
+type PexelsPhotoSrc = {
+  original?: string
+  large2x?: string
+  large?: string
+}
+
+type PexelsPhoto = {
+  id?: number
+  url?: string
+  src?: PexelsPhotoSrc
+}
+
+type PexelsSearchResponse = {
+  photos?: PexelsPhoto[]
 }
 
 const normalizeDate = (value: Date) => {
@@ -515,14 +538,19 @@ function App() {
   const manualSelectionRef = useRef<Date[]>([])
   const holidayFetchControllerRef = useRef<AbortController | null>(null)
   const holidayFetchCancelledRef = useRef(false)
+  const pexelsPhotoCacheRef = useRef<Map<string, string>>(new Map())
+  const pexelsPhotoRequestsRef = useRef<Set<string>>(new Set())
   const computeTimeoutRef = useRef<number | null>(null)
   const hideTimeoutRef = useRef<number | null>(null)
+  const headerRef = useRef<HTMLDivElement | null>(null)
+  const [headerHeight, setHeaderHeight] = useState(0)
 
   const months = useMemo(() => {
     const currentYearMonths = Array.from({ length: 12 }, (_, index) => new Date(currentYear, index, 1))
     const nextYearMonths = Array.from({ length: 4 }, (_, index) => new Date(currentYear + 1, index, 1))
     return [...currentYearMonths, ...nextYearMonths]
   }, [currentYear])
+  const legendTopOffset = headerHeight + LEGEND_TOP_PADDING_PX
 
   const calendarCaptionFormatter = useCallback(
     (date: Date) =>
@@ -548,6 +576,128 @@ function App() {
   useEffect(() => {
     manualSelectionRef.current = manualSelectedDates
   }, [manualSelectedDates])
+
+  const fetchHolidayPhoto = useCallback(
+    async (key: string, labels: string[]) => {
+      if (typeof window === "undefined") {
+        return
+      }
+
+      const cachedUrl = pexelsPhotoCacheRef.current.get(key)
+      const openInNewTab = (url: string | null) => {
+        if (!url) return
+        window.open(url, "_blank", "noopener,noreferrer")
+      }
+
+      if (cachedUrl) {
+        openInNewTab(cachedUrl)
+        return
+      }
+
+      if (pexelsPhotoRequestsRef.current.has(key)) {
+        return
+      }
+
+      const queryLabel = labels[0]?.trim()
+      const normalizedCountryName = selectedCountry?.name?.trim()
+      const countryQuery = normalizedCountryName
+        ? `${normalizedCountryName} ${currentCountry}`.trim()
+        : currentCountry
+      const queryParts = [queryLabel, countryQuery, "holiday"].filter(
+        (part): part is string => Boolean(part && part.length)
+      )
+      const searchQuery = queryParts.join(" ")
+      if (!searchQuery) {
+        return
+      }
+
+      const fallbackSearchUrl = `https://www.pexels.com/search/${encodeURIComponent(searchQuery)}/`
+      const openFallback = () => {
+        pexelsPhotoCacheRef.current.set(key, fallbackSearchUrl)
+        openInNewTab(fallbackSearchUrl)
+      }
+
+      if (!PEXELS_API_KEY) {
+        console.warn(
+          "Pexels API key missing. Set VITE_PEXELS_API_KEY in your environment to enable holiday photos."
+        )
+        openFallback()
+        return
+      }
+
+      let resolvedEndpoint = PEXELS_SEARCH_ENDPOINT
+      if (!/^https?:\/\//i.test(resolvedEndpoint)) {
+        const prefix = resolvedEndpoint.startsWith("/") ? "" : "/"
+        resolvedEndpoint = `${window.location.origin}${prefix}${resolvedEndpoint}`
+      }
+
+      let searchUrl: URL
+      try {
+        searchUrl = new URL(resolvedEndpoint)
+      } catch (error) {
+        console.error("Invalid Pexels search endpoint provided:", error)
+        openFallback()
+        return
+      }
+
+      searchUrl.searchParams.set("query", searchQuery)
+      searchUrl.searchParams.set("per_page", "1")
+      searchUrl.searchParams.set("orientation", "landscape")
+
+      pexelsPhotoRequestsRef.current.add(key)
+
+      try {
+        const response = await fetch(searchUrl.toString(), {
+          headers: {
+            Authorization: PEXELS_API_KEY,
+          },
+        })
+
+        if (!response.ok) {
+          console.warn(`Pexels request failed with status ${response.status}`)
+          openFallback()
+          return
+        }
+
+        const payload = (await response.json()) as PexelsSearchResponse
+        const photo = payload?.photos?.[0]
+        const src = photo?.src
+        const photoUrl =
+          (typeof src?.original === "string" && src.original) ||
+          (typeof src?.large2x === "string" && src.large2x) ||
+          (typeof src?.large === "string" && src.large) ||
+          null
+
+        if (!photoUrl) {
+          console.warn(`No image result returned by Pexels for query "${searchQuery}".`)
+          openFallback()
+          return
+        }
+
+        pexelsPhotoCacheRef.current.set(key, photoUrl)
+        openInNewTab(photoUrl)
+      } catch (error) {
+        console.error("Failed to fetch holiday photo from Pexels", error)
+        openFallback()
+      } finally {
+        pexelsPhotoRequestsRef.current.delete(key)
+      }
+    },
+    [selectedCountry]
+  )
+
+  const handleHolidayDayClick = useCallback<DayClickEventHandler>(
+    (day) => {
+      const key = dateKey(day)
+      const labels = holidayDescriptions[key]
+      if (!labels || labels.length === 0) {
+        return
+      }
+
+      void fetchHolidayPhoto(key, labels)
+    },
+    [fetchHolidayPhoto, holidayDescriptions]
+  )
 
   const cancelHolidayFetch = useCallback(
     ({ silent }: { silent?: boolean } = {}) => {
@@ -882,10 +1032,43 @@ function App() {
     }
   }, [])
 
+  useLayoutEffect(() => {
+    if (!headerRef.current) {
+      return
+    }
+
+    const updateHeaderHeight = () => {
+      if (!headerRef.current) {
+        return
+      }
+      const nextHeight = headerRef.current.getBoundingClientRect().height
+      setHeaderHeight((previous) => (Math.abs(previous - nextHeight) > 0.5 ? nextHeight : previous))
+    }
+
+    updateHeaderHeight()
+
+    if (typeof ResizeObserver === "undefined") {
+      window.addEventListener("resize", updateHeaderHeight)
+      return () => {
+        window.removeEventListener("resize", updateHeaderHeight)
+      }
+    }
+
+    const observer = new ResizeObserver(() => {
+      updateHeaderHeight()
+    })
+
+    observer.observe(headerRef.current)
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [])
+
   return (
     <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
       <div className="min-h-screen flex flex-col">
-        <div className="sticky top-0 z-20 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/75 transition-colors p-4">
+        <div ref={headerRef} className="sticky top-0 z-20 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/75 transition-colors p-4">
           <div className="container mx-auto flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex flex-wrap items-end gap-3">
               <h1 className="text-2xl font-bold">Holiday Calendar</h1>
@@ -954,53 +1137,49 @@ function App() {
           )}
         </div>
 
-        <div className="flex-1 relative">
-          <div className="absolute inset-0 overflow-auto scrollbar-hidden">
-            <div className="container mx-auto p-4">
-              <div className="legend-grid">
-                <div className="legend-grid-cell">
-                  <div className="legend-item">
-                    <span className="legend-cube legend-cube-holiday" aria-hidden="true" />
-                    <span className="legend-label">Public / selected holiday</span>
-                  </div>
-                </div>
-                <div className="legend-grid-cell">
-                  <div className="legend-item">
-                    <span className="legend-cube legend-cube-leave" aria-hidden="true" />
-                    <span className="legend-label">Suggested leave</span>
-                  </div>
-                </div>
-                <div className="legend-grid-cell">
-                  <div className="legend-item">
-                    <span className="legend-cube legend-cube-weekend" aria-hidden="true" />
-                    <span className="legend-label">Weekend</span>
-                  </div>
-                </div>
-                <div className="legend-grid-cell legend-grid-cell--hint">
-                  <span className="legend-hint">Click "Calculate Chain" to view legends &#8593;</span>
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="container mx-auto px-4 pt-4 pb-2">
+            <div
+              className="legend-grid legend-grid--sticky"
+              style={{ top: `${legendTopOffset}px` }}
+            >
+              <div className="legend-grid-cell">
+                <div className="legend-item">
+                  <span className="legend-cube legend-cube-holiday" aria-hidden="true" />
+                  <span className="legend-label">Public / selected holiday</span>
                 </div>
               </div>
+              <div className="legend-grid-cell">
+                <div className="legend-item">
+                  <span className="legend-cube legend-cube-leave" aria-hidden="true" />
+                  <span className="legend-label">Suggested leave</span>
+                </div>
+              </div>
+              <div className="legend-grid-cell">
+                <div className="legend-item">
+                  <span className="legend-cube legend-cube-weekend" aria-hidden="true" />
+                  <span className="legend-label">Weekend</span>
+                </div>
+              </div>
+              <div className="legend-grid-cell legend-grid-cell--hint">
+                <span className="legend-hint">Click "Calculate Chain" to view legends &#8593;</span>
+              </div>
+            </div>
+          </div>
+          <div className="flex-1 overflow-auto scrollbar-hidden">
+            <div className="container mx-auto px-4 pb-4">
               <div className="calendar-grid">
                 {months.map((month, index) => (
-                  <div key={index} className="calendar-grid-cell">
-                    <Calendar
-                      mode="multiple"
-                      selected={normalizedSelection}
-                      onSelect={handleSelect}
-                      getDayTooltip={getDayTooltip}
-                      month={month}
-                      className="w-full"
-                      modifiers={modifiers}
-                      formatters={{
-                        formatCaption: calendarCaptionFormatter,
-                      }}
-                      disabled={(date) =>
-                        date.getMonth() !== month.getMonth() ||
-                        date.getFullYear() !== month.getFullYear()
-                      }
-                      showOutsideDays={false}
-                    />
-                  </div>
+                  <MonthGridCell
+                    key={index}
+                    month={month}
+                    normalizedSelection={normalizedSelection}
+                    handleSelect={handleSelect}
+                    onDayClick={handleHolidayDayClick}
+                    getDayTooltip={getDayTooltip}
+                    modifiers={modifiers}
+                    calendarCaptionFormatter={calendarCaptionFormatter}
+                  />
                 ))}
               </div>
             </div>
@@ -1050,7 +1229,93 @@ function App() {
     </ThemeProvider>
   )
 }
+type MonthGridCellProps = {
+  month: Date
+  normalizedSelection: Date[]
+  handleSelect: (dates: Date[] | undefined) => void
+  onDayClick?: ComponentProps<typeof Calendar>["onDayClick"]
+  getDayTooltip?: ComponentProps<typeof Calendar>["getDayTooltip"]
+  modifiers: ComponentProps<typeof Calendar>["modifiers"]
+  calendarCaptionFormatter: NonNullable<NonNullable<ComponentProps<typeof Calendar>["formatters"]>["formatCaption"]>
+}
+
+function MonthGridCell({
+  month,
+  normalizedSelection,
+  handleSelect,
+  onDayClick,
+  getDayTooltip,
+  modifiers,
+  calendarCaptionFormatter,
+}: MonthGridCellProps) {
+  const cellRef = useRef<HTMLDivElement | null>(null)
+  const [isVisible, setIsVisible] = useState(false)
+
+  useEffect(() => {
+    const node = cellRef.current
+    if (!node) {
+      return
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setIsVisible(true)
+            observer.disconnect()
+          }
+        })
+      },
+      {
+        threshold: 0.1,
+        rootMargin: "0px 0px 25% 0px",
+      }
+    )
+
+    observer.observe(node)
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [])
+
+  return (
+    <div
+      ref={cellRef}
+      className={`calendar-grid-cell month-cell ${isVisible ? "month-cell--visible" : "month-cell--hidden"}`}
+    >
+      <div className="month-visual">
+        <div className="month-loader" aria-hidden="true" />
+        <div className="month-calendar">
+          <Calendar
+            mode="multiple"
+            selected={normalizedSelection}
+            onSelect={handleSelect}
+            onDayClick={onDayClick}
+            getDayTooltip={getDayTooltip}
+            month={month}
+            className="w-full"
+            modifiers={modifiers}
+            formatters={{
+              formatCaption: calendarCaptionFormatter,
+            }}
+            disabled={(date) =>
+              date.getMonth() !== month.getMonth() ||
+              date.getFullYear() !== month.getFullYear()
+            }
+            showOutsideDays={false}
+          />
+        </div>
+      </div>
+    </div>
+  )
+}
 
 export default App
+
+
+
+
+
 
 

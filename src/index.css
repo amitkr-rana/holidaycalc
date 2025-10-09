@@ -201,6 +201,71 @@
     line-height: 1.2;
   }
 
+  .legend-grid--sticky {
+    position: sticky;
+    z-index: 10;
+    background: var(--color-background);
+  }
+
+  .legend-grid--sticky .legend-grid-cell {
+    background: var(--color-background);
+  }
+
+  .month-cell {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .month-visual {
+    position: relative;
+    flex: 1;
+    min-height: 18rem;
+    display: flex;
+  }
+
+  .month-loader {
+    position: absolute;
+    inset: 0;
+    border-radius: 0.75rem;
+    background: linear-gradient(90deg, var(--color-muted) 0%, rgba(255, 255, 255, 0.25) 50%, var(--color-muted) 100%);
+    background-size: 200% 100%;
+    animation: month-shimmer 1.4s ease-in-out infinite;
+    transition: opacity 0.25s ease;
+    pointer-events: none;
+  }
+
+  .month-calendar {
+    position: relative;
+    width: 100%;
+    opacity: 0;
+    transform: translateY(12px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+
+  .month-cell--visible .month-loader {
+    opacity: 0;
+    animation-play-state: paused;
+  }
+
+  .month-cell--visible .month-calendar {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .month-cell--hidden .month-calendar {
+    pointer-events: none;
+  }
+
+  @keyframes month-shimmer {
+    0% {
+      background-position: 0% 50%;
+    }
+    100% {
+      background-position: 200% 50%;
+    }
+  }
+
+
   .legend-cube {
     width: 1.5rem;
     height: 1.5rem;
@@ -274,6 +339,10 @@
     background: transparent;
   }
 }
+
+
+
+
 
 
 
