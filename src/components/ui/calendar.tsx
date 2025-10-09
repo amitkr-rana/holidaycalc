@@ -18,6 +18,7 @@ type TooltipResolver = (
 const CalendarTooltipContext = React.createContext<TooltipResolver | null>(null)
 
 function Calendar({
+  showNav = false,
   className,
   classNames,
   showOutsideDays = true,
@@ -30,8 +31,44 @@ function Calendar({
 }: React.ComponentProps<typeof DayPicker> & {
   buttonVariant?: React.ComponentProps<typeof Button>["variant"]
   getDayTooltip?: TooltipResolver
+  showNav?: boolean
 }) {
   const defaultClassNames = getDefaultClassNames()
+
+  const mergedComponents: React.ComponentProps<typeof DayPicker>["components"] = {
+    Root: ({ className, rootRef, ...props }) => (
+      <div
+        data-slot="calendar"
+        ref={rootRef}
+        className={cn(className)}
+        {...props}
+      />
+    ),
+    Chevron: ({ className, orientation, ...props }) => {
+      if (orientation === "left") {
+        return <ChevronLeftIcon className={cn("size-4", className)} {...props} />
+      }
+
+      if (orientation === "right") {
+        return <ChevronRightIcon className={cn("size-4", className)} {...props} />
+      }
+
+      return <ChevronDownIcon className={cn("size-4", className)} {...props} />
+    },
+    DayButton: CalendarDayButton,
+    WeekNumber: ({ children, ...props }) => (
+      <td {...props}>
+        <div className="flex size-(--cell-size) items-center justify-center text-center">
+          {children}
+        </div>
+      </td>
+    ),
+    ...components,
+  }
+
+  if (!showNav) {
+    mergedComponents.Nav = () => <></>
+  }
 
   return (
     <CalendarTooltipContext.Provider value={getDayTooltip ?? null}>
@@ -45,8 +82,6 @@ function Calendar({
       )}
         captionLayout={captionLayout}
         formatters={{
-        formatMonthDropdown: (date) =>
-          date.toLocaleString("default", { month: "short" }),
         ...formatters,
       }}
         classNames={{
@@ -60,7 +95,10 @@ function Calendar({
           "flex flex-col gap-1 mt-2",
           defaultClassNames.weeks
         ),
-        nav: cn("hidden", defaultClassNames.nav),
+        nav: cn(
+          showNav ? "flex items-center justify-between gap-2" : "hidden",
+          defaultClassNames.nav
+        ),
         button_previous: cn(
           buttonVariants({ variant: buttonVariant }),
           "size-(--cell-size) aria-disabled:opacity-50 p-0 select-none",
@@ -134,50 +172,7 @@ function Calendar({
         hidden: cn("invisible", defaultClassNames.hidden),
         ...classNames,
       }}
-        components={{
-        Root: ({ className, rootRef, ...props }) => {
-          return (
-            <div
-              data-slot="calendar"
-              ref={rootRef}
-              className={cn(className)}
-              {...props}
-            />
-          )
-        },
-        Nav: () => <></>,
-        Chevron: ({ className, orientation, ...props }) => {
-          if (orientation === "left") {
-            return (
-              <ChevronLeftIcon className={cn("size-4", className)} {...props} />
-            )
-          }
-
-          if (orientation === "right") {
-            return (
-              <ChevronRightIcon
-                className={cn("size-4", className)}
-                {...props}
-              />
-            )
-          }
-
-          return (
-            <ChevronDownIcon className={cn("size-4", className)} {...props} />
-          )
-        },
-        DayButton: CalendarDayButton,
-        WeekNumber: ({ children, ...props }) => {
-          return (
-            <td {...props}>
-              <div className="flex size-(--cell-size) items-center justify-center text-center">
-                {children}
-              </div>
-            </td>
-          )
-        },
-        ...components,
-      }}
+        components={mergedComponents}
         {...props}
     />
     </CalendarTooltipContext.Provider>
