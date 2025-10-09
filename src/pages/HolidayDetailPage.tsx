@@ -304,11 +304,8 @@ export function HolidayDetailPage() {
     pexelsRequestsRef.current.add(key)
 
     fetch(searchUrl.toString(), {
-      cache: 'no-cache',
       headers: {
-        Authorization: PEXELS_API_KEY,
-        'Cache-Control': 'no-cache',
-        'Pragma': 'no-cache'
+        Authorization: PEXELS_API_KEY
       },
     })
       .then(async (response) => {
