@@ -55,7 +55,7 @@ import {
   type HolidayChainResult,
 } from "@/lib/holiday-chains"
 
-const MS_IN_DAY = 1000 * 60 * 60 * 24
+// const MS_IN_DAY = 1000 * 60 * 60 * 24
 const MAX_LEAVES = 2
 const YEAR_PAST_RANGE = 5
 const YEAR_FUTURE_RANGE = 10
@@ -282,12 +282,14 @@ function App() {
 
   const normalizedSelection = useMemo(() => uniqueDates(selectedDates), [selectedDates])
 
+  /*
   const normalizedManualSelection = useMemo(
     () => uniqueDates(manualSelectedDates),
     [manualSelectedDates]
   )
+  */
 
-  const hasManualSelections = normalizedManualSelection.length > 0
+  // const hasManualSelections = normalizedManualSelection.length > 0
   const hasHolidays = normalizedSelection.length > 0
   const isCalculateDisabled = isLoadingHolidays || isCalculating || !hasHolidays
   const shouldShowCalculateTooltip = !hasHolidays && !isLoadingHolidays && !isCalculating
