@@ -87,6 +87,9 @@ const differenceInDays = (start: Date, end: Date) => {
   return Math.round((endTime - startTime) / MS_IN_DAY)
 }
 
+const monthKeyFromDate = (date: Date) =>
+  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`
+
 const groupHolidays = (dates: Date[]) => {
   if (!dates.length) return [] as Date[][]
   const sorted = uniqueDates(dates)
@@ -133,10 +136,10 @@ const buildBestChain = ({
   const chainDates = uniqueDates(holidayGroup)
   if (!chainDates.length) return null
 
-  const leaveDays: Date[] = []
-  const start = chainDates[0]
-  const end = chainDates[chainDates.length - 1]
-  const totalDays = differenceInDays(start, end) + 1
+  let leaveDays: Date[] = []
+  let start = chainDates[0]
+  let end = chainDates[chainDates.length - 1]
+  const today = normalizeDate(new Date())
 
   const cursor = new Date(start)
   while (cursor <= end) {
@@ -149,9 +152,114 @@ const buildBestChain = ({
     cursor.setDate(cursor.getDate() + 1)
   }
 
+  const holidayMonthKeys = new Set(chainDates.map(monthKeyFromDate))
+  const originalStartMonthKey = monthKeyFromDate(start)
+  const originalEndMonthKey = monthKeyFromDate(end)
+
+  const extendDirection = (direction: "forward" | "backward") => {
+    const step = direction === "forward" ? 1 : -1
+    const base = direction === "forward" ? end : start
+    const boundaryKey = direction === "forward" ? originalEndMonthKey : originalStartMonthKey
+    const pointer = new Date(base)
+    const candidateDates: Date[] = []
+    const candidateLeaves: Date[] = []
+    let extraLeavesUsed = 0
+    let encounteredWeekend = false
+
+    while (true) {
+      pointer.setDate(pointer.getDate() + step)
+      const pointerMonthKey = monthKeyFromDate(pointer)
+
+      if (pointerMonthKey !== boundaryKey && !holidayMonthKeys.has(pointerMonthKey)) {
+        break
+      }
+
+      const key = dateKey(pointer)
+      const isHoliday = holidaysSet.has(key)
+      const weekend = isWeekend(pointer)
+
+      if (direction === "forward" && encounteredWeekend && !weekend && !isHoliday) {
+        break
+      }
+
+      if (direction === "backward" && encounteredWeekend && !weekend && !isHoliday && extraLeavesUsed >= MAX_LEAVES) {
+        break
+      }
+
+      if (weekend) {
+        encounteredWeekend = true
+        candidateDates.push(new Date(pointer))
+        continue
+      }
+
+      if (isHoliday) {
+        candidateDates.push(new Date(pointer))
+        continue
+      }
+
+      if (extraLeavesUsed + 1 > MAX_LEAVES) {
+        break
+      }
+
+      extraLeavesUsed += 1
+      const leaveDate = new Date(pointer)
+      candidateLeaves.push(leaveDate)
+      candidateDates.push(leaveDate)
+    }
+
+    if (!encounteredWeekend) {
+      return { dates: [] as Date[], leaves: [] as Date[] }
+    }
+
+    const filteredLeaves = candidateLeaves.filter((date) => date.getTime() >= today.getTime())
+    const keptLeafKeys = new Set(filteredLeaves.map((date) => dateKey(date)))
+    const originalLeafKeys = new Set(candidateLeaves.map((date) => dateKey(date)))
+    const filteredDates = candidateDates.filter((date) => {
+      const key = dateKey(date)
+      if (!originalLeafKeys.has(key)) {
+        return true
+      }
+      return keptLeafKeys.has(key)
+    })
+
+    const sortedDates = direction === "forward" ? filteredDates : filteredDates.reverse()
+    const sortedLeaves = direction === "forward" ? filteredLeaves : filteredLeaves.reverse()
+
+    return { dates: sortedDates, leaves: sortedLeaves }
+  }
+
+  const backwardExtension = extendDirection("backward")
+  const forwardExtension = extendDirection("forward")
+
+  const combinedDates = uniqueDates([
+    ...backwardExtension.dates,
+    ...chainDates,
+    ...forwardExtension.dates,
+  ])
+  leaveDays = uniqueDates([
+    ...backwardExtension.leaves,
+    ...leaveDays.filter((date) => date.getTime() >= today.getTime()),
+    ...forwardExtension.leaves,
+  ])
+
+  if (combinedDates.length) {
+    start = combinedDates[0]
+    end = combinedDates[combinedDates.length - 1]
+  }
+
+  const spanDates: Date[] = []
+  const spanCursor = new Date(start)
+  while (spanCursor <= end) {
+    spanDates.push(new Date(spanCursor))
+    spanCursor.setDate(spanCursor.getDate() + 1)
+  }
+
+  const totalDays = differenceInDays(start, end) + 1
+
   const leaveMonthKey = (date: Date) => `${date.getFullYear()}-${date.getMonth()}`
   for (const leaveDay of leaveDays) {
-    if (leaveDay.getFullYear() !== currentYear) {
+    const leaveYear = leaveDay.getFullYear()
+    if (leaveYear !== currentYear && leaveYear !== currentYear + 1) {
       return null
     }
     const monthKey = leaveMonthKey(leaveDay)
@@ -162,7 +270,7 @@ const buildBestChain = ({
   }
 
   return {
-    dates: chainDates,
+    dates: spanDates,
     leaveDays,
     totalDays,
     start,
@@ -231,10 +339,10 @@ function App() {
   const [currentCountry, setCurrentCountry] = useState<CountryCode>(DEFAULT_COUNTRY)
   const [selectedDates, setSelectedDates] = useState<Date[]>([])
   const [manualSelectedDates, setManualSelectedDates] = useState<Date[]>([])
-  const [chainResults, setChainResults] = useState<{
-    longest: ChainResult | null
-    shortest: ChainResult | null
-  }>({ longest: null, shortest: null })
+  const [chainResultsByMonth, setChainResultsByMonth] = useState<Record<
+    string,
+    { longest: ChainResult | null; shortest: ChainResult | null }
+  >>({})
   const [holidayDescriptions, setHolidayDescriptions] = useState<HolidayLabelMap>({})
   const [statusMessage, setStatusMessage] = useState<string | null>(null)
   const [currentYear, setCurrentYear] = useState<number>(BASE_YEAR)
@@ -316,7 +424,7 @@ function App() {
     manualSelectionRef.current = []
     setManualSelectedDates([])
     setSelectedDates([])
-    setChainResults({ longest: null, shortest: null })
+    setChainResultsByMonth({})
     setHolidayDescriptions({})
     setStatusMessage(null)
   }, [])
@@ -369,8 +477,18 @@ function App() {
 
     const combined = uniqueDates([...manual, ...autoDates])
     setSelectedDates(combined)
-    setChainResults({ longest: null, shortest: null })
     setStatusMessage(null)
+
+    const manualMonthKeys = new Set(manual.map(monthKeyFromDate))
+    setChainResultsByMonth((prev) => {
+      const next: Record<string, { longest: ChainResult | null; shortest: ChainResult | null }> = {}
+      Object.entries(prev).forEach(([key, value]) => {
+        if (manualMonthKeys.has(key)) {
+          next[key] = value
+        }
+      })
+      return next
+    })
   }
 
   const normalizedSelection = useMemo(() => uniqueDates(selectedDates), [selectedDates])
@@ -385,15 +503,41 @@ function App() {
   const shouldShowCalculateTooltip = !hasManualSelections && !isLoadingHolidays && !isCalculating
 
   const modifiers = useMemo(() => {
-    const longestDates = chainResults.longest ? uniqueDates(chainResults.longest.dates) : []
-    const longestLeaves = chainResults.longest ? uniqueDates(chainResults.longest.leaveDays) : []
-    const highlightShortest =
-      chainResults.longest &&
-      chainResults.shortest &&
-      chainResults.shortest.start.getTime() !== chainResults.longest.start.getTime()
-    const shortestDates = highlightShortest && chainResults.shortest ? uniqueDates(chainResults.shortest.dates) : []
-    const shortestLeaves =
-      highlightShortest && chainResults.shortest ? uniqueDates(chainResults.shortest.leaveDays) : []
+    const longestDatesMap = new Map<string, Date>()
+    const longestLeavesMap = new Map<string, Date>()
+    const shortestDatesMap = new Map<string, Date>()
+    const shortestLeavesMap = new Map<string, Date>()
+
+    Object.values(chainResultsByMonth).forEach(({ longest, shortest }) => {
+      if (!longest) return
+      longest.dates.forEach((date) => {
+        const key = dateKey(date)
+        if (!longestDatesMap.has(key)) {
+          longestDatesMap.set(key, new Date(date))
+        }
+      })
+      longest.leaveDays.forEach((date) => {
+        const key = dateKey(date)
+        if (!longestLeavesMap.has(key)) {
+          longestLeavesMap.set(key, new Date(date))
+        }
+      })
+
+      if (shortest && shortest.start.getTime() !== longest.start.getTime()) {
+        shortest.dates.forEach((date) => {
+          const key = dateKey(date)
+          if (!shortestDatesMap.has(key)) {
+            shortestDatesMap.set(key, new Date(date))
+          }
+        })
+        shortest.leaveDays.forEach((date) => {
+          const key = dateKey(date)
+          if (!shortestLeavesMap.has(key)) {
+            shortestLeavesMap.set(key, new Date(date))
+          }
+        })
+      }
+    })
 
     return {
       holiday: normalizedSelection,
@@ -401,12 +545,12 @@ function App() {
         const day = date.getDay()
         return day === 0 || day === 6
       },
-      longestChain: longestDates,
-      longestLeave: longestLeaves,
-      shortestChain: shortestDates,
-      shortestLeave: shortestLeaves,
+      longestChain: uniqueDates(Array.from(longestDatesMap.values())),
+      longestLeave: uniqueDates(Array.from(longestLeavesMap.values())),
+      shortestChain: uniqueDates(Array.from(shortestDatesMap.values())),
+      shortestLeave: uniqueDates(Array.from(shortestLeavesMap.values())),
     }
-  }, [chainResults, normalizedSelection])
+  }, [chainResultsByMonth, normalizedSelection])
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -506,15 +650,13 @@ function App() {
 
   const handleCalculateChain = () => {
     if (!hasManualSelections) {
-      setChainResults({ longest: null, shortest: null })
-      setStatusMessage(
-        "Please select at least one holiday other than public holidays to calculate chain."
-      )
+      setChainResultsByMonth({})
+      setStatusMessage("Please select at least one holiday other than public holidays to calculate a chain.")
       return
     }
 
     if (!normalizedSelection.length) {
-      setChainResults({ longest: null, shortest: null })
+      setChainResultsByMonth({})
       setStatusMessage("Select at least one holiday date to calculate a chain.")
       return
     }
@@ -531,29 +673,83 @@ function App() {
     }
 
     setIsCalculating(true)
-    setChainResults({ longest: null, shortest: null })
     setStatusMessage(null)
 
     const selectionSnapshot = normalizedSelection.map((date) => new Date(date))
-    const yearSnapshot = currentYear
+    const manualSnapshot = normalizedManualSelection.map((date) => new Date(date))
+    const manualMonthKeys = new Set(manualSnapshot.map(monthKeyFromDate))
+    const manualGroups = new Map<string, Date[]>()
+    manualSnapshot.forEach((date) => {
+      const key = monthKeyFromDate(date)
+      const bucket = manualGroups.get(key) ?? []
+      bucket.push(new Date(date))
+      manualGroups.set(key, bucket)
+    })
+
+    if (!manualGroups.size) {
+      setChainResultsByMonth({})
+      setStatusMessage("No manual holiday selections available to calculate a chain.")
+      setIsCalculating(false)
+      return
+    }
 
     computeTimeoutRef.current = window.setTimeout(() => {
       computeTimeoutRef.current = null
-      const { longest, shortest } = computeChains(selectionSnapshot, yearSnapshot)
 
-      if (!longest) {
-        setChainResults({ longest: null, shortest: null })
-        setStatusMessage("No viable chain found for the selected dates.")
-        return
-      }
+      const updates: Record<string, { longest: ChainResult | null; shortest: ChainResult | null }> = {}
+      const messages: string[] = []
 
-      setChainResults({ longest, shortest })
-      const leaveCount = longest.leaveDays.length
-      setStatusMessage(
-        `Longest chain: ${formatDateRange(longest.start, longest.end)} | ${longest.totalDays} day${
-          longest.totalDays === 1 ? "" : "s"
-        } (${leaveCount} leave day${leaveCount === 1 ? "" : "s"})`
-      )
+      manualGroups.forEach((_, key) => {
+        const [yearStr, monthStr] = key.split("-")
+        const targetYear = Number(yearStr)
+        const targetMonth = Number(monthStr) - 1
+        const targetMonthKey = monthKeyFromDate(new Date(targetYear, targetMonth, 1))
+        const windowStart = new Date(targetYear, targetMonth - 1, 1)
+        const windowEnd = new Date(targetYear, targetMonth + 2, 0)
+        const windowStartTime = windowStart.getTime()
+        const windowEndTime = windowEnd.getTime()
+
+        const windowDates = selectionSnapshot.filter((date) => {
+          const time = date.getTime()
+          if (time < windowStartTime || time > windowEndTime) {
+            return false
+          }
+          const keyMonth = monthKeyFromDate(date)
+          return keyMonth === targetMonthKey || manualMonthKeys.has(keyMonth)
+        })
+
+        const { longest, shortest } = computeChains(windowDates, targetYear)
+        const monthLabel = new Date(targetYear, targetMonth, 1).toLocaleDateString(undefined, {
+          month: "long",
+          year: "numeric",
+        })
+
+        if (longest) {
+          updates[key] = { longest, shortest }
+          const leaveCount = longest.leaveDays.length
+          messages.push(
+            `${monthLabel}: ${formatDateRange(longest.start, longest.end)} ? ${longest.totalDays} day${
+              longest.totalDays === 1 ? "" : "s"
+            } (${leaveCount} leave day${leaveCount === 1 ? "" : "s"})`
+          )
+        } else {
+          updates[key] = { longest: null, shortest: null }
+          messages.push(`${monthLabel}: No viable chain found.`)
+        }
+      })
+
+      setChainResultsByMonth(() => {
+        const next: Record<string, { longest: ChainResult | null; shortest: ChainResult | null }> = {}
+        manualGroups.forEach((_, key) => {
+          const result = updates[key]
+          if (result?.longest) {
+            next[key] = result
+          }
+        })
+        return next
+      })
+
+      setStatusMessage(messages.join(" | "))
     }, CALCULATION_DELAY_MS)
 
     hideTimeoutRef.current = window.setTimeout(() => {
@@ -869,3 +1065,5 @@ function MonthGridCell({
 }
 
 export default App
+
+

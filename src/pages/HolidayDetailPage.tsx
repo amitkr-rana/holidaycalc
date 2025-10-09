@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useRef, useState } from "react"
+﻿import { useEffect, useMemo, useRef, useState } from "react"
 import { useLocation, useNavigate, useParams } from "react-router-dom"
 
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import { ModeToggle } from "@/components/mode-toggle"
 import { Spinner } from "@/components/ui/spinner"
+import { Skeleton } from "@/components/ui/skeleton"
 import { ThemeProvider } from "@/components/theme-provider"
 import type { HolidayCacheData, HolidayDetail } from "@/lib/holiday-service"
 import {
@@ -45,7 +46,7 @@ type ImageState =
     }
 
 const INITIAL_IMAGE_STATE: ImageState = { status: "idle" }
-const monthLabelFormatter = new Intl.DateTimeFormat(undefined, { month: "long", year: "numeric" })
+const monthLabelFormatter = new Intl.DateTimeFormat(undefined, { month: "long"})
 
 export function HolidayDetailPage() {
   const { country, year, month, day } = useParams()
@@ -253,9 +254,12 @@ export function HolidayDetailPage() {
       return
     }
 
-    const queryParts = [selectedLabels[0]?.trim(), countryName, "holiday"].filter(
-      (part): part is string => Boolean(part && part.length)
-    )
+    const normalizedCountry = typeof countryName === "string" ? countryName.trim() : ""
+    const queryParts = [
+      selectedLabels[0]?.trim(),
+      normalizedCountry,
+      activeDate ? String(activeDate.getFullYear()) : null,
+    ].filter((part): part is string => Boolean(part && part.length))
     const searchQuery = queryParts.join(" ")
     const fallbackSearchUrl = searchQuery
       ? `https://www.pexels.com/search/${encodeURIComponent(searchQuery)}/`
@@ -390,24 +394,28 @@ export function HolidayDetailPage() {
     month: "long",
     day: "numeric",
   })
+  const headerLine = [countryName, formattedDate].filter(Boolean).join(" . ")
 
   return (
     <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
       <div className="min-h-screen flex flex-col bg-background text-foreground">
-        <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/75">
-          <div className="container mx-auto flex flex-col gap-4 px-4 py-4 md:flex-row md:items-center md:justify-between">
-            <div>
+        <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/75">
+          <div className="container mx-auto flex flex-col gap-3 px-4 py-4 md:flex-row md:items-center md:justify-between">
+            <div className="flex flex-col gap-2">
               <div className="flex items-center gap-3">
-                <Button variant="outline" size="sm" onClick={() => navigate(-1)}>
-                  ← Back
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="rounded-full"
+                  onClick={() => navigate(-1)}
+                  aria-label="Back to calendar"
+                >
+                  <ChevronLeftIcon className="size-4" />
                 </Button>
-                <span className="text-sm text-muted-foreground">Holiday detail</span>
+                <h1 className="text-xl font-semibold md:text-2xl">{headerLine}</h1>
               </div>
-              <h1 className="mt-2 text-2xl font-bold">
-                {countryName} • {formattedDate}
-              </h1>
               {statusMessage && (
-                <div className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   {isLoading && <Spinner size={16} />}
                   <p>{statusMessage}</p>
                 </div>
@@ -420,6 +428,16 @@ export function HolidayDetailPage() {
         <main className="container mx-auto flex-1 px-4 py-6">
           <div className="calendar-grid detail-grid">
             <div className="calendar-grid-cell detail-grid-cell detail-grid-cell--calendar">
+              <div className="detail-summary">
+                <h2 className="detail-title">{selectedLabels[0] ?? "Holiday"}</h2>
+                {selectedLabels.length > 1 && (
+                  <p className="detail-subtitle">Also: {selectedLabels.slice(1).join(", ")}</p>
+                )}
+                {selectedHolidayDetails[0]?.description && (
+                  <p className="detail-description">{selectedHolidayDetails[0].description}</p>
+                )}
+              </div>
+              <br />
               <div className="detail-calendar-nav">
                 <Button
                   variant="ghost"
@@ -444,6 +462,10 @@ export function HolidayDetailPage() {
                 selected={activeDate ?? undefined}
                 month={displayMonth}
                 onSelect={handleCalendarSelect}
+                classNames={{
+                  month_caption: "hidden",
+                  caption_label: "hidden",
+                }}
                 onMonthChange={(monthDate) => {
                   setViewMonth(new Date(monthDate.getFullYear(), monthDate.getMonth(), 1))
                   ensureHolidayData(monthDate.getFullYear())
@@ -452,17 +474,6 @@ export function HolidayDetailPage() {
                 disabled={(date) => !holidayDateKeys.has(dateKey(normalizeDate(date)))}
                 className="w-full"
               />
-              <div className="detail-summary">
-                <p className="detail-eyebrow">Selected holiday</p>
-                <h2 className="detail-title">{selectedLabels[0] ?? "Holiday"}</h2>
-                <p className="detail-date">{formattedDate}</p>
-                {selectedLabels.length > 1 && (
-                  <p className="detail-subtitle">Also: {selectedLabels.slice(1).join(", ")}</p>
-                )}
-                {selectedHolidayDetails[0]?.description && (
-                  <p className="detail-description">{selectedHolidayDetails[0].description}</p>
-                )}
-              </div>
             </div>
 
             <div className="calendar-grid-cell detail-grid-cell detail-grid-cell--image">
@@ -489,8 +500,7 @@ export function HolidayDetailPage() {
                     )}
                     {imageState.sourcePageUrl && (
                       <>
-                        {" "}
-                        •{" "}
+                        {" - "}
                         <a href={imageState.sourcePageUrl} target="_blank" rel="noreferrer">
                           View on Pexels
                         </a>
@@ -500,9 +510,15 @@ export function HolidayDetailPage() {
                 </figure>
               )}
               {imageState.status === "loading" && (
-                <div className="detail-image-placeholder">
-                  <Spinner size={32} />
-                  <p>Fetching holiday photo...</p>
+                <div className="detail-image-loading" aria-live="polite">
+                  <div className="detail-image-loading__stack">
+                    <Skeleton className="detail-image-loading__media" />
+                    <div className="detail-image-loading__meta">
+                      <Skeleton className="detail-image-loading__line" />
+                      <Skeleton className="detail-image-loading__line detail-image-loading__line--short" />
+                    </div>
+                  </div>
+                  <span className="sr-only">Fetching holiday photo...</span>
                 </div>
               )}
               {imageState.status === "error" && (
@@ -512,6 +528,7 @@ export function HolidayDetailPage() {
                     <Button
                       variant="outline"
                       size="sm"
+                      className="rounded-none"
                       onClick={() => {
                         if (imageState.sourcePageUrl) {
                           window.open(imageState.sourcePageUrl, "_blank", "noopener,noreferrer")
@@ -530,3 +547,4 @@ export function HolidayDetailPage() {
     </ThemeProvider>
   )
 }
+

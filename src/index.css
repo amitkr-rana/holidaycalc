@@ -457,17 +457,23 @@
 
   .detail-image-caption {
     position: absolute;
-    inset-inline: 1.25rem;
-    bottom: 1rem;
-    border-radius: 0.5rem;
-    background: color-mix(in srgb, var(--color-background) 80%, transparent);
-    padding: 0.5rem 0.75rem;
-    font-size: 0.75rem;
-    text-align: right;
+    inset-inline: clamp(1.25rem, 4vw, 2.5rem);
+    bottom: clamp(1rem, 3vw, 2rem);
+    padding: clamp(0.65rem, 1.5vw, 0.9rem) clamp(0.8rem, 2vw, 1.4rem);
+    font-size: 0.8rem;
+    text-align: left;
+    color: color-mix(in srgb, var(--color-muted-foreground) 80%, var(--color-foreground) 20%);
+    background: color-mix(in srgb, var(--color-background) 92%, var(--color-muted) 8%);
+    backdrop-filter: blur(6px);
+    border-radius: 0;
+    box-shadow: 0 18px 42px -32px rgba(15, 23, 42, 0.7);
+    max-width: min(24rem, 80%);
+    line-height: 1.45;
   }
 
   .detail-image-caption a {
     text-decoration: underline;
+    font-weight: 600;
   }
 
   .detail-image-placeholder {
@@ -480,6 +486,54 @@
     gap: 0.75rem;
     background: var(--color-muted);
     color: var(--color-muted-foreground);
+  }
+
+  .detail-image-loading {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(1.25rem, 3vw, 2.75rem);
+    background: color-mix(in srgb, var(--color-background) 62%, var(--color-muted) 38%);
+    backdrop-filter: blur(8px);
+    overflow: hidden;
+  }
+
+  .detail-image-loading__stack {
+    width: min(28rem, 92%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(1rem, 3vw, 1.75rem);
+  }
+
+  .detail-image-loading__media {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border-radius: clamp(0.9rem, 3vw, 1.5rem);
+    background-color: color-mix(in srgb, var(--color-muted) 82%, var(--color-background) 18%);
+    box-shadow: 0 22px 48px -28px rgba(15, 23, 42, 0.55);
+  }
+
+  .detail-image-loading__meta {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.65rem;
+    width: min(18rem, 90%);
+  }
+
+  .detail-image-loading__line {
+    width: 80%;
+    height: 0.5rem;
+    border-radius: 999px;
+    background-color: color-mix(in srgb, var(--color-muted) 80%, var(--color-background) 20%);
+  }
+
+  .detail-image-loading__line--short {
+    width: 60%;
   }
 
   .detail-section-title {
