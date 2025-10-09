@@ -14,6 +14,26 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card"
+import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { COUNTRIES } from "@/lib/countries"
@@ -29,6 +49,11 @@ import {
   readHolidayCache,
   writeHolidayCache,
 } from "@/lib/holiday-service"
+import {
+  calculateHolidayChains,
+  type HolidayChainMode,
+  type HolidayChainResult,
+} from "@/lib/holiday-chains"
 
 const MS_IN_DAY = 1000 * 60 * 60 * 24
 const MAX_LEAVES = 2
@@ -48,26 +73,16 @@ const DEFAULT_COUNTRY = (
   (COUNTRIES.find((country) => country.code === "US")?.code ?? COUNTRIES[0]?.code) || "US"
 ) as CountryCode
 
-type ChainCandidate = {
+type ChainResult = {
   dates: Date[]
   leaveDays: Date[]
   totalDays: number
-}
-
-type ChainResult = ChainCandidate & {
   start: Date
   end: Date
 }
 
-const getDayOfWeek = (date: Date) => {
-  const day = date.getDay()
-  return day === 0 ? 6 : day - 1
-}
-
-const isWeekend = (date: Date) => {
-  const dow = getDayOfWeek(date)
-  return dow === 5 || dow === 6
-}
+const monthKeyFromDate = (date: Date) =>
+  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`
 
 const uniqueDates = (dates: Date[]) => {
   const map = new Map<string, Date>()
@@ -79,241 +94,6 @@ const uniqueDates = (dates: Date[]) => {
     }
   })
   return Array.from(map.values()).sort((a, b) => a.getTime() - b.getTime())
-}
-
-const differenceInDays = (start: Date, end: Date) => {
-  const startTime = normalizeDate(start).getTime()
-  const endTime = normalizeDate(end).getTime()
-  return Math.round((endTime - startTime) / MS_IN_DAY)
-}
-
-const monthKeyFromDate = (date: Date) =>
-  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`
-
-const groupHolidays = (dates: Date[]) => {
-  if (!dates.length) return [] as Date[][]
-  const sorted = uniqueDates(dates)
-  const groups: Date[][] = []
-  let currentGroup: Date[] = [sorted[0]]
-
-  for (let i = 1; i < sorted.length; i++) {
-    const prev = sorted[i - 1]
-    const current = sorted[i]
-    const diff = differenceInDays(prev, current)
-
-    let workingDaysBetween = 0
-    const tempDate = new Date(prev)
-    for (let j = 1; j < diff; j++) {
-      tempDate.setDate(tempDate.getDate() + 1)
-      if (!isWeekend(tempDate)) {
-        workingDaysBetween += 1
-      }
-    }
-
-    if (workingDaysBetween <= MAX_LEAVES) {
-      currentGroup.push(current)
-    } else {
-      groups.push(currentGroup)
-      currentGroup = [current]
-    }
-  }
-
-  groups.push(currentGroup)
-  return groups
-}
-
-const buildBestChain = ({
-  holidayGroup,
-  leavesUsedByMonth,
-  holidaysSet,
-  currentYear,
-}: {
-  holidayGroup: Date[]
-  leavesUsedByMonth: Record<string, number>
-  holidaysSet: Set<string>
-  currentYear: number
-}) => {
-  const chainDates = uniqueDates(holidayGroup)
-  if (!chainDates.length) return null
-
-  let leaveDays: Date[] = []
-  let start = chainDates[0]
-  let end = chainDates[chainDates.length - 1]
-  const today = normalizeDate(new Date())
-
-  const cursor = new Date(start)
-  while (cursor <= end) {
-    if (!isWeekend(cursor)) {
-      const key = dateKey(cursor)
-      if (!holidaysSet.has(key)) {
-        leaveDays.push(new Date(cursor))
-      }
-    }
-    cursor.setDate(cursor.getDate() + 1)
-  }
-
-  const holidayMonthKeys = new Set(chainDates.map(monthKeyFromDate))
-  const originalStartMonthKey = monthKeyFromDate(start)
-  const originalEndMonthKey = monthKeyFromDate(end)
-
-  const extendDirection = (direction: "forward" | "backward") => {
-    const step = direction === "forward" ? 1 : -1
-    const base = direction === "forward" ? end : start
-    const boundaryKey = direction === "forward" ? originalEndMonthKey : originalStartMonthKey
-    const pointer = new Date(base)
-    const candidateDates: Date[] = []
-    const candidateLeaves: Date[] = []
-    let extraLeavesUsed = 0
-    let encounteredWeekend = false
-
-    while (true) {
-      pointer.setDate(pointer.getDate() + step)
-      const pointerMonthKey = monthKeyFromDate(pointer)
-
-      if (pointerMonthKey !== boundaryKey && !holidayMonthKeys.has(pointerMonthKey)) {
-        break
-      }
-
-      const key = dateKey(pointer)
-      const isHoliday = holidaysSet.has(key)
-      const weekend = isWeekend(pointer)
-
-      if (direction === "forward" && encounteredWeekend && !weekend && !isHoliday) {
-        break
-      }
-
-      if (direction === "backward" && encounteredWeekend && !weekend && !isHoliday && extraLeavesUsed >= MAX_LEAVES) {
-        break
-      }
-
-      if (weekend) {
-        encounteredWeekend = true
-        candidateDates.push(new Date(pointer))
-        continue
-      }
-
-      if (isHoliday) {
-        candidateDates.push(new Date(pointer))
-        continue
-      }
-
-      if (extraLeavesUsed + 1 > MAX_LEAVES) {
-        break
-      }
-
-      extraLeavesUsed += 1
-      const leaveDate = new Date(pointer)
-      candidateLeaves.push(leaveDate)
-      candidateDates.push(leaveDate)
-    }
-
-    if (!encounteredWeekend) {
-      return { dates: [] as Date[], leaves: [] as Date[] }
-    }
-
-    const filteredLeaves = candidateLeaves.filter((date) => date.getTime() >= today.getTime())
-    const keptLeafKeys = new Set(filteredLeaves.map((date) => dateKey(date)))
-    const originalLeafKeys = new Set(candidateLeaves.map((date) => dateKey(date)))
-    const filteredDates = candidateDates.filter((date) => {
-      const key = dateKey(date)
-      if (!originalLeafKeys.has(key)) {
-        return true
-      }
-      return keptLeafKeys.has(key)
-    })
-
-    const sortedDates = direction === "forward" ? filteredDates : filteredDates.reverse()
-    const sortedLeaves = direction === "forward" ? filteredLeaves : filteredLeaves.reverse()
-
-    return { dates: sortedDates, leaves: sortedLeaves }
-  }
-
-  const backwardExtension = extendDirection("backward")
-  const forwardExtension = extendDirection("forward")
-
-  const combinedDates = uniqueDates([
-    ...backwardExtension.dates,
-    ...chainDates,
-    ...forwardExtension.dates,
-  ])
-  leaveDays = uniqueDates([
-    ...backwardExtension.leaves,
-    ...leaveDays.filter((date) => date.getTime() >= today.getTime()),
-    ...forwardExtension.leaves,
-  ])
-
-  if (combinedDates.length) {
-    start = combinedDates[0]
-    end = combinedDates[combinedDates.length - 1]
-  }
-
-  const spanDates: Date[] = []
-  const spanCursor = new Date(start)
-  while (spanCursor <= end) {
-    spanDates.push(new Date(spanCursor))
-    spanCursor.setDate(spanCursor.getDate() + 1)
-  }
-
-  const totalDays = differenceInDays(start, end) + 1
-
-  const leaveMonthKey = (date: Date) => `${date.getFullYear()}-${date.getMonth()}`
-  for (const leaveDay of leaveDays) {
-    const leaveYear = leaveDay.getFullYear()
-    if (leaveYear !== currentYear && leaveYear !== currentYear + 1) {
-      return null
-    }
-    const monthKey = leaveMonthKey(leaveDay)
-    const leavesUsed = leavesUsedByMonth[monthKey] ?? 0
-    if (leavesUsed >= MAX_LEAVES) {
-      return null
-    }
-  }
-
-  return {
-    dates: spanDates,
-    leaveDays,
-    totalDays,
-    start,
-    end,
-  } satisfies ChainResult
-}
-
-const computeChains = (
-  dates: Date[],
-  currentYear: number
-): { longest: ChainResult | null; shortest: ChainResult | null } => {
-  const normalized = uniqueDates(dates)
-  if (!normalized.length) return { longest: null, shortest: null }
-
-  const holidaysSet = new Set(normalized.map(dateKey))
-  const holidayGroups = groupHolidays(normalized)
-  const chains: ChainResult[] = []
-  const leavesUsedByMonth: Record<string, number> = {}
-
-  for (const group of holidayGroups) {
-    const chain = buildBestChain({
-      holidayGroup: group,
-      leavesUsedByMonth,
-      holidaysSet,
-      currentYear,
-    })
-
-    if (chain) {
-      chains.push(chain)
-      chain.leaveDays.forEach((leave) => {
-        const monthKey = `${leave.getFullYear()}-${leave.getMonth()}`
-        leavesUsedByMonth[monthKey] = (leavesUsedByMonth[monthKey] ?? 0) + 1
-      })
-    }
-  }
-
-  if (!chains.length) return { longest: null, shortest: null }
-
-  chains.sort((a, b) => b.totalDays - a.totalDays)
-  const longest = chains[0]
-  const shortest = chains.length > 1 ? chains[chains.length - 1] : longest
-
-  return { longest, shortest }
 }
 
 const formatDateRange = (start: Date, end: Date) => {
@@ -349,6 +129,15 @@ function App() {
   const [isCalculating, setIsCalculating] = useState(false)
   const [isLoadingHolidays, setIsLoadingHolidays] = useState(false)
   const [loadingMessage, setLoadingMessage] = useState<string | null>(null)
+
+  // New state for chain algorithm mode and user input
+  const [chainMode, setChainMode] = useState<HolidayChainMode>("optimal")
+  const [userLeaveDays, setUserLeaveDays] = useState<number | null>(null)
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [dialogInput, setDialogInput] = useState("")
+  const [dialogError, setDialogError] = useState<string | null>(null)
+  const [allChainsByMonth, setAllChainsByMonth] = useState<Record<string, HolidayChainResult[]>>({})
+  const [selectedChainIndexByMonth, setSelectedChainIndexByMonth] = useState<Record<string, number>>({})
   const autoHolidayKeysRef = useRef<Set<string>>(new Set())
   const manualSelectionRef = useRef<Date[]>([])
   const holidayFetchControllerRef = useRef<AbortController | null>(null)
@@ -499,8 +288,9 @@ function App() {
   )
 
   const hasManualSelections = normalizedManualSelection.length > 0
-  const isCalculateDisabled = isLoadingHolidays || isCalculating || !hasManualSelections
-  const shouldShowCalculateTooltip = !hasManualSelections && !isLoadingHolidays && !isCalculating
+  const hasHolidays = normalizedSelection.length > 0
+  const isCalculateDisabled = isLoadingHolidays || isCalculating || !hasHolidays
+  const shouldShowCalculateTooltip = !hasHolidays && !isLoadingHolidays && !isCalculating
 
   const modifiers = useMemo(() => {
     const longestDatesMap = new Map<string, Date>()
@@ -648,16 +438,78 @@ function App() {
     [currentCountry, holidayDescriptions, navigate]
   )
 
+  const handleModeChange = (mode: HolidayChainMode) => {
+    if (mode === "user-total") {
+      setDialogOpen(true)
+      setDialogInput("")
+      setDialogError(null)
+    } else {
+      setChainMode("optimal")
+      setUserLeaveDays(null)
+    }
+  }
+
+  const handleDialogCalculate = () => {
+    const value = parseInt(dialogInput, 10)
+    if (isNaN(value) || value < 1) {
+      setDialogError("Please enter a number greater than or equal to 1")
+      return
+    }
+    if (value > 15) {
+      setDialogError("Please enter a number less than or equal to 15")
+      return
+    }
+    setUserLeaveDays(value)
+    setChainMode("user-total")
+    setDialogOpen(false)
+    setDialogError(null)
+  }
+
+  const handleDialogCancel = () => {
+    setDialogOpen(false)
+    setDialogError(null)
+    setDialogInput("")
+    setChainMode("optimal")
+    setUserLeaveDays(null)
+  }
+
+  const handleChainSelection = (monthKey: string, chainIndex: number) => {
+    setSelectedChainIndexByMonth((prev) => ({
+      ...prev,
+      [monthKey]: chainIndex,
+    }))
+
+    // Update chainResultsByMonth with the selected chain
+    const chains = allChainsByMonth[monthKey]
+    if (chains && chains[chainIndex]) {
+      const selectedChain = chains[chainIndex]
+      setChainResultsByMonth((prev) => ({
+        ...prev,
+        [monthKey]: {
+          longest: {
+            dates: selectedChain.dates,
+            leaveDays: selectedChain.leaveDates,
+            totalDays: selectedChain.length,
+            start: selectedChain.start,
+            end: selectedChain.end,
+          },
+          shortest: null,
+        },
+      }))
+    }
+  }
+
   const handleCalculateChain = () => {
-    if (!hasManualSelections) {
+    if (!normalizedSelection.length) {
       setChainResultsByMonth({})
-      setStatusMessage("Please select at least one holiday other than public holidays to calculate a chain.")
+      setAllChainsByMonth({})
+      setSelectedChainIndexByMonth({})
+      setStatusMessage("No holidays available to calculate chains. Please wait for holidays to load.")
       return
     }
 
-    if (!normalizedSelection.length) {
-      setChainResultsByMonth({})
-      setStatusMessage("Select at least one holiday date to calculate a chain.")
+    if (chainMode === "user-total" && !userLeaveDays) {
+      setStatusMessage("Please set the number of leave days in User mode.")
       return
     }
 
@@ -676,80 +528,91 @@ function App() {
     setStatusMessage(null)
 
     const selectionSnapshot = normalizedSelection.map((date) => new Date(date))
-    const manualSnapshot = normalizedManualSelection.map((date) => new Date(date))
-    const manualMonthKeys = new Set(manualSnapshot.map(monthKeyFromDate))
-    const manualGroups = new Map<string, Date[]>()
-    manualSnapshot.forEach((date) => {
-      const key = monthKeyFromDate(date)
-      const bucket = manualGroups.get(key) ?? []
-      bucket.push(new Date(date))
-      manualGroups.set(key, bucket)
-    })
-
-    if (!manualGroups.size) {
-      setChainResultsByMonth({})
-      setStatusMessage("No manual holiday selections available to calculate a chain.")
-      setIsCalculating(false)
-      return
-    }
 
     computeTimeoutRef.current = window.setTimeout(() => {
       computeTimeoutRef.current = null
 
-      const updates: Record<string, { longest: ChainResult | null; shortest: ChainResult | null }> = {}
-      const messages: string[] = []
+      // Use the new algorithm
+      const startDate = new Date(currentYear, 0, 1)
+      const endDate = new Date(currentYear + 1, 3, 0) // End of April next year
 
-      manualGroups.forEach((_, key) => {
-        const [yearStr, monthStr] = key.split("-")
-        const targetYear = Number(yearStr)
-        const targetMonth = Number(monthStr) - 1
-        const targetMonthKey = monthKeyFromDate(new Date(targetYear, targetMonth, 1))
-        const windowStart = new Date(targetYear, targetMonth - 1, 1)
-        const windowEnd = new Date(targetYear, targetMonth + 2, 0)
-        const windowStartTime = windowStart.getTime()
-        const windowEndTime = windowEnd.getTime()
+      // Optimal mode uses 2 leaves by default (like user-total with 2)
+      const effectiveMode: HolidayChainMode = chainMode === "optimal" ? "user-total" : "user-total"
+      const effectiveLeaves = chainMode === "optimal" ? 2 : (userLeaveDays ?? 2)
 
-        const windowDates = selectionSnapshot.filter((date) => {
-          const time = date.getTime()
-          if (time < windowStartTime || time > windowEndTime) {
-            return false
+      const chains = calculateHolidayChains({
+        mode: effectiveMode,
+        leavesBudget: effectiveLeaves,
+        startDate,
+        endDate,
+        holidayDates: selectionSnapshot,
+        maxLeavesPerMonth: MAX_LEAVES,
+      })
+
+      // Group chains by ALL months they touch (not just primary month)
+      const chainsByMonth: Record<string, HolidayChainResult[]> = {}
+      const selectedIndexes: Record<string, number> = {}
+
+      chains.forEach((chain) => {
+        // Add this chain to all months it touches
+        chain.monthKeys.forEach((monthKey) => {
+          if (!chainsByMonth[monthKey]) {
+            chainsByMonth[monthKey] = []
+            selectedIndexes[monthKey] = 0
           }
-          const keyMonth = monthKeyFromDate(date)
-          return keyMonth === targetMonthKey || manualMonthKeys.has(keyMonth)
-        })
-
-        const { longest, shortest } = computeChains(windowDates, targetYear)
-        const monthLabel = new Date(targetYear, targetMonth, 1).toLocaleDateString(undefined, {
-          month: "long",
-          year: "numeric",
-        })
-
-        if (longest) {
-          updates[key] = { longest, shortest }
-          const leaveCount = longest.leaveDays.length
-          messages.push(
-            `${monthLabel}: ${formatDateRange(longest.start, longest.end)} ? ${longest.totalDays} day${
-              longest.totalDays === 1 ? "" : "s"
-            } (${leaveCount} leave day${leaveCount === 1 ? "" : "s"})`
+          // Only add if not already in this month's list (avoid duplicates)
+          const isDuplicate = chainsByMonth[monthKey].some(
+            (existingChain) => existingChain.id === chain.id
           )
-        } else {
-          updates[key] = { longest: null, shortest: null }
-          messages.push(`${monthLabel}: No viable chain found.`)
+          if (!isDuplicate) {
+            chainsByMonth[monthKey].push(chain)
+          }
+        })
+      })
+
+      setAllChainsByMonth(chainsByMonth)
+      setSelectedChainIndexByMonth(selectedIndexes)
+
+      // Update chainResultsByMonth for backward compatibility
+      const updates: Record<string, { longest: ChainResult | null; shortest: ChainResult | null }> = {}
+      Object.entries(chainsByMonth).forEach(([monthKey, chains]) => {
+        if (chains.length > 0) {
+          const selectedIndex = selectedIndexes[monthKey] || 0
+          const selectedChain = chains[selectedIndex] || chains[0]
+          updates[monthKey] = {
+            longest: {
+              dates: selectedChain.dates,
+              leaveDays: selectedChain.leaveDates,
+              totalDays: selectedChain.length,
+              start: selectedChain.start,
+              end: selectedChain.end,
+            },
+            shortest: null,
+          }
         }
       })
 
-      setChainResultsByMonth(() => {
-        const next: Record<string, { longest: ChainResult | null; shortest: ChainResult | null }> = {}
-        manualGroups.forEach((_, key) => {
-          const result = updates[key]
-          if (result?.longest) {
-            next[key] = result
-          }
-        })
-        return next
+      setChainResultsByMonth(updates)
+
+      // Build status message
+      const messages: string[] = []
+      Object.entries(chainsByMonth).forEach(([monthKey, chains]) => {
+        if (chains.length > 0) {
+          const chain = chains[0]
+          const [yearStr, monthStr] = monthKey.split("-")
+          const monthLabel = new Date(Number(yearStr), Number(monthStr) - 1, 1).toLocaleDateString(undefined, {
+            month: "long",
+            year: "numeric",
+          })
+          messages.push(
+            `${monthLabel}: ${formatDateRange(chain.start, chain.end)} · ${chain.length} day${
+              chain.length === 1 ? "" : "s"
+            } (${chain.leaves} leave${chain.leaves === 1 ? "" : "s"})`
+          )
+        }
       })
 
-      setStatusMessage(messages.join(" | "))
+      setStatusMessage(messages.length > 0 ? messages.join(" | ") : "No chains found.")
     }, CALCULATION_DELAY_MS)
 
     hideTimeoutRef.current = window.setTimeout(() => {
@@ -846,6 +709,27 @@ function App() {
                   ))}
                 </SelectContent>
               </Select>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" data-testid="mode-dropdown">
+                    {chainMode === "optimal" ? "Optimal (2 days)" : `User (${userLeaveDays ?? "?"} days)`}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    data-testid="optimal-mode-item"
+                    onClick={() => handleModeChange("optimal")}
+                  >
+                    Optimal Mode (2 days)
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    data-testid="user-mode-item"
+                    onClick={() => handleModeChange("user-total")}
+                  >
+                    User Mode (Custom)
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <span className="inline-flex pointer-events-auto">
@@ -853,6 +737,7 @@ function App() {
                       variant="default"
                       onClick={handleCalculateChain}
                       disabled={isCalculateDisabled}
+                      data-testid="calculate-chain-button"
                     >
                       Calculate Chain
                     </Button>
@@ -860,7 +745,7 @@ function App() {
                 </TooltipTrigger>
                 {shouldShowCalculateTooltip && (
                   <TooltipContent>
-                    <p>Please select at least one holiday other than public holidays to calculate chain.</p>
+                    <p>Please wait for holidays to load before calculating chains.</p>
                   </TooltipContent>
                 )}
               </Tooltip>
@@ -906,18 +791,25 @@ function App() {
           <div className="flex-1 overflow-auto scrollbar-hidden">
             <div className="container mx-auto px-4 pb-4">
               <div className="calendar-grid">
-                {months.map((month, index) => (
-                  <MonthGridCell
-                    key={index}
-                    month={month}
-                    normalizedSelection={normalizedSelection}
-                    handleSelect={handleSelect}
-                    onDayClick={handleHolidayDayClick}
-                    getDayTooltip={getDayTooltip}
-                    modifiers={modifiers}
-                    calendarCaptionFormatter={calendarCaptionFormatter}
-                  />
-                ))}
+                {months.map((month, index) => {
+                  const monthKey = monthKeyFromDate(month)
+                  return (
+                    <MonthGridCell
+                      key={index}
+                      month={month}
+                      normalizedSelection={normalizedSelection}
+                      handleSelect={handleSelect}
+                      onDayClick={handleHolidayDayClick}
+                      getDayTooltip={getDayTooltip}
+                      modifiers={modifiers}
+                      calendarCaptionFormatter={calendarCaptionFormatter}
+                      allChains={allChainsByMonth[monthKey] || []}
+                      selectedChainIndex={selectedChainIndexByMonth[monthKey] ?? 0}
+                      onChainSelect={(index) => handleChainSelection(monthKey, index)}
+                      monthKey={monthKey}
+                    />
+                  )
+                })}
               </div>
             </div>
           </div>
@@ -963,12 +855,62 @@ function App() {
           </div>
         </div>
       )}
+
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen} data-testid="user-mode-dialog">
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>User Mode Configuration</DialogTitle>
+            <DialogDescription>
+              Enter the total number of leave days you want to use (1-15 days).
+              <br />
+              <span className="text-xs text-muted-foreground">Note: Optimal mode uses 2 days by default.</span>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Input
+                type="number"
+                min="1"
+                max="15"
+                placeholder="Enter leave days"
+                value={dialogInput}
+                onChange={(e) => setDialogInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    handleDialogCalculate()
+                  }
+                }}
+                data-testid="leave-days-input"
+              />
+              {dialogError && (
+                <p className="text-sm text-destructive">{dialogError}</p>
+              )}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={handleDialogCancel}
+              data-testid="dialog-cancel-button"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleDialogCalculate}
+              data-testid="dialog-calculate-button"
+            >
+              Set Mode
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </ThemeProvider>
   )
 }
 
 type MonthGridCellProps = {
   month: Date
+  monthKey: string
   normalizedSelection: Date[]
   handleSelect: (dates: Date[] | undefined) => void
   onDayClick?: ComponentProps<typeof Calendar>["onDayClick"]
@@ -977,19 +919,27 @@ type MonthGridCellProps = {
   calendarCaptionFormatter: NonNullable<
     NonNullable<ComponentProps<typeof Calendar>["formatters"]>["formatCaption"]
   >
+  allChains: HolidayChainResult[]
+  selectedChainIndex: number
+  onChainSelect: (index: number) => void
 }
 
 function MonthGridCell({
   month,
+  monthKey,
   normalizedSelection,
   handleSelect,
   onDayClick,
   getDayTooltip,
   modifiers,
   calendarCaptionFormatter,
+  allChains,
+  selectedChainIndex,
+  onChainSelect,
 }: MonthGridCellProps) {
   const cellRef = useRef<HTMLDivElement | null>(null)
   const [isVisible, setIsVisible] = useState(false)
+  const [hoverOpen, setHoverOpen] = useState(false)
 
   useEffect(() => {
     const node = cellRef.current
@@ -1033,31 +983,116 @@ function MonthGridCell({
     }
   }, [])
 
+  const hasChains = allChains.length > 0
+
   return (
     <div
       ref={cellRef}
       className={`calendar-grid-cell month-cell ${isVisible ? "month-cell--visible" : "month-cell--hidden"}`}
+      data-testid={`month-trigger-${monthKey}`}
     >
       <div className="month-visual">
         <div className="month-loader" aria-hidden="true" />
         <div className="month-calendar">
-          <Calendar
-            mode="multiple"
-            selected={normalizedSelection}
-            onSelect={handleSelect}
-            onDayClick={onDayClick}
-            getDayTooltip={getDayTooltip}
-            month={month}
-            className="w-full"
-            modifiers={modifiers}
-            formatters={{
-              formatCaption: calendarCaptionFormatter,
-            }}
-            disabled={(date) =>
-              date.getMonth() !== month.getMonth() || date.getFullYear() !== month.getFullYear()
-            }
-            showOutsideDays={false}
-          />
+          {hasChains ? (
+            <HoverCard open={hoverOpen} onOpenChange={setHoverOpen}>
+              <HoverCardTrigger asChild>
+                <div style={{ pointerEvents: 'none' }}>
+                  <Calendar
+                    mode="multiple"
+                    selected={normalizedSelection}
+                    onSelect={handleSelect}
+                    onDayClick={onDayClick}
+                    getDayTooltip={getDayTooltip}
+                    month={month}
+                    className="w-full"
+                    modifiers={modifiers}
+                    formatters={{
+                      formatCaption: calendarCaptionFormatter,
+                    }}
+                    disabled={(date) =>
+                      date.getMonth() !== month.getMonth() || date.getFullYear() !== month.getFullYear()
+                    }
+                    showOutsideDays={false}
+                    style={{ pointerEvents: 'auto' }}
+                  />
+                </div>
+              </HoverCardTrigger>
+              <HoverCardContent
+                className="w-80"
+                data-testid={`month-hover-card-${monthKey}`}
+              >
+                <div className="space-y-2">
+                  <h4 className="text-sm font-semibold">Available Chains</h4>
+                  <div className="space-y-1">
+                    {allChains.map((chain, index) => {
+                      const isSelected = index === selectedChainIndex
+                      const isBoundary = chain.monthKeys.length > 1
+                      const boundaryMonths = isBoundary
+                        ? chain.monthKeys.filter((key) => key !== monthKey)
+                        : []
+
+                      return (
+                        <button
+                          key={index}
+                          data-testid={`chain-option-${index}`}
+                          onClick={() => {
+                            onChainSelect(index)
+                            setHoverOpen(false)
+                          }}
+                          className={`w-full text-left rounded px-2 py-1.5 text-sm transition-colors ${
+                            isSelected
+                              ? "bg-primary text-primary-foreground"
+                              : "hover:bg-accent hover:text-accent-foreground"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <span>
+                              {formatDateRange(chain.start, chain.end)}
+                            </span>
+                            {isSelected && (
+                              <span className="text-xs">✓</span>
+                            )}
+                          </div>
+                          <div className="text-xs opacity-80">
+                            {chain.length} day{chain.length === 1 ? "" : "s"}, {chain.leaves} leave{chain.leaves === 1 ? "" : "s"}
+                            {isBoundary && (
+                              <span className="ml-1">
+                                {boundaryMonths.map((key) => {
+                                  const [y, m] = key.split("-")
+                                  const monthName = new Date(Number(y), Number(m) - 1).toLocaleDateString(undefined, { month: "short" })
+                                  const direction = key < monthKey ? "←" : "→"
+                                  return ` ${direction} ${monthName}`
+                                }).join("")}
+                              </span>
+                            )}
+                          </div>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              </HoverCardContent>
+            </HoverCard>
+          ) : (
+            <Calendar
+              mode="multiple"
+              selected={normalizedSelection}
+              onSelect={handleSelect}
+              onDayClick={onDayClick}
+              getDayTooltip={getDayTooltip}
+              month={month}
+              className="w-full"
+              modifiers={modifiers}
+              formatters={{
+                formatCaption: calendarCaptionFormatter,
+              }}
+              disabled={(date) =>
+                date.getMonth() !== month.getMonth() || date.getFullYear() !== month.getFullYear()
+              }
+              showOutsideDays={false}
+            />
+          )}
         </div>
       </div>
     </div>
