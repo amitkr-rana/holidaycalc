@@ -70,7 +70,7 @@ const CALCULATION_DELAY_MS = Math.max(0, SPINNER_DURATION_MS - RESULT_LEAD_MS)
 const LEGEND_TOP_PADDING_PX = 16
 
 const DEFAULT_COUNTRY = (
-  (COUNTRIES.find((country) => country.code === "US")?.code ?? COUNTRIES[0]?.code) || "US"
+  (COUNTRIES.find((country) => country.code === "IN")?.code ?? COUNTRIES[0]?.code) || "IN"
 ) as CountryCode
 
 type ChainResult = {
@@ -113,10 +113,15 @@ const formatDateRange = (start: Date, end: Date) => {
   return `${startLabel} - ${endLabel}`
 }
 
+const LAST_COUNTRY_KEY = 'lastSelectedCountry'
+
 function App() {
   const navigate = useNavigate()
 
-  const [currentCountry, setCurrentCountry] = useState<CountryCode>(DEFAULT_COUNTRY)
+  const [currentCountry, setCurrentCountry] = useState<CountryCode>(() => {
+    const savedCountry = localStorage.getItem(LAST_COUNTRY_KEY)
+    return (savedCountry && COUNTRIES.some(c => c.code === savedCountry) ? savedCountry : DEFAULT_COUNTRY) as CountryCode
+  })
   const [selectedDates, setSelectedDates] = useState<Date[]>([])
   const [manualSelectedDates, setManualSelectedDates] = useState<Date[]>([])
   const [chainResultsByMonth, setChainResultsByMonth] = useState<Record<
@@ -235,6 +240,7 @@ function App() {
       cancelHolidayFetch({ silent: true })
       resetSelections()
       setCurrentCountry(code)
+      localStorage.setItem(LAST_COUNTRY_KEY, code)
     },
     [cancelHolidayFetch, currentCountry, resetSelections]
   )
@@ -596,25 +602,8 @@ function App() {
 
       setChainResultsByMonth(updates)
 
-      // Build status message
-      const messages: string[] = []
-      Object.entries(chainsByMonth).forEach(([monthKey, chains]) => {
-        if (chains.length > 0) {
-          const chain = chains[0]
-          const [yearStr, monthStr] = monthKey.split("-")
-          const monthLabel = new Date(Number(yearStr), Number(monthStr) - 1, 1).toLocaleDateString(undefined, {
-            month: "long",
-            year: "numeric",
-          })
-          messages.push(
-            `${monthLabel}: ${formatDateRange(chain.start, chain.end)} · ${chain.length} day${
-              chain.length === 1 ? "" : "s"
-            } (${chain.leaves} leave${chain.leaves === 1 ? "" : "s"})`
-          )
-        }
-      })
-
-      setStatusMessage(messages.length > 0 ? messages.join(" | ") : "No chains found.")
+      // Only show message if no chains were found
+      setStatusMessage(Object.keys(chainsByMonth).length === 0 ? "No chains found." : null)
     }, CALCULATION_DELAY_MS)
 
     hideTimeoutRef.current = window.setTimeout(() => {

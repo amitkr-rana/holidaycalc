@@ -138,8 +138,8 @@ export function HolidayDetailPage() {
       const count = Object.keys(data.labels).length
       setStatusMessage(
         count
-          ? `Loaded ${count} holiday${count === 1 ? "" : "s"} for ${countryName} ${yearToLoad}.`
-          : `No holidays found for ${countryName} ${yearToLoad}.`
+          ? `Successfully Loaded ${count} Holiday${count === 1 ? "" : "s"} for ${countryName}`
+          : `No Holidays found for ${countryName}`
       )
     } catch (error) {
       if ((error as Error)?.name !== "AbortError") {
@@ -254,13 +254,14 @@ export function HolidayDetailPage() {
       return
     }
 
-    const normalizedCountry = typeof countryName === "string" ? countryName.trim() : ""
-    const queryParts = [
-      selectedLabels[0]?.trim(),
-      normalizedCountry,
-      activeDate ? String(activeDate.getFullYear()) : null,
-    ].filter((part): part is string => Boolean(part && part.length))
-    const searchQuery = queryParts.join(" ")
+    const occasion = selectedLabels[0]?.trim() || ""
+    // Clean up occasion name: take text before parentheses or slash
+    const cleanOccasion = occasion
+      .split(/[\(\)\/]/) // Split on parentheses or forward slash
+      .map(part => part.trim())
+      .filter(Boolean)[0] || occasion // Take first part or fall back to original
+    
+    const searchQuery = cleanOccasion
     const fallbackSearchUrl = searchQuery
       ? `https://www.pexels.com/search/${encodeURIComponent(searchQuery)}/`
       : "https://www.pexels.com"
@@ -303,8 +304,11 @@ export function HolidayDetailPage() {
     pexelsRequestsRef.current.add(key)
 
     fetch(searchUrl.toString(), {
+      cache: 'no-cache',
       headers: {
         Authorization: PEXELS_API_KEY,
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache'
       },
     })
       .then(async (response) => {
