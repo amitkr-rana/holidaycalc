@@ -1,1004 +1,431 @@
-export const COUNTRIES = [
-  {
-    "code": "AF",
-    "name": "Afghanistan"
-  },
-  {
-    "code": "AX",
-    "name": "Aland Islands"
-  },
-  {
-    "code": "AL",
-    "name": "Albania"
-  },
-  {
-    "code": "DZ",
-    "name": "Algeria"
-  },
-  {
-    "code": "AS",
-    "name": "American Samoa"
-  },
-  {
-    "code": "AD",
-    "name": "Andorra"
-  },
-  {
-    "code": "AO",
-    "name": "Angola"
-  },
-  {
-    "code": "AI",
-    "name": "Anguilla"
-  },
-  {
-    "code": "AQ",
-    "name": "Antarctica"
-  },
-  {
-    "code": "AG",
-    "name": "Antigua and Barbuda"
-  },
-  {
-    "code": "AR",
-    "name": "Argentina"
-  },
-  {
-    "code": "AM",
-    "name": "Armenia"
-  },
-  {
-    "code": "AW",
-    "name": "Aruba"
-  },
-  {
-    "code": "AU",
-    "name": "Australia"
-  },
-  {
-    "code": "AT",
-    "name": "Austria"
-  },
-  {
-    "code": "AZ",
-    "name": "Azerbaijan"
-  },
-  {
-    "code": "BS",
-    "name": "Bahamas"
-  },
-  {
-    "code": "BH",
-    "name": "Bahrain"
-  },
-  {
-    "code": "BD",
-    "name": "Bangladesh"
-  },
-  {
-    "code": "BB",
-    "name": "Barbados"
-  },
-  {
-    "code": "BY",
-    "name": "Belarus"
-  },
-  {
-    "code": "BE",
-    "name": "Belgium"
-  },
-  {
-    "code": "BZ",
-    "name": "Belize"
-  },
-  {
-    "code": "BJ",
-    "name": "Benin"
-  },
-  {
-    "code": "BM",
-    "name": "Bermuda"
-  },
-  {
-    "code": "BT",
-    "name": "Bhutan"
-  },
-  {
-    "code": "BO",
-    "name": "Bolivia"
-  },
-  {
-    "code": "BA",
-    "name": "Bosnia and Herzegovina"
-  },
-  {
-    "code": "BW",
-    "name": "Botswana"
-  },
-  {
-    "code": "BV",
-    "name": "Bouvet Island"
-  },
-  {
-    "code": "BR",
-    "name": "Brazil"
-  },
-  {
-    "code": "IO",
-    "name": "British Indian Ocean Territory"
-  },
-  {
-    "code": "VG",
-    "name": "British Virgin Islands"
-  },
-  {
-    "code": "BN",
-    "name": "Brunei"
-  },
-  {
-    "code": "BG",
-    "name": "Bulgaria"
-  },
-  {
-    "code": "BF",
-    "name": "Burkina Faso"
-  },
-  {
-    "code": "BI",
-    "name": "Burundi"
-  },
-  {
-    "code": "KH",
-    "name": "Cambodia"
-  },
-  {
-    "code": "CM",
-    "name": "Cameroon"
-  },
-  {
-    "code": "CA",
-    "name": "Canada"
-  },
-  {
-    "code": "CV",
-    "name": "Cape Verde"
-  },
-  {
-    "code": "BQ",
-    "name": "Caribbean Netherlands"
-  },
-  {
-    "code": "KY",
-    "name": "Cayman Islands"
-  },
-  {
-    "code": "CF",
-    "name": "Central African Republic"
-  },
-  {
-    "code": "TD",
-    "name": "Chad"
-  },
-  {
-    "code": "CL",
-    "name": "Chile"
-  },
-  {
-    "code": "CN",
-    "name": "China"
-  },
-  {
-    "code": "CX",
-    "name": "Christmas Island"
-  },
-  {
-    "code": "CC",
-    "name": "Cocos (Keeling) Islands"
-  },
-  {
-    "code": "CO",
-    "name": "Colombia"
-  },
-  {
-    "code": "KM",
-    "name": "Comoros"
-  },
-  {
-    "code": "CK",
-    "name": "Cook Islands"
-  },
-  {
-    "code": "CR",
-    "name": "Costa Rica"
-  },
-  {
-    "code": "HR",
-    "name": "Croatia"
-  },
-  {
-    "code": "CU",
-    "name": "Cuba"
-  },
-  {
-    "code": "CW",
-    "name": "Curacao"
-  },
-  {
-    "code": "CY",
-    "name": "Cyprus"
-  },
-  {
-    "code": "CZ",
-    "name": "Czechia"
-  },
-  {
-    "code": "DK",
-    "name": "Denmark"
-  },
-  {
-    "code": "DJ",
-    "name": "Djibouti"
-  },
-  {
-    "code": "DM",
-    "name": "Dominica"
-  },
-  {
-    "code": "DO",
-    "name": "Dominican Republic"
-  },
-  {
-    "code": "CD",
-    "name": "DR Congo"
-  },
-  {
-    "code": "EC",
-    "name": "Ecuador"
-  },
-  {
-    "code": "EG",
-    "name": "Egypt"
-  },
-  {
-    "code": "SV",
-    "name": "El Salvador"
-  },
-  {
-    "code": "GQ",
-    "name": "Equatorial Guinea"
-  },
-  {
-    "code": "ER",
-    "name": "Eritrea"
-  },
-  {
-    "code": "EE",
-    "name": "Estonia"
-  },
-  {
-    "code": "SZ",
-    "name": "Eswatini"
-  },
-  {
-    "code": "ET",
-    "name": "Ethiopia"
-  },
-  {
-    "code": "FK",
-    "name": "Falkland Islands"
-  },
-  {
-    "code": "FO",
-    "name": "Faroe Islands"
-  },
-  {
-    "code": "FJ",
-    "name": "Fiji"
-  },
-  {
-    "code": "FI",
-    "name": "Finland"
-  },
-  {
-    "code": "FR",
-    "name": "France"
-  },
-  {
-    "code": "GF",
-    "name": "French Guiana"
-  },
-  {
-    "code": "PF",
-    "name": "French Polynesia"
-  },
-  {
-    "code": "TF",
-    "name": "French Southern and Antarctic Lands"
-  },
-  {
-    "code": "GA",
-    "name": "Gabon"
-  },
-  {
-    "code": "GM",
-    "name": "Gambia"
-  },
-  {
-    "code": "GE",
-    "name": "Georgia"
-  },
-  {
-    "code": "DE",
-    "name": "Germany"
-  },
-  {
-    "code": "GH",
-    "name": "Ghana"
-  },
-  {
-    "code": "GI",
-    "name": "Gibraltar"
-  },
-  {
-    "code": "GR",
-    "name": "Greece"
-  },
-  {
-    "code": "GL",
-    "name": "Greenland"
-  },
-  {
-    "code": "GD",
-    "name": "Grenada"
-  },
-  {
-    "code": "GP",
-    "name": "Guadeloupe"
-  },
-  {
-    "code": "GU",
-    "name": "Guam"
-  },
-  {
-    "code": "GT",
-    "name": "Guatemala"
-  },
-  {
-    "code": "GG",
-    "name": "Guernsey"
-  },
-  {
-    "code": "GN",
-    "name": "Guinea"
-  },
-  {
-    "code": "GW",
-    "name": "Guinea-Bissau"
-  },
-  {
-    "code": "GY",
-    "name": "Guyana"
-  },
-  {
-    "code": "HT",
-    "name": "Haiti"
-  },
-  {
-    "code": "HM",
-    "name": "Heard Island and McDonald Islands"
-  },
-  {
-    "code": "HN",
-    "name": "Honduras"
-  },
-  {
-    "code": "HK",
-    "name": "Hong Kong"
-  },
-  {
-    "code": "HU",
-    "name": "Hungary"
-  },
-  {
-    "code": "IS",
-    "name": "Iceland"
-  },
-  {
-    "code": "IN",
-    "name": "India"
-  },
-  {
-    "code": "ID",
-    "name": "Indonesia"
-  },
-  {
-    "code": "IR",
-    "name": "Iran"
-  },
-  {
-    "code": "IQ",
-    "name": "Iraq"
-  },
-  {
-    "code": "IE",
-    "name": "Ireland"
-  },
-  {
-    "code": "IM",
-    "name": "Isle of Man"
-  },
-  {
-    "code": "IL",
-    "name": "Israel"
-  },
-  {
-    "code": "IT",
-    "name": "Italy"
-  },
-  {
-    "code": "CI",
-    "name": "Ivory Coast"
-  },
-  {
-    "code": "JM",
-    "name": "Jamaica"
-  },
-  {
-    "code": "JP",
-    "name": "Japan"
-  },
-  {
-    "code": "JE",
-    "name": "Jersey"
-  },
-  {
-    "code": "JO",
-    "name": "Jordan"
-  },
-  {
-    "code": "KZ",
-    "name": "Kazakhstan"
-  },
-  {
-    "code": "KE",
-    "name": "Kenya"
-  },
-  {
-    "code": "KI",
-    "name": "Kiribati"
-  },
-  {
-    "code": "XK",
-    "name": "Kosovo"
-  },
-  {
-    "code": "KW",
-    "name": "Kuwait"
-  },
-  {
-    "code": "KG",
-    "name": "Kyrgyzstan"
-  },
-  {
-    "code": "LA",
-    "name": "Laos"
-  },
-  {
-    "code": "LV",
-    "name": "Latvia"
-  },
-  {
-    "code": "LB",
-    "name": "Lebanon"
-  },
-  {
-    "code": "LS",
-    "name": "Lesotho"
-  },
-  {
-    "code": "LR",
-    "name": "Liberia"
-  },
-  {
-    "code": "LY",
-    "name": "Libya"
-  },
-  {
-    "code": "LI",
-    "name": "Liechtenstein"
-  },
-  {
-    "code": "LT",
-    "name": "Lithuania"
-  },
-  {
-    "code": "LU",
-    "name": "Luxembourg"
-  },
-  {
-    "code": "MO",
-    "name": "Macau"
-  },
-  {
-    "code": "MG",
-    "name": "Madagascar"
-  },
-  {
-    "code": "MW",
-    "name": "Malawi"
-  },
-  {
-    "code": "MY",
-    "name": "Malaysia"
-  },
-  {
-    "code": "MV",
-    "name": "Maldives"
-  },
-  {
-    "code": "ML",
-    "name": "Mali"
-  },
-  {
-    "code": "MT",
-    "name": "Malta"
-  },
-  {
-    "code": "MH",
-    "name": "Marshall Islands"
-  },
-  {
-    "code": "MQ",
-    "name": "Martinique"
-  },
-  {
-    "code": "MR",
-    "name": "Mauritania"
-  },
-  {
-    "code": "MU",
-    "name": "Mauritius"
-  },
-  {
-    "code": "YT",
-    "name": "Mayotte"
-  },
-  {
-    "code": "MX",
-    "name": "Mexico"
-  },
-  {
-    "code": "FM",
-    "name": "Micronesia"
-  },
-  {
-    "code": "MD",
-    "name": "Moldova"
-  },
-  {
-    "code": "MC",
-    "name": "Monaco"
-  },
-  {
-    "code": "MN",
-    "name": "Mongolia"
-  },
-  {
-    "code": "ME",
-    "name": "Montenegro"
-  },
-  {
-    "code": "MS",
-    "name": "Montserrat"
-  },
-  {
-    "code": "MA",
-    "name": "Morocco"
-  },
-  {
-    "code": "MZ",
-    "name": "Mozambique"
-  },
-  {
-    "code": "MM",
-    "name": "Myanmar"
-  },
-  {
-    "code": "NA",
-    "name": "Namibia"
-  },
-  {
-    "code": "NR",
-    "name": "Nauru"
-  },
-  {
-    "code": "NP",
-    "name": "Nepal"
-  },
-  {
-    "code": "NL",
-    "name": "Netherlands"
-  },
-  {
-    "code": "NC",
-    "name": "New Caledonia"
-  },
-  {
-    "code": "NZ",
-    "name": "New Zealand"
-  },
-  {
-    "code": "NI",
-    "name": "Nicaragua"
-  },
-  {
-    "code": "NE",
-    "name": "Niger"
-  },
-  {
-    "code": "NG",
-    "name": "Nigeria"
-  },
-  {
-    "code": "NU",
-    "name": "Niue"
-  },
-  {
-    "code": "NF",
-    "name": "Norfolk Island"
-  },
-  {
-    "code": "KP",
-    "name": "North Korea"
-  },
-  {
-    "code": "MK",
-    "name": "North Macedonia"
-  },
-  {
-    "code": "MP",
-    "name": "Northern Mariana Islands"
-  },
-  {
-    "code": "NO",
-    "name": "Norway"
-  },
-  {
-    "code": "OM",
-    "name": "Oman"
-  },
-  {
-    "code": "PK",
-    "name": "Pakistan"
-  },
-  {
-    "code": "PW",
-    "name": "Palau"
-  },
-  {
-    "code": "PS",
-    "name": "Palestine"
-  },
-  {
-    "code": "PA",
-    "name": "Panama"
-  },
-  {
-    "code": "PG",
-    "name": "Papua New Guinea"
-  },
-  {
-    "code": "PY",
-    "name": "Paraguay"
-  },
-  {
-    "code": "PE",
-    "name": "Peru"
-  },
-  {
-    "code": "PH",
-    "name": "Philippines"
-  },
-  {
-    "code": "PN",
-    "name": "Pitcairn Islands"
-  },
-  {
-    "code": "PL",
-    "name": "Poland"
-  },
-  {
-    "code": "PT",
-    "name": "Portugal"
-  },
-  {
-    "code": "PR",
-    "name": "Puerto Rico"
-  },
-  {
-    "code": "QA",
-    "name": "Qatar"
-  },
-  {
-    "code": "CG",
-    "name": "Republic of the Congo"
-  },
-  {
-    "code": "RE",
-    "name": "Reunion"
-  },
-  {
-    "code": "RO",
-    "name": "Romania"
-  },
-  {
-    "code": "RU",
-    "name": "Russia"
-  },
-  {
-    "code": "RW",
-    "name": "Rwanda"
-  },
-  {
-    "code": "BL",
-    "name": "Saint Barthelemy"
-  },
-  {
-    "code": "SH",
-    "name": "Saint Helena, Ascension and Tristan da Cunha"
-  },
-  {
-    "code": "KN",
-    "name": "Saint Kitts and Nevis"
-  },
-  {
-    "code": "LC",
-    "name": "Saint Lucia"
-  },
-  {
-    "code": "MF",
-    "name": "Saint Martin"
-  },
-  {
-    "code": "PM",
-    "name": "Saint Pierre and Miquelon"
-  },
-  {
-    "code": "VC",
-    "name": "Saint Vincent and the Grenadines"
-  },
-  {
-    "code": "WS",
-    "name": "Samoa"
-  },
-  {
-    "code": "SM",
-    "name": "San Marino"
-  },
-  {
-    "code": "ST",
-    "name": "Sao Tome and Principe"
-  },
-  {
-    "code": "SA",
-    "name": "Saudi Arabia"
-  },
-  {
-    "code": "SN",
-    "name": "Senegal"
-  },
-  {
-    "code": "RS",
-    "name": "Serbia"
-  },
-  {
-    "code": "SC",
-    "name": "Seychelles"
-  },
-  {
-    "code": "SL",
-    "name": "Sierra Leone"
-  },
-  {
-    "code": "SG",
-    "name": "Singapore"
-  },
-  {
-    "code": "SX",
-    "name": "Sint Maarten"
-  },
-  {
-    "code": "SK",
-    "name": "Slovakia"
-  },
-  {
-    "code": "SI",
-    "name": "Slovenia"
-  },
-  {
-    "code": "SB",
-    "name": "Solomon Islands"
-  },
-  {
-    "code": "SO",
-    "name": "Somalia"
-  },
-  {
-    "code": "ZA",
-    "name": "South Africa"
-  },
-  {
-    "code": "GS",
-    "name": "South Georgia"
-  },
-  {
-    "code": "KR",
-    "name": "South Korea"
-  },
-  {
-    "code": "SS",
-    "name": "South Sudan"
-  },
-  {
-    "code": "ES",
-    "name": "Spain"
-  },
-  {
-    "code": "LK",
-    "name": "Sri Lanka"
-  },
-  {
-    "code": "SD",
-    "name": "Sudan"
-  },
-  {
-    "code": "SR",
-    "name": "Suriname"
-  },
-  {
-    "code": "SJ",
-    "name": "Svalbard and Jan Mayen"
-  },
-  {
-    "code": "SE",
-    "name": "Sweden"
-  },
-  {
-    "code": "CH",
-    "name": "Switzerland"
-  },
-  {
-    "code": "SY",
-    "name": "Syria"
-  },
-  {
-    "code": "TW",
-    "name": "Taiwan"
-  },
-  {
-    "code": "TJ",
-    "name": "Tajikistan"
-  },
-  {
-    "code": "TZ",
-    "name": "Tanzania"
-  },
-  {
-    "code": "TH",
-    "name": "Thailand"
-  },
-  {
-    "code": "TL",
-    "name": "Timor-Leste"
-  },
-  {
-    "code": "TG",
-    "name": "Togo"
-  },
-  {
-    "code": "TK",
-    "name": "Tokelau"
-  },
-  {
-    "code": "TO",
-    "name": "Tonga"
-  },
-  {
-    "code": "TT",
-    "name": "Trinidad and Tobago"
-  },
-  {
-    "code": "TN",
-    "name": "Tunisia"
-  },
-  {
-    "code": "TR",
-    "name": "Turkey"
-  },
-  {
-    "code": "TM",
-    "name": "Turkmenistan"
-  },
-  {
-    "code": "TC",
-    "name": "Turks and Caicos Islands"
-  },
-  {
-    "code": "TV",
-    "name": "Tuvalu"
-  },
-  {
-    "code": "UG",
-    "name": "Uganda"
-  },
-  {
-    "code": "UA",
-    "name": "Ukraine"
-  },
-  {
-    "code": "AE",
-    "name": "United Arab Emirates"
-  },
-  {
-    "code": "GB",
-    "name": "United Kingdom"
-  },
-  {
-    "code": "US",
-    "name": "United States"
-  },
-  {
-    "code": "UM",
-    "name": "United States Minor Outlying Islands"
-  },
-  {
-    "code": "VI",
-    "name": "United States Virgin Islands"
-  },
-  {
-    "code": "UY",
-    "name": "Uruguay"
-  },
-  {
-    "code": "UZ",
-    "name": "Uzbekistan"
-  },
-  {
-    "code": "VU",
-    "name": "Vanuatu"
-  },
-  {
-    "code": "VA",
-    "name": "Vatican City"
-  },
-  {
-    "code": "VE",
-    "name": "Venezuela"
-  },
-  {
-    "code": "VN",
-    "name": "Vietnam"
-  },
-  {
-    "code": "WF",
-    "name": "Wallis and Futuna"
-  },
-  {
-    "code": "EH",
-    "name": "Western Sahara"
-  },
-  {
-    "code": "YE",
-    "name": "Yemen"
-  },
-  {
-    "code": "ZM",
-    "name": "Zambia"
-  },
-  {
-    "code": "ZW",
-    "name": "Zimbabwe"
-  }
-] as const;
+/**
+ * Comprehensive list of countries supported by Calendarific API
+ * with their states/regions/locations where applicable
+ *
+ * Location codes follow ISO 3166-2 standard in lowercase with hyphen format (e.g., "us-ny", "in-dl")
+ *
+ * Data source: Calendarific API /countries endpoint
+ * Last updated: 2025
+ */
 
-export type CountryCode = typeof COUNTRIES[number]['code'];
+export type StateLocation = {
+  code: string
+  name: string
+}
+
+export type Country = {
+  code: string
+  name: string
+  states: StateLocation[]
+}
+
+// Helper function to format location codes: converts "US-NY" to "us-ny"
+const loc = (countryCode: string, stateCode: string) =>
+  `${countryCode.toLowerCase()}-${stateCode.toLowerCase()}`
+
+// United States - 50 states + DC
+const US_STATES: StateLocation[] = [
+  { code: loc("US", "AL"), name: "Alabama" },
+  { code: loc("US", "AK"), name: "Alaska" },
+  { code: loc("US", "AZ"), name: "Arizona" },
+  { code: loc("US", "AR"), name: "Arkansas" },
+  { code: loc("US", "CA"), name: "California" },
+  { code: loc("US", "CO"), name: "Colorado" },
+  { code: loc("US", "CT"), name: "Connecticut" },
+  { code: loc("US", "DE"), name: "Delaware" },
+  { code: loc("US", "DC"), name: "District of Columbia" },
+  { code: loc("US", "FL"), name: "Florida" },
+  { code: loc("US", "GA"), name: "Georgia" },
+  { code: loc("US", "HI"), name: "Hawaii" },
+  { code: loc("US", "ID"), name: "Idaho" },
+  { code: loc("US", "IL"), name: "Illinois" },
+  { code: loc("US", "IN"), name: "Indiana" },
+  { code: loc("US", "IA"), name: "Iowa" },
+  { code: loc("US", "KS"), name: "Kansas" },
+  { code: loc("US", "KY"), name: "Kentucky" },
+  { code: loc("US", "LA"), name: "Louisiana" },
+  { code: loc("US", "ME"), name: "Maine" },
+  { code: loc("US", "MD"), name: "Maryland" },
+  { code: loc("US", "MA"), name: "Massachusetts" },
+  { code: loc("US", "MI"), name: "Michigan" },
+  { code: loc("US", "MN"), name: "Minnesota" },
+  { code: loc("US", "MS"), name: "Mississippi" },
+  { code: loc("US", "MO"), name: "Missouri" },
+  { code: loc("US", "MT"), name: "Montana" },
+  { code: loc("US", "NE"), name: "Nebraska" },
+  { code: loc("US", "NV"), name: "Nevada" },
+  { code: loc("US", "NH"), name: "New Hampshire" },
+  { code: loc("US", "NJ"), name: "New Jersey" },
+  { code: loc("US", "NM"), name: "New Mexico" },
+  { code: loc("US", "NY"), name: "New York" },
+  { code: loc("US", "NC"), name: "North Carolina" },
+  { code: loc("US", "ND"), name: "North Dakota" },
+  { code: loc("US", "OH"), name: "Ohio" },
+  { code: loc("US", "OK"), name: "Oklahoma" },
+  { code: loc("US", "OR"), name: "Oregon" },
+  { code: loc("US", "PA"), name: "Pennsylvania" },
+  { code: loc("US", "RI"), name: "Rhode Island" },
+  { code: loc("US", "SC"), name: "South Carolina" },
+  { code: loc("US", "SD"), name: "South Dakota" },
+  { code: loc("US", "TN"), name: "Tennessee" },
+  { code: loc("US", "TX"), name: "Texas" },
+  { code: loc("US", "UT"), name: "Utah" },
+  { code: loc("US", "VT"), name: "Vermont" },
+  { code: loc("US", "VA"), name: "Virginia" },
+  { code: loc("US", "WA"), name: "Washington" },
+  { code: loc("US", "WV"), name: "West Virginia" },
+  { code: loc("US", "WI"), name: "Wisconsin" },
+  { code: loc("US", "WY"), name: "Wyoming" },
+]
+
+// India - 28 states + 8 union territories
+const IN_STATES: StateLocation[] = [
+  { code: loc("IN", "AP"), name: "Andhra Pradesh" },
+  { code: loc("IN", "AR"), name: "Arunachal Pradesh" },
+  { code: loc("IN", "AS"), name: "Assam" },
+  { code: loc("IN", "BR"), name: "Bihar" },
+  { code: loc("IN", "CG"), name: "Chhattisgarh" },
+  { code: loc("IN", "GA"), name: "Goa" },
+  { code: loc("IN", "GJ"), name: "Gujarat" },
+  { code: loc("IN", "HR"), name: "Haryana" },
+  { code: loc("IN", "HP"), name: "Himachal Pradesh" },
+  { code: loc("IN", "JH"), name: "Jharkhand" },
+  { code: loc("IN", "KA"), name: "Karnataka" },
+  { code: loc("IN", "KL"), name: "Kerala" },
+  { code: loc("IN", "MP"), name: "Madhya Pradesh" },
+  { code: loc("IN", "MH"), name: "Maharashtra" },
+  { code: loc("IN", "MN"), name: "Manipur" },
+  { code: loc("IN", "ML"), name: "Meghalaya" },
+  { code: loc("IN", "MZ"), name: "Mizoram" },
+  { code: loc("IN", "NL"), name: "Nagaland" },
+  { code: loc("IN", "OD"), name: "Odisha" },
+  { code: loc("IN", "PB"), name: "Punjab" },
+  { code: loc("IN", "RJ"), name: "Rajasthan" },
+  { code: loc("IN", "SK"), name: "Sikkim" },
+  { code: loc("IN", "TN"), name: "Tamil Nadu" },
+  { code: loc("IN", "TS"), name: "Telangana" },
+  { code: loc("IN", "TR"), name: "Tripura" },
+  { code: loc("IN", "UP"), name: "Uttar Pradesh" },
+  { code: loc("IN", "UK"), name: "Uttarakhand" },
+  { code: loc("IN", "WB"), name: "West Bengal" },
+  { code: loc("IN", "AN"), name: "Andaman and Nicobar Islands" },
+  { code: loc("IN", "CH"), name: "Chandigarh" },
+  { code: loc("IN", "DH"), name: "Dadra and Nagar Haveli and Daman and Diu" },
+  { code: loc("IN", "DL"), name: "Delhi" },
+  { code: loc("IN", "JK"), name: "Jammu and Kashmir" },
+  { code: loc("IN", "LA"), name: "Ladakh" },
+  { code: loc("IN", "LD"), name: "Lakshadweep" },
+  { code: loc("IN", "PY"), name: "Puducherry" },
+]
+
+// Canada - 10 provinces + 3 territories
+const CA_PROVINCES: StateLocation[] = [
+  { code: loc("CA", "AB"), name: "Alberta" },
+  { code: loc("CA", "BC"), name: "British Columbia" },
+  { code: loc("CA", "MB"), name: "Manitoba" },
+  { code: loc("CA", "NB"), name: "New Brunswick" },
+  { code: loc("CA", "NL"), name: "Newfoundland and Labrador" },
+  { code: loc("CA", "NS"), name: "Nova Scotia" },
+  { code: loc("CA", "ON"), name: "Ontario" },
+  { code: loc("CA", "PE"), name: "Prince Edward Island" },
+  { code: loc("CA", "QC"), name: "Quebec" },
+  { code: loc("CA", "SK"), name: "Saskatchewan" },
+  { code: loc("CA", "NT"), name: "Northwest Territories" },
+  { code: loc("CA", "NU"), name: "Nunavut" },
+  { code: loc("CA", "YT"), name: "Yukon" },
+]
+
+// Australia - 6 states + 2 territories
+const AU_STATES: StateLocation[] = [
+  { code: loc("AU", "ACT"), name: "Australian Capital Territory" },
+  { code: loc("AU", "NSW"), name: "New South Wales" },
+  { code: loc("AU", "NT"), name: "Northern Territory" },
+  { code: loc("AU", "QLD"), name: "Queensland" },
+  { code: loc("AU", "SA"), name: "South Australia" },
+  { code: loc("AU", "TAS"), name: "Tasmania" },
+  { code: loc("AU", "VIC"), name: "Victoria" },
+  { code: loc("AU", "WA"), name: "Western Australia" },
+]
+
+// Germany - 16 states
+const DE_STATES: StateLocation[] = [
+  { code: loc("DE", "BW"), name: "Baden-Württemberg" },
+  { code: loc("DE", "BY"), name: "Bavaria" },
+  { code: loc("DE", "BE"), name: "Berlin" },
+  { code: loc("DE", "BB"), name: "Brandenburg" },
+  { code: loc("DE", "HB"), name: "Bremen" },
+  { code: loc("DE", "HH"), name: "Hamburg" },
+  { code: loc("DE", "HE"), name: "Hesse" },
+  { code: loc("DE", "MV"), name: "Mecklenburg-Vorpommern" },
+  { code: loc("DE", "NI"), name: "Lower Saxony" },
+  { code: loc("DE", "NW"), name: "North Rhine-Westphalia" },
+  { code: loc("DE", "RP"), name: "Rhineland-Palatinate" },
+  { code: loc("DE", "SL"), name: "Saarland" },
+  { code: loc("DE", "SN"), name: "Saxony" },
+  { code: loc("DE", "ST"), name: "Saxony-Anhalt" },
+  { code: loc("DE", "SH"), name: "Schleswig-Holstein" },
+  { code: loc("DE", "TH"), name: "Thuringia" },
+]
+
+export const COUNTRIES: Country[] = [
+  { code: "AF", name: "Afghanistan", states: [] },
+  { code: "AL", name: "Albania", states: [] },
+  { code: "DZ", name: "Algeria", states: [] },
+  { code: "AS", name: "American Samoa", states: [] },
+  { code: "AD", name: "Andorra", states: [] },
+  { code: "AO", name: "Angola", states: [] },
+  { code: "AI", name: "Anguilla", states: [] },
+  { code: "AG", name: "Antigua and Barbuda", states: [] },
+  { code: "AR", name: "Argentina", states: [] },
+  { code: "AM", name: "Armenia", states: [] },
+  { code: "AW", name: "Aruba", states: [] },
+  { code: "AU", name: "Australia", states: AU_STATES },
+  { code: "AT", name: "Austria", states: [] },
+  { code: "AZ", name: "Azerbaijan", states: [] },
+  { code: "BH", name: "Bahrain", states: [] },
+  { code: "BD", name: "Bangladesh", states: [] },
+  { code: "BB", name: "Barbados", states: [] },
+  { code: "BY", name: "Belarus", states: [] },
+  { code: "BE", name: "Belgium", states: [] },
+  { code: "BZ", name: "Belize", states: [] },
+  { code: "BJ", name: "Benin", states: [] },
+  { code: "BM", name: "Bermuda", states: [] },
+  { code: "BT", name: "Bhutan", states: [] },
+  { code: "BO", name: "Bolivia", states: [] },
+  { code: "BA", name: "Bosnia and Herzegovina", states: [] },
+  { code: "BW", name: "Botswana", states: [] },
+  { code: "BR", name: "Brazil", states: [] },
+  { code: "VG", name: "British Virgin Islands", states: [] },
+  { code: "BN", name: "Brunei", states: [] },
+  { code: "BG", name: "Bulgaria", states: [] },
+  { code: "BF", name: "Burkina Faso", states: [] },
+  { code: "BI", name: "Burundi", states: [] },
+  { code: "CV", name: "Cabo Verde", states: [] },
+  { code: "KH", name: "Cambodia", states: [] },
+  { code: "CM", name: "Cameroon", states: [] },
+  { code: "CA", name: "Canada", states: CA_PROVINCES },
+  { code: "KY", name: "Cayman Islands", states: [] },
+  { code: "CF", name: "Central African Republic", states: [] },
+  { code: "TD", name: "Chad", states: [] },
+  { code: "CL", name: "Chile", states: [] },
+  { code: "CN", name: "China", states: [] },
+  { code: "CO", name: "Colombia", states: [] },
+  { code: "KM", name: "Comoros", states: [] },
+  { code: "CG", name: "Congo", states: [] },
+  { code: "CD", name: "Congo Democratic Republic", states: [] },
+  { code: "CK", name: "Cook Islands", states: [] },
+  { code: "CR", name: "Costa Rica", states: [] },
+  { code: "CI", name: "Cote d'Ivoire", states: [] },
+  { code: "HR", name: "Croatia", states: [] },
+  { code: "CU", name: "Cuba", states: [] },
+  { code: "CW", name: "Curaçao", states: [] },
+  { code: "CY", name: "Cyprus", states: [] },
+  { code: "CZ", name: "Czechia", states: [] },
+  { code: "DK", name: "Denmark", states: [] },
+  { code: "DJ", name: "Djibouti", states: [] },
+  { code: "DM", name: "Dominica", states: [] },
+  { code: "DO", name: "Dominican Republic", states: [] },
+  { code: "TL", name: "East Timor", states: [] },
+  { code: "EC", name: "Ecuador", states: [] },
+  { code: "EG", name: "Egypt", states: [] },
+  { code: "SV", name: "El Salvador", states: [] },
+  { code: "GQ", name: "Equatorial Guinea", states: [] },
+  { code: "ER", name: "Eritrea", states: [] },
+  { code: "EE", name: "Estonia", states: [] },
+  { code: "ET", name: "Ethiopia", states: [] },
+  { code: "FK", name: "Falkland Islands", states: [] },
+  { code: "FO", name: "Faroe Islands", states: [] },
+  { code: "FJ", name: "Fiji", states: [] },
+  { code: "FI", name: "Finland", states: [] },
+  { code: "FR", name: "France", states: [] },
+  { code: "PF", name: "French Polynesia", states: [] },
+  { code: "GA", name: "Gabon", states: [] },
+  { code: "GM", name: "Gambia", states: [] },
+  { code: "GE", name: "Georgia", states: [] },
+  { code: "DE", name: "Germany", states: DE_STATES },
+  { code: "GH", name: "Ghana", states: [] },
+  { code: "GI", name: "Gibraltar", states: [] },
+  { code: "GR", name: "Greece", states: [] },
+  { code: "GL", name: "Greenland", states: [] },
+  { code: "GD", name: "Grenada", states: [] },
+  { code: "GU", name: "Guam", states: [] },
+  { code: "GT", name: "Guatemala", states: [] },
+  { code: "GG", name: "Guernsey", states: [] },
+  { code: "GN", name: "Guinea", states: [] },
+  { code: "GW", name: "Guinea-Bissau", states: [] },
+  { code: "GY", name: "Guyana", states: [] },
+  { code: "HT", name: "Haiti", states: [] },
+  { code: "HN", name: "Honduras", states: [] },
+  { code: "HK", name: "Hong Kong", states: [] },
+  { code: "HU", name: "Hungary", states: [] },
+  { code: "IS", name: "Iceland", states: [] },
+  { code: "IN", name: "India", states: IN_STATES },
+  { code: "ID", name: "Indonesia", states: [] },
+  { code: "IR", name: "Iran", states: [] },
+  { code: "IQ", name: "Iraq", states: [] },
+  { code: "IE", name: "Ireland", states: [] },
+  { code: "IM", name: "Isle of Man", states: [] },
+  { code: "IL", name: "Israel", states: [] },
+  { code: "IT", name: "Italy", states: [] },
+  { code: "JM", name: "Jamaica", states: [] },
+  { code: "JP", name: "Japan", states: [] },
+  { code: "JE", name: "Jersey", states: [] },
+  { code: "JO", name: "Jordan", states: [] },
+  { code: "KZ", name: "Kazakhstan", states: [] },
+  { code: "KE", name: "Kenya", states: [] },
+  { code: "KI", name: "Kiribati", states: [] },
+  { code: "XK", name: "Kosovo", states: [] },
+  { code: "KW", name: "Kuwait", states: [] },
+  { code: "KG", name: "Kyrgyzstan", states: [] },
+  { code: "LA", name: "Laos", states: [] },
+  { code: "LV", name: "Latvia", states: [] },
+  { code: "LB", name: "Lebanon", states: [] },
+  { code: "LS", name: "Lesotho", states: [] },
+  { code: "LR", name: "Liberia", states: [] },
+  { code: "LY", name: "Libya", states: [] },
+  { code: "LI", name: "Liechtenstein", states: [] },
+  { code: "LT", name: "Lithuania", states: [] },
+  { code: "LU", name: "Luxembourg", states: [] },
+  { code: "MO", name: "Macau", states: [] },
+  { code: "MG", name: "Madagascar", states: [] },
+  { code: "MW", name: "Malawi", states: [] },
+  { code: "MY", name: "Malaysia", states: [] },
+  { code: "MV", name: "Maldives", states: [] },
+  { code: "ML", name: "Mali", states: [] },
+  { code: "MT", name: "Malta", states: [] },
+  { code: "MH", name: "Marshall Islands", states: [] },
+  { code: "MQ", name: "Martinique", states: [] },
+  { code: "MR", name: "Mauritania", states: [] },
+  { code: "MU", name: "Mauritius", states: [] },
+  { code: "YT", name: "Mayotte", states: [] },
+  { code: "MX", name: "Mexico", states: [] },
+  { code: "FM", name: "Micronesia", states: [] },
+  { code: "MD", name: "Moldova", states: [] },
+  { code: "MC", name: "Monaco", states: [] },
+  { code: "MN", name: "Mongolia", states: [] },
+  { code: "ME", name: "Montenegro", states: [] },
+  { code: "MS", name: "Montserrat", states: [] },
+  { code: "MA", name: "Morocco", states: [] },
+  { code: "MZ", name: "Mozambique", states: [] },
+  { code: "MM", name: "Myanmar", states: [] },
+  { code: "NA", name: "Namibia", states: [] },
+  { code: "NR", name: "Nauru", states: [] },
+  { code: "NP", name: "Nepal", states: [] },
+  { code: "NL", name: "Netherlands", states: [] },
+  { code: "NC", name: "New Caledonia", states: [] },
+  { code: "NZ", name: "New Zealand", states: [] },
+  { code: "NI", name: "Nicaragua", states: [] },
+  { code: "NE", name: "Niger", states: [] },
+  { code: "NG", name: "Nigeria", states: [] },
+  { code: "KP", name: "North Korea", states: [] },
+  { code: "MK", name: "North Macedonia", states: [] },
+  { code: "MP", name: "Northern Mariana Islands", states: [] },
+  { code: "NO", name: "Norway", states: [] },
+  { code: "OM", name: "Oman", states: [] },
+  { code: "PK", name: "Pakistan", states: [] },
+  { code: "PW", name: "Palau", states: [] },
+  { code: "PA", name: "Panama", states: [] },
+  { code: "PG", name: "Papua New Guinea", states: [] },
+  { code: "PY", name: "Paraguay", states: [] },
+  { code: "PE", name: "Peru", states: [] },
+  { code: "PH", name: "Philippines", states: [] },
+  { code: "PL", name: "Poland", states: [] },
+  { code: "PT", name: "Portugal", states: [] },
+  { code: "PR", name: "Puerto Rico", states: [] },
+  { code: "QA", name: "Qatar", states: [] },
+  { code: "RE", name: "Reunion", states: [] },
+  { code: "RO", name: "Romania", states: [] },
+  { code: "RU", name: "Russia", states: [] },
+  { code: "RW", name: "Rwanda", states: [] },
+  { code: "SH", name: "Saint Helena", states: [] },
+  { code: "KN", name: "Saint Kitts and Nevis", states: [] },
+  { code: "LC", name: "Saint Lucia", states: [] },
+  { code: "MF", name: "Saint Martin", states: [] },
+  { code: "PM", name: "Saint Pierre and Miquelon", states: [] },
+  { code: "VC", name: "Saint Vincent and the Grenadines", states: [] },
+  { code: "WS", name: "Samoa", states: [] },
+  { code: "SM", name: "San Marino", states: [] },
+  { code: "ST", name: "Sao Tome and Principe", states: [] },
+  { code: "SA", name: "Saudi Arabia", states: [] },
+  { code: "SN", name: "Senegal", states: [] },
+  { code: "RS", name: "Serbia", states: [] },
+  { code: "SC", name: "Seychelles", states: [] },
+  { code: "SL", name: "Sierra Leone", states: [] },
+  { code: "SG", name: "Singapore", states: [] },
+  { code: "SX", name: "Sint Maarten", states: [] },
+  { code: "SK", name: "Slovakia", states: [] },
+  { code: "SI", name: "Slovenia", states: [] },
+  { code: "SB", name: "Solomon Islands", states: [] },
+  { code: "SO", name: "Somalia", states: [] },
+  { code: "ZA", name: "South Africa", states: [] },
+  { code: "KR", name: "South Korea", states: [] },
+  { code: "SS", name: "South Sudan", states: [] },
+  { code: "ES", name: "Spain", states: [] },
+  { code: "LK", name: "Sri Lanka", states: [] },
+  { code: "SD", name: "Sudan", states: [] },
+  { code: "SR", name: "Suriname", states: [] },
+  { code: "SE", name: "Sweden", states: [] },
+  { code: "CH", name: "Switzerland", states: [] },
+  { code: "SY", name: "Syria", states: [] },
+  { code: "TW", name: "Taiwan", states: [] },
+  { code: "TJ", name: "Tajikistan", states: [] },
+  { code: "TZ", name: "Tanzania", states: [] },
+  { code: "TH", name: "Thailand", states: [] },
+  { code: "TG", name: "Togo", states: [] },
+  { code: "TO", name: "Tonga", states: [] },
+  { code: "TT", name: "Trinidad and Tobago", states: [] },
+  { code: "TN", name: "Tunisia", states: [] },
+  { code: "TR", name: "Turkey", states: [] },
+  { code: "TM", name: "Turkmenistan", states: [] },
+  { code: "TC", name: "Turks and Caicos Islands", states: [] },
+  { code: "TV", name: "Tuvalu", states: [] },
+  { code: "UG", name: "Uganda", states: [] },
+  { code: "UA", name: "Ukraine", states: [] },
+  { code: "AE", name: "United Arab Emirates", states: [] },
+  { code: "GB", name: "United Kingdom", states: [] },
+  { code: "US", name: "United States", states: US_STATES },
+  { code: "UY", name: "Uruguay", states: [] },
+  { code: "UZ", name: "Uzbekistan", states: [] },
+  { code: "VU", name: "Vanuatu", states: [] },
+  { code: "VA", name: "Vatican City", states: [] },
+  { code: "VE", name: "Venezuela", states: [] },
+  { code: "VN", name: "Vietnam", states: [] },
+  { code: "YE", name: "Yemen", states: [] },
+  { code: "ZM", name: "Zambia", states: [] },
+  { code: "ZW", name: "Zimbabwe", states: [] },
+]
+
+export type CountryCode = typeof COUNTRIES[number]["code"]
+
+/**
+ * Get states/locations for a given country
+ */
+export const getStatesForCountry = (countryCode: string): StateLocation[] => {
+  const country = COUNTRIES.find((c) => c.code === countryCode)
+  return country?.states || []
+}
+
+/**
+ * Check if a country has states defined
+ */
+export const hasStates = (countryCode: string): boolean => {
+  return getStatesForCountry(countryCode).length > 0
+}
+
+/**
+ * Get country name from code
+ */
+export const getCountryName = (code: string): string => {
+  const country = COUNTRIES.find((c) => c.code === code)
+  return country?.name || code
+}
+
+/**
+ * Get state/location name from code
+ */
+export const getLocationName = (locationCode: string): string => {
+  const [countryCode] = locationCode.split("-")
+  const states = getStatesForCountry(countryCode.toUpperCase())
+  const state = states.find((s) => s.code === locationCode.toLowerCase())
+  return state?.name || locationCode
+}

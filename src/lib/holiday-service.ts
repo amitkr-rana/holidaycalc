@@ -1,7 +1,8 @@
-import { COUNTRIES } from "@/lib/countries"
+import type { HolidayType } from "@/lib/holiday-types"
+import { formatHolidayTypesForApi } from "@/lib/holiday-types"
 
 export const HOLIDAY_CACHE_PREFIX = "holiday-cache"
-export const HOLIDAY_CACHE_VERSION = 3
+export const HOLIDAY_CACHE_VERSION = 4 // Incremented for new cache structure
 export const CALENDARIFIC_API_KEY = "g2hJuLniy4J5YI5WTkxVw37Lynk72Wuu"
 export const CALENDARIFIC_ENDPOINT = "https://calendarific.com/api/v2/holidays"
 
@@ -95,16 +96,29 @@ export const parseDateKeyToDate = (key: string): Date | null => {
   return normalizeDate(candidate)
 }
 
-const buildHolidayCacheKey = (country: string, year: number) =>
-  `${HOLIDAY_CACHE_PREFIX}:${country}:${year}`
+const buildHolidayCacheKey = (
+  country: string,
+  year: number,
+  location?: string | null,
+  types?: HolidayType[]
+) => {
+  const locationKey = location || "all"
+  const typesKey = types && types.length > 0 ? [...types].sort().join(",") : "all"
+  return `${HOLIDAY_CACHE_PREFIX}:${country}:${year}:${locationKey}:${typesKey}`
+}
 
-export const readHolidayCache = (country: string, year: number): HolidayCacheData | null => {
+export const readHolidayCache = (
+  country: string,
+  year: number,
+  location?: string | null,
+  types?: HolidayType[]
+): HolidayCacheData | null => {
   if (typeof window === "undefined") {
     return null
   }
 
   try {
-    const raw = window.localStorage.getItem(buildHolidayCacheKey(country, year))
+    const raw = window.localStorage.getItem(buildHolidayCacheKey(country, year, location, types))
     if (!raw) {
       return null
     }
@@ -201,7 +215,13 @@ export const readHolidayCache = (country: string, year: number): HolidayCacheDat
   }
 }
 
-export const writeHolidayCache = (country: string, year: number, data: HolidayCacheData) => {
+export const writeHolidayCache = (
+  country: string,
+  year: number,
+  data: HolidayCacheData,
+  location?: string | null,
+  types?: HolidayType[]
+) => {
   if (typeof window === "undefined") {
     return
   }
@@ -213,7 +233,7 @@ export const writeHolidayCache = (country: string, year: number, data: HolidayCa
       labels: data.labels,
       details: data.details,
     })
-    window.localStorage.setItem(buildHolidayCacheKey(country, year), payload)
+    window.localStorage.setItem(buildHolidayCacheKey(country, year, location, types), payload)
   } catch (error) {
     console.error("Failed to write holiday cache", error)
   }
@@ -245,7 +265,9 @@ const sanitizeType = (value: unknown) => {
 export const fetchHolidayData = async (
   country: string,
   year: number,
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  location?: string | null,
+  types?: HolidayType[]
 ): Promise<HolidayCacheData> => {
   const labelMap: HolidayLabelMap = {}
   const detailMap: HolidayDetailMap = {}
@@ -254,7 +276,15 @@ export const fetchHolidayData = async (
   url.searchParams.set("api_key", CALENDARIFIC_API_KEY)
   url.searchParams.set("country", country)
   url.searchParams.set("year", String(year))
-  url.searchParams.set("type", "national")
+
+  // Add location parameter if provided
+  if (location) {
+    url.searchParams.set("location", location)
+  }
+
+  // Add types parameter (defaults to all types if not specified)
+  const typesParam = formatHolidayTypesForApi(types || [])
+  url.searchParams.set("type", typesParam)
 
   const response = await fetch(url.toString(), { signal })
   if (!response.ok) {
@@ -331,6 +361,3 @@ export const fetchHolidayData = async (
     details: detailMap,
   }
 }
-
-export const getCountryName = (code: string) =>
-  COUNTRIES.find((country) => country.code === code)?.name ?? code

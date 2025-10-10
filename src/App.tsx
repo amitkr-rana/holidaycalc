@@ -33,17 +33,27 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card"
+import {
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command"
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-import { COUNTRIES } from "@/lib/countries"
+import { Search } from "lucide-react"
+import { COUNTRIES, getStatesForCountry, hasStates, getCountryName, getLocationName } from "@/lib/countries"
 import type { CountryCode } from "@/lib/countries"
+import type { HolidayType } from "@/lib/holiday-types"
+import { HOLIDAY_TYPES, getSelectedTypesDisplay } from "@/lib/holiday-types"
 import type { HolidayCacheData, HolidayLabelMap } from "@/lib/holiday-service"
 import {
   HOLIDAY_CACHE_VERSION,
   dateKey,
   fetchHolidayData,
-  getCountryName,
   normalizeDate,
   parseDateKeyToDate,
   readHolidayCache,
@@ -56,7 +66,6 @@ import {
 } from "@/lib/holiday-chains"
 
 // const MS_IN_DAY = 1000 * 60 * 60 * 24
-const MAX_LEAVES = 2
 const YEAR_PAST_RANGE = 5
 const YEAR_FUTURE_RANGE = 10
 const BASE_YEAR = new Date().getFullYear()
@@ -114,6 +123,9 @@ const formatDateRange = (start: Date, end: Date) => {
 }
 
 const LAST_COUNTRY_KEY = 'lastSelectedCountry'
+const LAST_LOCATION_KEY_PREFIX = 'lastLocation' // Per-country location preference
+const LAST_TYPES_KEY = 'lastSelectedTypes'
+const CHAIN_STATE_KEY = 'chainState'
 
 function App() {
   const navigate = useNavigate()
@@ -122,6 +134,39 @@ function App() {
     const savedCountry = localStorage.getItem(LAST_COUNTRY_KEY)
     return (savedCountry && COUNTRIES.some(c => c.code === savedCountry) ? savedCountry : DEFAULT_COUNTRY) as CountryCode
   })
+
+  // Location/State selection (null = all locations)
+  const [selectedLocation, setSelectedLocation] = useState<string | null>(() => {
+    try {
+      const savedLocation = localStorage.getItem(`${LAST_LOCATION_KEY_PREFIX}:${DEFAULT_COUNTRY}`)
+      return savedLocation || null
+    } catch {
+      return null
+    }
+  })
+
+  // Holiday types selection (empty = all types)
+  const [selectedTypes, setSelectedTypes] = useState<HolidayType[]>(() => {
+    try {
+      const saved = localStorage.getItem(LAST_TYPES_KEY)
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        if (Array.isArray(parsed)) {
+          return parsed.filter((t): t is HolidayType =>
+            typeof t === 'string' && ['national', 'local', 'religious', 'observance'].includes(t)
+          )
+        }
+      }
+    } catch {
+      // Ignore parse errors
+    }
+    return []
+  })
+
+  // Temporary types selection for the dropdown (only applied when clicking Apply)
+  const [tempTypes, setTempTypes] = useState<HolidayType[]>(selectedTypes)
+  const [typesDropdownOpen, setTypesDropdownOpen] = useState(false)
+  const [searchOpen, setSearchOpen] = useState(false)
   const [selectedDates, setSelectedDates] = useState<Date[]>([])
   const [manualSelectedDates, setManualSelectedDates] = useState<Date[]>([])
   const [chainResultsByMonth, setChainResultsByMonth] = useState<Record<
@@ -221,6 +266,15 @@ function App() {
     setChainResultsByMonth({})
     setHolidayDescriptions({})
     setStatusMessage(null)
+    setAllChainsByMonth({})
+    setSelectedChainIndexByMonth({})
+    // Location and types are preserved across resets
+    // Clear saved chain state
+    try {
+      localStorage.removeItem(CHAIN_STATE_KEY)
+    } catch (e) {
+      console.error('Failed to clear chain state', e)
+    }
   }, [])
 
   const handleYearChange = (year: number) => {
@@ -241,9 +295,102 @@ function App() {
       resetSelections()
       setCurrentCountry(code)
       localStorage.setItem(LAST_COUNTRY_KEY, code)
+
+      // Load location preference for this country, or reset if country has no states
+      if (hasStates(code)) {
+        try {
+          const savedLocation = localStorage.getItem(`${LAST_LOCATION_KEY_PREFIX}:${code}`)
+          setSelectedLocation(savedLocation || null)
+        } catch {
+          setSelectedLocation(null)
+        }
+      } else {
+        setSelectedLocation(null)
+      }
+      // Types selection persists across country changes
     },
     [cancelHolidayFetch, currentCountry, resetSelections]
   )
+
+  // Handler for location change
+  const handleLocationChange = useCallback(
+    (locationCode: string | null) => {
+      setSelectedLocation(locationCode)
+      try {
+        if (locationCode) {
+          localStorage.setItem(`${LAST_LOCATION_KEY_PREFIX}:${currentCountry}`, locationCode)
+        } else {
+          localStorage.removeItem(`${LAST_LOCATION_KEY_PREFIX}:${currentCountry}`)
+        }
+      } catch (e) {
+        console.error('Failed to save location preference', e)
+      }
+      // Reset holiday data when location changes
+      resetSelections()
+    },
+    [currentCountry, resetSelections]
+  )
+
+  // Handler for types change
+  const handleTypesChange = useCallback(
+    (types: HolidayType[]) => {
+      setSelectedTypes(types)
+      try {
+        localStorage.setItem(LAST_TYPES_KEY, JSON.stringify(types))
+      } catch (e) {
+        console.error('Failed to save types preference', e)
+      }
+      // Reset holiday data when types change
+      resetSelections()
+    },
+    [resetSelections]
+  )
+
+  // Handler for types dropdown open/close
+  const handleTypesDropdownOpenChange = useCallback((open: boolean) => {
+    setTypesDropdownOpen(open)
+    if (open) {
+      // Sync temp types with selected types when opening
+      setTempTypes(selectedTypes)
+    }
+  }, [selectedTypes])
+
+  // Handler for Apply button in types dropdown
+  const handleTypesApply = useCallback(() => {
+    handleTypesChange(tempTypes)
+    setTypesDropdownOpen(false)
+  }, [tempTypes, handleTypesChange])
+
+  // Handler for Clear button in types dropdown
+  const handleTypesClear = useCallback(() => {
+    setTempTypes([])
+  }, [])
+
+  // Search handler - navigate to holiday detail page
+  const handleSearchSelect = useCallback((dateKey: string, holidayName: string) => {
+    const [year, month, day] = dateKey.split('-')
+    navigate(`/holiday/${currentCountry}/${year}/${month}/${day}`, {
+      state: {
+        dateKey,
+        labels: holidayDescriptions[dateKey] || [holidayName],
+        countryName: getCountryName(currentCountry),
+        cacheVersion: HOLIDAY_CACHE_VERSION,
+      },
+    })
+    setSearchOpen(false)
+  }, [currentCountry, holidayDescriptions, navigate])
+
+  // Keyboard shortcut for search (Cmd+K / Ctrl+K)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault()
+        setSearchOpen((open) => !open)
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [])
 
   const handleSelect = (value: Date[] | undefined) => {
     if (!value) {
@@ -357,16 +504,22 @@ function App() {
 
     cancelHolidayFetch({ silent: true })
 
-    const cachedHolidayData = readHolidayCache(currentCountry, currentYear)
+    const cachedHolidayData = readHolidayCache(currentCountry, currentYear, selectedLocation, selectedTypes)
     if (cachedHolidayData) {
       applyHolidayData(cachedHolidayData)
       const count = Object.keys(cachedHolidayData.labels).length
+      const locationName = selectedLocation ? getLocationName(selectedLocation) : null
+      const typesDesc = selectedTypes.length > 0 && selectedTypes.length < HOLIDAY_TYPES.length
+        ? ` (${getSelectedTypesDisplay(selectedTypes)})`
+        : ''
       setStatusMessage(
         count
           ? `Loaded ${count} cached holiday${count === 1 ? "" : "s"} for ${
               getCountryName(currentCountry)
-            } ${currentYear}.`
-          : `No holidays found for ${getCountryName(currentCountry)} ${currentYear}.`
+            }${locationName ? ` (${locationName})` : ''} ${currentYear}${typesDesc}.`
+          : `No holidays found for ${getCountryName(currentCountry)}${
+              locationName ? ` (${locationName})` : ''
+            } ${currentYear}${typesDesc}.`
       )
       return
     }
@@ -375,23 +528,36 @@ function App() {
     holidayFetchControllerRef.current = controller
     holidayFetchCancelledRef.current = false
     setIsLoadingHolidays(true)
-    setLoadingMessage(`Fetching holidays for ${getCountryName(currentCountry)} ${currentYear}...`)
+    const locationName = selectedLocation ? getLocationName(selectedLocation) : null
+    setLoadingMessage(
+      `Fetching holidays for ${getCountryName(currentCountry)}${
+        locationName ? ` (${locationName})` : ''
+      } ${currentYear}...`
+    )
 
     const load = async () => {
       try {
-        const data = await fetchHolidayData(currentCountry, currentYear, controller.signal)
+        const data = await fetchHolidayData(currentCountry, currentYear, controller.signal, selectedLocation, selectedTypes)
         if (holidayFetchCancelledRef.current) {
           return
         }
 
         applyHolidayData(data)
-        writeHolidayCache(currentCountry, currentYear, data)
+        writeHolidayCache(currentCountry, currentYear, data, selectedLocation, selectedTypes)
 
         const count = Object.keys(data.labels).length
+        const locationName = selectedLocation ? getLocationName(selectedLocation) : null
+        const typesDesc = selectedTypes.length > 0 && selectedTypes.length < HOLIDAY_TYPES.length
+          ? ` (${getSelectedTypesDisplay(selectedTypes)})`
+          : ''
         setStatusMessage(
           count
-            ? `Loaded ${count} holiday${count === 1 ? "" : "s"} for ${getCountryName(currentCountry)} ${currentYear}.`
-            : `No holidays found for ${getCountryName(currentCountry)} ${currentYear}.`
+            ? `Loaded ${count} holiday${count === 1 ? "" : "s"} for ${getCountryName(currentCountry)}${
+                locationName ? ` (${locationName})` : ''
+              } ${currentYear}${typesDesc}.`
+            : `No holidays found for ${getCountryName(currentCountry)}${
+                locationName ? ` (${locationName})` : ''
+              } ${currentYear}${typesDesc}.`
         )
       } catch (error) {
         if ((error as Error)?.name === "AbortError" || holidayFetchCancelledRef.current) {
@@ -399,8 +565,11 @@ function App() {
         }
 
         console.error("Failed to fetch holidays", error)
+        const locationName = selectedLocation ? getLocationName(selectedLocation) : null
         setStatusMessage(
-          `Unable to fetch holidays for ${getCountryName(currentCountry)} ${currentYear}.`
+          `Unable to fetch holidays for ${getCountryName(currentCountry)}${
+            locationName ? ` (${locationName})` : ''
+          } ${currentYear}.`
         )
       } finally {
         holidayFetchControllerRef.current = null
@@ -415,7 +584,7 @@ function App() {
     return () => {
       cancelHolidayFetch({ silent: true })
     }
-  }, [applyHolidayData, cancelHolidayFetch, currentCountry, currentYear])
+  }, [applyHolidayData, cancelHolidayFetch, currentCountry, currentYear, selectedLocation, selectedTypes])
 
   const getDayTooltip = useCallback((date: Date) => {
     const labels = holidayDescriptions[dateKey(date)]
@@ -488,37 +657,49 @@ function App() {
     const selectedChain = chains[chainIndex]
 
     // Update dropdown selection for all months containing this chain
-    setSelectedChainIndexByMonth((prev) => {
-      const updates = { ...prev }
-      selectedChain.monthKeys.forEach((key) => {
-        const monthChains = allChainsByMonth[key]
-        if (monthChains) {
-          const idx = monthChains.findIndex(c => c.id === selectedChain.id)
-          if (idx >= 0) {
-            updates[key] = idx
-          }
+    const nextSelectedIndexes = { ...selectedChainIndexByMonth }
+    selectedChain.monthKeys.forEach((key) => {
+      const monthChains = allChainsByMonth[key]
+      if (monthChains) {
+        const idx = monthChains.findIndex(c => c.id === selectedChain.id)
+        if (idx >= 0) {
+          nextSelectedIndexes[key] = idx
         }
-      })
-      return updates
+      }
     })
+    setSelectedChainIndexByMonth(nextSelectedIndexes)
 
     // Update chainResultsByMonth with the selected chain for ALL its months
-    setChainResultsByMonth((prev) => {
-      const updates = { ...prev }
-      selectedChain.monthKeys.forEach((key) => {
-        updates[key] = {
-          longest: {
-            dates: selectedChain.dates,
-            leaveDays: selectedChain.leaveDates,
-            totalDays: selectedChain.length,
-            start: selectedChain.start,
-            end: selectedChain.end,
-          },
-          shortest: null,
-        }
-      })
-      return updates
+    const nextChainResults = { ...chainResultsByMonth }
+    selectedChain.monthKeys.forEach((key) => {
+      nextChainResults[key] = {
+        longest: {
+          dates: selectedChain.dates,
+          leaveDays: selectedChain.leaveDates,
+          totalDays: selectedChain.length,
+          start: selectedChain.start,
+          end: selectedChain.end,
+        },
+        shortest: null,
+      }
     })
+    setChainResultsByMonth(nextChainResults)
+
+    // Save updated state to localStorage
+    try {
+      const chainState = {
+        allChainsByMonth,
+        selectedChainIndexByMonth: nextSelectedIndexes,
+        chainResultsByMonth: nextChainResults,
+        chainMode,
+        userLeaveDays,
+        country: currentCountry,
+        year: currentYear,
+      }
+      localStorage.setItem(CHAIN_STATE_KEY, JSON.stringify(chainState))
+    } catch (e) {
+      console.error('Failed to save chain state', e)
+    }
   }
 
   const handleCalculateChain = () => {
@@ -595,26 +776,42 @@ function App() {
       setAllChainsByMonth(chainsByMonth)
       setSelectedChainIndexByMonth(selectedIndexes)
 
-      // Update chainResultsByMonth - initially only show the first chain globally
+      // Update chainResultsByMonth - show all first chains (overlaps allowed)
       const updates: Record<string, { longest: ChainResult | null; shortest: ChainResult | null }> = {}
-      if (chains.length > 0) {
-        const firstChain = chains[0]
-        // Only add the first chain to visible chains
-        firstChain.monthKeys.forEach((monthKey) => {
+      Object.entries(chainsByMonth).forEach(([monthKey, chains]) => {
+        if (chains.length > 0) {
+          const selectedIndex = selectedIndexes[monthKey] || 0
+          const selectedChain = chains[selectedIndex] || chains[0]
           updates[monthKey] = {
             longest: {
-              dates: firstChain.dates,
-              leaveDays: firstChain.leaveDates,
-              totalDays: firstChain.length,
-              start: firstChain.start,
-              end: firstChain.end,
+              dates: selectedChain.dates,
+              leaveDays: selectedChain.leaveDates,
+              totalDays: selectedChain.length,
+              start: selectedChain.start,
+              end: selectedChain.end,
             },
             shortest: null,
           }
-        })
-      }
+        }
+      })
 
       setChainResultsByMonth(updates)
+
+      // Save chain state to localStorage
+      try {
+        const chainState = {
+          allChainsByMonth: chainsByMonth,
+          selectedChainIndexByMonth: selectedIndexes,
+          chainResultsByMonth: updates,
+          chainMode,
+          userLeaveDays,
+          country: currentCountry,
+          year: currentYear,
+        }
+        localStorage.setItem(CHAIN_STATE_KEY, JSON.stringify(chainState))
+      } catch (e) {
+        console.error('Failed to save chain state', e)
+      }
 
       // Only show message if no chains were found
       setStatusMessage(Object.keys(chainsByMonth).length === 0 ? "No chains found." : null)
@@ -625,6 +822,65 @@ function App() {
       setIsCalculating(false)
     }, SPINNER_DURATION_MS)
   }
+
+  // Restore chain state on mount or when country/year changes
+  useEffect(() => {
+    try {
+      const savedState = localStorage.getItem(CHAIN_STATE_KEY)
+      if (savedState) {
+        const parsed = JSON.parse(savedState)
+        // Only restore if it matches current country/year
+        if (parsed.country === currentCountry && parsed.year === currentYear) {
+          // Convert date strings back to Date objects
+          if (parsed.allChainsByMonth) {
+            const restoredAllChains: Record<string, HolidayChainResult[]> = {}
+            Object.entries(parsed.allChainsByMonth).forEach(([monthKey, chains]: [string, any]) => {
+              restoredAllChains[monthKey] = chains.map((chain: any) => ({
+                ...chain,
+                start: new Date(chain.start),
+                end: new Date(chain.end),
+                dates: chain.dates.map((d: string) => new Date(d)),
+                leaveDates: chain.leaveDates.map((d: string) => new Date(d)),
+              }))
+            })
+            setAllChainsByMonth(restoredAllChains)
+          }
+
+          if (parsed.selectedChainIndexByMonth) setSelectedChainIndexByMonth(parsed.selectedChainIndexByMonth)
+
+          if (parsed.chainResultsByMonth) {
+            const restoredChainResults: Record<string, { longest: ChainResult | null; shortest: ChainResult | null }> = {}
+            Object.entries(parsed.chainResultsByMonth).forEach(([monthKey, result]: [string, any]) => {
+              if (result.longest) {
+                restoredChainResults[monthKey] = {
+                  longest: {
+                    ...result.longest,
+                    start: new Date(result.longest.start),
+                    end: new Date(result.longest.end),
+                    dates: result.longest.dates.map((d: string) => new Date(d)),
+                    leaveDays: result.longest.leaveDays.map((d: string) => new Date(d)),
+                  },
+                  shortest: result.shortest ? {
+                    ...result.shortest,
+                    start: new Date(result.shortest.start),
+                    end: new Date(result.shortest.end),
+                    dates: result.shortest.dates.map((d: string) => new Date(d)),
+                    leaveDays: result.shortest.leaveDays.map((d: string) => new Date(d)),
+                  } : null,
+                }
+              }
+            })
+            setChainResultsByMonth(restoredChainResults)
+          }
+
+          if (parsed.chainMode) setChainMode(parsed.chainMode)
+          if (parsed.userLeaveDays) setUserLeaveDays(parsed.userLeaveDays)
+        }
+      }
+    } catch (e) {
+      console.error('Failed to restore chain state', e)
+    }
+  }, [currentCountry, currentYear])
 
   useEffect(() => {
     return () => {
@@ -678,15 +934,15 @@ function App() {
             <div className="flex flex-wrap items-end gap-3">
               <h1 className="text-2xl font-bold">Holiday Calendar</h1>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 flex-wrap">
               <Select
                 value={currentCountry}
                 onValueChange={(value) => handleCountryChange(value as CountryCode)}
               >
-                <SelectTrigger id="country-select" className="w-52">
+                <SelectTrigger id="country-select" className="w-52 rounded-none">
                   <SelectValue placeholder="Country" />
                 </SelectTrigger>
-                <SelectContent className="max-h-64">
+                <SelectContent className="max-h-64 rounded-none">
                   {COUNTRIES.map((country) => (
                     <SelectItem key={country.code} value={country.code}>
                       {country.name}
@@ -694,6 +950,27 @@ function App() {
                   ))}
                 </SelectContent>
               </Select>
+
+              {/* Location/State dropdown - only show if country has states */}
+              {hasStates(currentCountry) && (
+                <Select
+                  value={selectedLocation || "all"}
+                  onValueChange={(value) => handleLocationChange(value === "all" ? null : value)}
+                >
+                  <SelectTrigger id="location-select" className="w-48 rounded-none">
+                    <SelectValue placeholder="All Locations" />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-64 rounded-none">
+                    <SelectItem value="all">All Locations</SelectItem>
+                    {getStatesForCountry(currentCountry).map((state) => (
+                      <SelectItem key={state.code} value={state.code}>
+                        {state.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+
               <Select
                 value={String(currentYear)}
                 onValueChange={(value) => {
@@ -703,10 +980,10 @@ function App() {
                   }
                 }}
               >
-                <SelectTrigger id="year-select" className="w-32">
+                <SelectTrigger id="year-select" className="w-32 rounded-none">
                   <SelectValue placeholder="Year" />
                 </SelectTrigger>
-                <SelectContent align="center">
+                <SelectContent align="center" className="rounded-none">
                   {yearOptions.map((year) => (
                     <SelectItem key={year} value={String(year)}>
                       {year}
@@ -714,24 +991,103 @@ function App() {
                   ))}
                 </SelectContent>
               </Select>
-              <DropdownMenu>
+
+              {/* Holiday Types multi-select dropdown */}
+              <DropdownMenu open={typesDropdownOpen} onOpenChange={handleTypesDropdownOpenChange}>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" data-testid="mode-dropdown">
-                    {chainMode === "optimal" ? "Optimal (2 days)" : `User (${userLeaveDays ?? "?"} days)`}
+                  <Button
+                    variant="outline"
+                    className="w-48 rounded-none h-9 px-3 py-2 text-sm border border-input bg-transparent shadow-sm hover:bg-accent hover:text-accent-foreground justify-between font-normal"
+                  >
+                    <span className="truncate">{getSelectedTypesDisplay(selectedTypes)}</span>
+                    <svg
+                      width="15"
+                      height="15"
+                      viewBox="0 0 15 15"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-4 w-4 opacity-50"
+                    >
+                      <path
+                        d="M4.93179 5.43179C4.75605 5.60753 4.75605 5.89245 4.93179 6.06819C5.10753 6.24392 5.39245 6.24392 5.56819 6.06819L7.49999 4.13638L9.43179 6.06819C9.60753 6.24392 9.89245 6.24392 10.0682 6.06819C10.2439 5.89245 10.2439 5.60753 10.0682 5.43179L7.81819 3.18179C7.73379 3.0974 7.61933 3.04999 7.49999 3.04999C7.38064 3.04999 7.26618 3.0974 7.18179 3.18179L4.93179 5.43179ZM10.0682 9.56819C10.2439 9.39245 10.2439 9.10753 10.0682 8.93179C9.89245 8.75606 9.60753 8.75606 9.43179 8.93179L7.49999 10.8636L5.56819 8.93179C5.39245 8.75606 5.10753 8.75606 4.93179 8.93179C4.75605 9.10753 4.75605 9.39245 4.93179 9.56819L7.18179 11.8182C7.26618 11.9026 7.38064 11.95 7.49999 11.95C7.61933 11.95 7.73379 11.9026 7.81819 11.8182L10.0682 9.56819Z"
+                        fill="currentColor"
+                        fillRule="evenodd"
+                        clipRule="evenodd"
+                      ></path>
+                    </svg>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
+                <DropdownMenuContent align="start" className="w-64 rounded-none p-0">
+                  <div className="max-h-64 overflow-y-auto p-1">
+                    {HOLIDAY_TYPES.map((type) => {
+                      const isSelected = tempTypes.includes(type.value)
+                      return (
+                        <DropdownMenuItem
+                          key={type.value}
+                          onClick={(e) => {
+                            e.preventDefault()
+                            const newTypes = isSelected
+                              ? tempTypes.filter((t) => t !== type.value)
+                              : [...tempTypes, type.value]
+                            setTempTypes(newTypes)
+                          }}
+                          className="flex items-center gap-2 cursor-pointer"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => {}}
+                            className="cursor-pointer w-4 h-4 rounded-none border-2 border-input bg-background checked:bg-foreground checked:border-foreground dark:checked:bg-white dark:checked:border-white appearance-none relative checked:after:content-['✓'] checked:after:absolute checked:after:top-1/2 checked:after:left-1/2 checked:after:-translate-x-1/2 checked:after:-translate-y-1/2 checked:after:text-background dark:checked:after:text-black checked:after:text-xs checked:after:font-bold"
+                          />
+                          <div className="flex flex-col">
+                            <span className="font-medium">{type.label}</span>
+                            <span className="text-xs text-muted-foreground">{type.description}</span>
+                          </div>
+                        </DropdownMenuItem>
+                      )
+                    })}
+                  </div>
+                  <div className="border-t p-2 flex gap-2 bg-background">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleTypesClear}
+                      className="flex-1 rounded-none"
+                    >
+                      Clear
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={handleTypesApply}
+                      className="flex-1 rounded-none"
+                    >
+                      Apply
+                    </Button>
+                  </div>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" data-testid="mode-dropdown" className="rounded-none">
+                    {chainMode === "optimal" ? "Optimal" : `User (${userLeaveDays ?? "?"} days)`}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="min-w-[280px] rounded-none">
                   <DropdownMenuItem
                     data-testid="optimal-mode-item"
                     onClick={() => handleModeChange("optimal")}
+                    className="flex flex-col items-start gap-1"
                   >
-                    Optimal Mode (2 days)
+                    <div className="font-medium">Optimal</div>
+                    <div className="text-xs text-muted-foreground">Find the longest holiday using 2 leave days</div>
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     data-testid="user-mode-item"
                     onClick={() => handleModeChange("user-total")}
+                    className="flex flex-col items-start gap-1"
                   >
-                    User Mode (Custom)
+                    <div className="font-medium">Custom</div>
+                    <div className="text-xs text-muted-foreground">Choose your own number of leave days</div>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -743,6 +1099,7 @@ function App() {
                       onClick={handleCalculateChain}
                       disabled={isCalculateDisabled}
                       data-testid="calculate-chain-button"
+                      className="rounded-none"
                     >
                       Calculate Chain
                     </Button>
@@ -753,6 +1110,22 @@ function App() {
                     <p>Please wait for holidays to load before calculating chains.</p>
                   </TooltipContent>
                 )}
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setSearchOpen(true)}
+                    className="rounded-none"
+                  >
+                    <Search className="h-[1.2rem] w-[1.2rem]" />
+                    <span className="sr-only">Search holidays</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Search holidays (⌘K)</p>
+                </TooltipContent>
               </Tooltip>
               <ModeToggle />
             </div>
@@ -839,6 +1212,7 @@ function App() {
             <Button
               variant="outline"
               size="sm"
+              className="rounded-none"
               onClick={() => {
                 if (isLoadingHolidays) {
                   cancelHolidayFetch()
@@ -862,7 +1236,7 @@ function App() {
       )}
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen} data-testid="user-mode-dialog">
-        <DialogContent>
+        <DialogContent className="rounded-none">
           <DialogHeader>
             <DialogTitle>User Mode Configuration</DialogTitle>
             <DialogDescription>
@@ -886,6 +1260,7 @@ function App() {
                   }
                 }}
                 data-testid="leave-days-input"
+                className="rounded-none"
               />
               {dialogError && (
                 <p className="text-sm text-destructive">{dialogError}</p>
@@ -897,18 +1272,52 @@ function App() {
               variant="outline"
               onClick={handleDialogCancel}
               data-testid="dialog-cancel-button"
+              className="rounded-none"
             >
               Cancel
             </Button>
             <Button
               onClick={handleDialogCalculate}
               data-testid="dialog-calculate-button"
+              className="rounded-none"
             >
               Set Mode
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <CommandDialog open={searchOpen} onOpenChange={setSearchOpen} className="rounded-none">
+        <CommandInput placeholder="Search holidays..." />
+        <CommandList className="scrollbar-hidden">
+          <CommandEmpty>No holidays found.</CommandEmpty>
+          <CommandGroup heading="Holidays">
+            {Object.entries(holidayDescriptions).map(([key, labels]) => {
+              const date = parseDateKeyToDate(key)
+              if (!date) return null
+
+              const dateStr = date.toLocaleDateString(undefined, {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
+              })
+
+              return labels.map((label, idx) => (
+                <CommandItem
+                  key={`${key}-${idx}`}
+                  value={`${label} ${dateStr}`}
+                  onSelect={() => handleSearchSelect(key, label)}
+                >
+                  <div className="flex flex-col">
+                    <span className="font-medium">{label}</span>
+                    <span className="text-xs text-muted-foreground">{dateStr}</span>
+                  </div>
+                </CommandItem>
+              ))
+            })}
+          </CommandGroup>
+        </CommandList>
+      </CommandDialog>
     </ThemeProvider>
   )
 }
@@ -944,7 +1353,10 @@ function MonthGridCell({
 }: MonthGridCellProps) {
   const cellRef = useRef<HTMLDivElement | null>(null)
   const [isVisible, setIsVisible] = useState(false)
-  const [hoverOpen, setHoverOpen] = useState(false)
+
+  const handleDayClick: DayClickEventHandler = useCallback((day, modifiers, e) => {
+    onDayClick?.(day, modifiers, e)
+  }, [onDayClick])
 
   useEffect(() => {
     const node = cellRef.current
@@ -1000,14 +1412,14 @@ function MonthGridCell({
         <div className="month-loader" aria-hidden="true" />
         <div className="month-calendar">
           {hasChains ? (
-            <HoverCard open={hoverOpen} onOpenChange={setHoverOpen}>
+            <HoverCard openDelay={100} closeDelay={200}>
               <HoverCardTrigger asChild>
-                <div style={{ pointerEvents: 'none' }}>
+                <div>
                   <Calendar
                     mode="multiple"
                     selected={normalizedSelection}
                     onSelect={handleSelect}
-                    onDayClick={onDayClick}
+                    onDayClick={handleDayClick}
                     getDayTooltip={getDayTooltip}
                     month={month}
                     className="w-full"
@@ -1019,13 +1431,14 @@ function MonthGridCell({
                       date.getMonth() !== month.getMonth() || date.getFullYear() !== month.getFullYear()
                     }
                     showOutsideDays={false}
-                    style={{ pointerEvents: 'auto' }}
                   />
                 </div>
               </HoverCardTrigger>
               <HoverCardContent
                 className="w-80"
                 data-testid={`month-hover-card-${monthKey}`}
+                side="right"
+                sideOffset={5}
               >
                 <div className="space-y-2">
                   <h4 className="text-sm font-semibold">Available Chains</h4>
@@ -1043,9 +1456,8 @@ function MonthGridCell({
                           data-testid={`chain-option-${index}`}
                           onClick={() => {
                             onChainSelect(index)
-                            setHoverOpen(false)
                           }}
-                          className={`w-full text-left rounded px-2 py-1.5 text-sm transition-colors ${
+                          className={`w-full text-left rounded-none px-2 py-1.5 text-sm transition-colors ${
                             isSelected
                               ? "bg-primary text-primary-foreground"
                               : "hover:bg-accent hover:text-accent-foreground"

@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:calendarific.com)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

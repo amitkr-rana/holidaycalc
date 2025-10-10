@@ -93,147 +93,6 @@ const buildCalendar = (startDate: Date, endDate: Date, holidayDates: Date[]): Ca
   return calendar
 }
 
-/**
- * Core O(N²) algorithm to find holiday chains based on mode and constraints.
- */
-const computeChains = (
-  calendar: CalendarDay[],
-  mode: HolidayChainMode,
-  leavesBudget: number,
-  maxPolicy: number
-): HolidayChainResult[] => {
-  if (calendar.length === 0) return []
-
-  let maxChainLength = 0
-  let minTotalLeaves = -1
-  const N = calendar.length
-  const seenChains = new Map<string, HolidayChainResult>()
-
-  if (mode === "user-total") {
-    // User-Total Mode: Find chains using exactly X leaves
-    const totalWorkDays = calendar.filter((d) => d.type === "WD").length
-
-    if (leavesBudget < 1 || leavesBudget > totalWorkDays || leavesBudget > 15) {
-      return []
-    }
-
-    minTotalLeaves = leavesBudget
-
-    for (let S = 0; S < N; S++) {
-      const leavesByMonth: Record<string, number> = {}
-      let hasWeekdayPublicHoliday = false
-      let currentLeavesUsed = 0
-
-      for (let E = S; E < N; E++) {
-        const D = calendar[E]
-
-        if (D.type === "WD") {
-          const monthKey = D.monthKey
-          leavesByMonth[monthKey] = (leavesByMonth[monthKey] || 0) + 1
-          currentLeavesUsed++
-        }
-        if (D.type === "PH") hasWeekdayPublicHoliday = true
-
-        const maxLeavesInAnyMonth = Object.values(leavesByMonth).reduce(
-          (max, val) => Math.max(max, val),
-          0
-        )
-        if (maxLeavesInAnyMonth > maxPolicy) break
-
-        if (currentLeavesUsed > leavesBudget) break
-
-        if (hasWeekdayPublicHoliday && currentLeavesUsed === leavesBudget) {
-          const monthKeys = Object.keys(leavesByMonth)
-          const numMonths = monthKeys.length
-
-          // Constraint: Odd X spanning exactly 2 months MUST be 1 and X-1 split
-          if (leavesBudget % 2 !== 0 && numMonths === 2) {
-            const L1 = leavesByMonth[monthKeys[0]]
-            const L2 = leavesByMonth[monthKeys[1]]
-            const isUnevenSplit =
-              (L1 === 1 && L2 === leavesBudget - 1) || (L1 === leavesBudget - 1 && L2 === 1)
-            if (!isUnevenSplit) continue
-          }
-
-          // Constraint: Even X (like 2) spanning 2+ months should distribute evenly (1 per month)
-          if (leavesBudget === 2 && numMonths >= 2) {
-            const leavesPerMonth = Object.values(leavesByMonth)
-            const isEvenDistribution = leavesPerMonth.every(count => count === 1)
-            if (!isEvenDistribution) continue
-          }
-
-          const currentLength = E - S + 1
-          const chainKey = `${calendar[S].timestamp}-${calendar[E].timestamp}`
-
-          if (currentLength >= maxChainLength) {
-            if (currentLength > maxChainLength) {
-              seenChains.clear()
-              maxChainLength = currentLength
-            }
-
-            if (!seenChains.has(chainKey)) {
-              const result = buildResult(calendar, S, E, leavesBudget)
-              seenChains.set(chainKey, result)
-            }
-          }
-        }
-      }
-    }
-  } else {
-    // Optimal Mode: Maximize length, minimize leaves
-    for (let S = 0; S < N; S++) {
-      const leavesByMonth: Record<string, number> = {}
-      let hasWeekdayPublicHoliday = false
-
-      for (let E = S; E < N; E++) {
-        const D = calendar[E]
-
-        if (D.type === "WD") {
-          const monthKey = D.monthKey
-          leavesByMonth[monthKey] = (leavesByMonth[monthKey] || 0) + 1
-        }
-        if (D.type === "PH") hasWeekdayPublicHoliday = true
-
-        const maxLeavesInAnyMonth = Object.values(leavesByMonth).reduce(
-          (max, val) => Math.max(max, val),
-          0
-        )
-        if (maxLeavesInAnyMonth > maxPolicy) break
-
-        const totalLeaves = Object.values(leavesByMonth).reduce((sum, val) => sum + val, 0)
-
-        if (hasWeekdayPublicHoliday) {
-          const currentLength = E - S + 1
-          const chainKey = `${calendar[S].timestamp}-${calendar[E].timestamp}`
-
-          // Tie-breaking: Length (maximized) > Leaves (minimized)
-          if (currentLength > maxChainLength) {
-            seenChains.clear()
-            maxChainLength = currentLength
-            minTotalLeaves = totalLeaves
-            const result = buildResult(calendar, S, E, totalLeaves)
-            seenChains.set(chainKey, result)
-          } else if (currentLength === maxChainLength) {
-            if (minTotalLeaves === -1 || totalLeaves < minTotalLeaves) {
-              seenChains.clear()
-              minTotalLeaves = totalLeaves
-              const result = buildResult(calendar, S, E, totalLeaves)
-              seenChains.set(chainKey, result)
-            } else if (totalLeaves === minTotalLeaves) {
-              if (!seenChains.has(chainKey)) {
-                const result = buildResult(calendar, S, E, totalLeaves)
-                seenChains.set(chainKey, result)
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-
-  return Array.from(seenChains.values())
-}
-
 const buildResult = (
   calendar: CalendarDay[],
   startIndex: number,
@@ -261,6 +120,141 @@ const buildResult = (
 }
 
 /**
+ * Finds all possible chains per month, respecting max leaves per month and overflow rules
+ */
+const computeChainsPerMonth = (
+  calendar: CalendarDay[],
+  mode: HolidayChainMode,
+  leavesBudget: number,
+  maxPolicy: number
+): HolidayChainResult[] => {
+  if (calendar.length === 0) return []
+
+  // Group calendar days by month
+  const daysByMonth = new Map<string, { days: CalendarDay[]; startIndex: number }>()
+  calendar.forEach((day, index) => {
+    if (!daysByMonth.has(day.monthKey)) {
+      daysByMonth.set(day.monthKey, { days: [], startIndex: index })
+    }
+    daysByMonth.get(day.monthKey)!.days.push(day)
+  })
+
+  const allChains: HolidayChainResult[] = []
+  const usedMonths = new Set<string>()
+
+  // Process each month independently
+  for (const [monthKey, { startIndex }] of daysByMonth) {
+    if (usedMonths.has(monthKey)) continue
+
+    const monthChains = new Map<string, HolidayChainResult>()
+    let maxLength = 0
+    let minLeaves = Infinity
+
+    // Try all possible chains starting from this month
+    for (let S = startIndex; S < calendar.length; S++) {
+      const leavesByMonth: Record<string, number> = {}
+      let hasWeekdayPublicHoliday = false
+      let currentLeavesUsed = 0
+      let chainStartMonth = calendar[S].monthKey
+
+      // Only process chains that start in this month
+      if (chainStartMonth !== monthKey) break
+
+      for (let E = S; E < calendar.length; E++) {
+        const D = calendar[E]
+
+        if (D.type === "WD") {
+          leavesByMonth[D.monthKey] = (leavesByMonth[D.monthKey] || 0) + 1
+          currentLeavesUsed++
+        }
+        if (D.type === "PH") hasWeekdayPublicHoliday = true
+
+        const maxLeavesInAnyMonth = Object.values(leavesByMonth).reduce(
+          (max, val) => Math.max(max, val),
+          0
+        )
+        if (maxLeavesInAnyMonth > maxPolicy) break
+
+        const monthKeys = Object.keys(leavesByMonth)
+        const numMonths = monthKeys.length
+
+        // Don't allow chains spanning more than 2 months
+        if (numMonths > 2) break
+
+        // Check user-total mode constraints
+        if (mode === "user-total") {
+          if (currentLeavesUsed > leavesBudget) break
+
+          if (hasWeekdayPublicHoliday && currentLeavesUsed === leavesBudget) {
+            // Constraint: Odd X spanning exactly 2 months MUST be 1 and X-1 split
+            if (leavesBudget % 2 !== 0 && numMonths === 2) {
+              const L1 = leavesByMonth[monthKeys[0]]
+              const L2 = leavesByMonth[monthKeys[1]]
+              const isUnevenSplit =
+                (L1 === 1 && L2 === leavesBudget - 1) || (L1 === leavesBudget - 1 && L2 === 1)
+              if (!isUnevenSplit) continue
+            }
+
+            // Constraint: Even X spanning 2+ months should distribute evenly
+            if (leavesBudget === 2 && numMonths >= 2) {
+              const leavesPerMonth = Object.values(leavesByMonth)
+              const isEvenDistribution = leavesPerMonth.every(count => count === 1)
+              if (!isEvenDistribution) continue
+            }
+
+            const currentLength = E - S + 1
+            const chainKey = `${calendar[S].timestamp}-${calendar[E].timestamp}`
+
+            // Keep all chains with max length
+            if (currentLength >= maxLength) {
+              if (currentLength > maxLength) {
+                monthChains.clear()
+                maxLength = currentLength
+                minLeaves = currentLeavesUsed
+              }
+              if (!monthChains.has(chainKey)) {
+                monthChains.set(chainKey, buildResult(calendar, S, E, currentLeavesUsed))
+              }
+            }
+          }
+        } else {
+          // Optimal mode
+          if (hasWeekdayPublicHoliday) {
+            const currentLength = E - S + 1
+            const chainKey = `${calendar[S].timestamp}-${calendar[E].timestamp}`
+
+            // Keep all chains with max length and min leaves
+            if (currentLength > maxLength || (currentLength === maxLength && currentLeavesUsed <= minLeaves)) {
+              if (currentLength > maxLength) {
+                monthChains.clear()
+                maxLength = currentLength
+                minLeaves = currentLeavesUsed
+              } else if (currentLeavesUsed < minLeaves) {
+                monthChains.clear()
+                minLeaves = currentLeavesUsed
+              }
+
+              if (currentLeavesUsed === minLeaves && !monthChains.has(chainKey)) {
+                monthChains.set(chainKey, buildResult(calendar, S, E, currentLeavesUsed))
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // Add all chains found for this month
+    monthChains.forEach(chain => {
+      allChains.push(chain)
+      // Mark all months touched by this chain as used
+      chain.monthKeys.forEach(mk => usedMonths.add(mk))
+    })
+  }
+
+  return allChains
+}
+
+/**
  * Calculates the array of optimal holiday chain possibilities based on the given mode.
  * @param options - Configuration including mode, dates, holidays, and constraints
  * @returns Array of the best chain possibilities found
@@ -275,7 +269,7 @@ export const calculateHolidayChains = (
   }
 
   const leavesBudget = options.mode === "user-total" ? options.leavesBudget ?? 0 : 0
-  const chains = computeChains(calendar, options.mode, leavesBudget, options.maxLeavesPerMonth)
+  const chains = computeChainsPerMonth(calendar, options.mode, leavesBudget, options.maxLeavesPerMonth)
 
   return chains
 }

@@ -269,7 +269,7 @@
   .legend-cube {
     width: 1.5rem;
     height: 1.5rem;
-    border-radius: 0.25rem;
+    border-radius: 0;
     border: 2px solid var(--color-border);
     flex-shrink: 0;
   }
@@ -600,6 +600,22 @@
   .detail-grid-cell--placeholder {
     justify-content: center;
     align-items: flex-start;
+  }
+
+  /* Remove border radius from calendar day buttons */
+  .rdp-day button,
+  .rdp-button,
+  [data-slot="calendar"] button {
+    border-radius: 0 !important;
+  }
+
+  /* Override specific rounded corners in calendar */
+  .rdp-day_selected button,
+  .rdp-day_range_start button,
+  .rdp-day_range_end button,
+  .rdp-day_range_middle button,
+  .rdp-day_today {
+    border-radius: 0 !important;
   }
 }
 

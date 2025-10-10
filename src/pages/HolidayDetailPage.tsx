@@ -7,11 +7,11 @@ import { ModeToggle } from "@/components/mode-toggle"
 import { Spinner } from "@/components/ui/spinner"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ThemeProvider } from "@/components/theme-provider"
+import { getCountryName } from "@/lib/countries"
 import type { HolidayCacheData, HolidayDetail } from "@/lib/holiday-service"
 import {
   dateKey,
   fetchHolidayData,
-  getCountryName,
   normalizeDate,
   readHolidayCache,
   writeHolidayCache,
