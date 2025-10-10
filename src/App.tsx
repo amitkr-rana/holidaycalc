@@ -482,18 +482,31 @@ function App() {
   }
 
   const handleChainSelection = (monthKey: string, chainIndex: number) => {
-    setSelectedChainIndexByMonth((prev) => ({
-      ...prev,
-      [monthKey]: chainIndex,
-    }))
-
-    // Update chainResultsByMonth with the selected chain
     const chains = allChainsByMonth[monthKey]
-    if (chains && chains[chainIndex]) {
-      const selectedChain = chains[chainIndex]
-      setChainResultsByMonth((prev) => ({
-        ...prev,
-        [monthKey]: {
+    if (!chains || !chains[chainIndex]) return
+
+    const selectedChain = chains[chainIndex]
+
+    // Update dropdown selection for all months containing this chain
+    setSelectedChainIndexByMonth((prev) => {
+      const updates = { ...prev }
+      selectedChain.monthKeys.forEach((key) => {
+        const monthChains = allChainsByMonth[key]
+        if (monthChains) {
+          const idx = monthChains.findIndex(c => c.id === selectedChain.id)
+          if (idx >= 0) {
+            updates[key] = idx
+          }
+        }
+      })
+      return updates
+    })
+
+    // Update chainResultsByMonth with the selected chain for ALL its months
+    setChainResultsByMonth((prev) => {
+      const updates = { ...prev }
+      selectedChain.monthKeys.forEach((key) => {
+        updates[key] = {
           longest: {
             dates: selectedChain.dates,
             leaveDays: selectedChain.leaveDates,
@@ -502,9 +515,10 @@ function App() {
             end: selectedChain.end,
           },
           shortest: null,
-        },
-      }))
-    }
+        }
+      })
+      return updates
+    })
   }
 
   const handleCalculateChain = () => {
@@ -554,7 +568,7 @@ function App() {
         startDate,
         endDate,
         holidayDates: selectionSnapshot,
-        maxLeavesPerMonth: MAX_LEAVES,
+        maxLeavesPerMonth: effectiveLeaves,
       })
 
       // Group chains by ALL months they touch (not just primary month)
@@ -581,24 +595,24 @@ function App() {
       setAllChainsByMonth(chainsByMonth)
       setSelectedChainIndexByMonth(selectedIndexes)
 
-      // Update chainResultsByMonth for backward compatibility
+      // Update chainResultsByMonth - initially only show the first chain globally
       const updates: Record<string, { longest: ChainResult | null; shortest: ChainResult | null }> = {}
-      Object.entries(chainsByMonth).forEach(([monthKey, chains]) => {
-        if (chains.length > 0) {
-          const selectedIndex = selectedIndexes[monthKey] || 0
-          const selectedChain = chains[selectedIndex] || chains[0]
+      if (chains.length > 0) {
+        const firstChain = chains[0]
+        // Only add the first chain to visible chains
+        firstChain.monthKeys.forEach((monthKey) => {
           updates[monthKey] = {
             longest: {
-              dates: selectedChain.dates,
-              leaveDays: selectedChain.leaveDates,
-              totalDays: selectedChain.length,
-              start: selectedChain.start,
-              end: selectedChain.end,
+              dates: firstChain.dates,
+              leaveDays: firstChain.leaveDates,
+              totalDays: firstChain.length,
+              start: firstChain.start,
+              end: firstChain.end,
             },
             shortest: null,
           }
-        }
-      })
+        })
+      }
 
       setChainResultsByMonth(updates)
 
