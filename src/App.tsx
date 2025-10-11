@@ -44,7 +44,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-import { Search } from "lucide-react"
+import { Search, Sparkles, User, Trash2, XCircle, Eraser } from "lucide-react"
 import { COUNTRIES, getStatesForCountry, hasStates, getCountryName, getLocationName } from "@/lib/countries"
 import type { CountryCode } from "@/lib/countries"
 import type { HolidayType } from "@/lib/holiday-types"
@@ -125,6 +125,7 @@ const formatDateRange = (start: Date, end: Date) => {
 const LAST_COUNTRY_KEY = 'lastSelectedCountry'
 const LAST_LOCATION_KEY_PREFIX = 'lastLocation' // Per-country location preference
 const LAST_TYPES_KEY = 'lastSelectedTypes'
+const LAST_SELECTION_MODE_KEY = 'lastSelectionMode'
 const CHAIN_STATE_KEY = 'chainState'
 
 function App() {
@@ -145,7 +146,7 @@ function App() {
     }
   })
 
-  // Holiday types selection (empty = all types)
+  // Holiday types selection (default = national)
   const [selectedTypes, setSelectedTypes] = useState<HolidayType[]>(() => {
     try {
       const saved = localStorage.getItem(LAST_TYPES_KEY)
@@ -160,7 +161,7 @@ function App() {
     } catch {
       // Ignore parse errors
     }
-    return []
+    return ['national']
   })
 
   // Temporary types selection for the dropdown (only applied when clicking Apply)
@@ -188,6 +189,20 @@ function App() {
   const [dialogError, setDialogError] = useState<string | null>(null)
   const [allChainsByMonth, setAllChainsByMonth] = useState<Record<string, HolidayChainResult[]>>({})
   const [selectedChainIndexByMonth, setSelectedChainIndexByMonth] = useState<Record<string, number>>({})
+
+  // Selection mode: "auto" or "user"
+  const [selectionMode, setSelectionMode] = useState<"auto" | "user">(() => {
+    try {
+      const saved = localStorage.getItem(LAST_SELECTION_MODE_KEY)
+      return (saved === "user" || saved === "auto") ? saved : "auto"
+    } catch {
+      return "auto"
+    }
+  })
+  const [modeHoverOpen, setModeHoverOpen] = useState(false)
+  const [clearHoverOpen, setClearHoverOpen] = useState(false)
+  const [forceHolidayReload, setForceHolidayReload] = useState(0)
+
   const autoHolidayKeysRef = useRef<Set<string>>(new Set())
   const manualSelectionRef = useRef<Date[]>([])
   const holidayFetchControllerRef = useRef<AbortController | null>(null)
@@ -196,6 +211,7 @@ function App() {
   const hideTimeoutRef = useRef<number | null>(null)
   const headerRef = useRef<HTMLDivElement | null>(null)
   const [headerHeight, setHeaderHeight] = useState(0)
+  const isInitialMount = useRef(true)
 
   const months = useMemo(() => {
     const currentYearMonths = Array.from({ length: 12 }, (_, index) => new Date(currentYear, index, 1))
@@ -258,16 +274,21 @@ function App() {
     [currentYear]
   )
 
-  const resetSelections = useCallback(() => {
-    autoHolidayKeysRef.current = new Set()
+  const resetSelections = useCallback((clearPublicHolidays = false) => {
     manualSelectionRef.current = []
     setManualSelectedDates([])
     setSelectedDates([])
     setChainResultsByMonth({})
-    setHolidayDescriptions({})
     setStatusMessage(null)
     setAllChainsByMonth({})
     setSelectedChainIndexByMonth({})
+
+    // Optionally clear public holidays (for "Clear Everything")
+    if (clearPublicHolidays) {
+      autoHolidayKeysRef.current = new Set()
+      setHolidayDescriptions({})
+    }
+
     // Location and types are preserved across resets
     // Clear saved chain state
     try {
@@ -392,14 +413,72 @@ function App() {
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [])
 
+  const lastClickedDateRef = useRef<Date | null>(null)
+  const ctrlPressedRef = useRef(false)
+
+  // Track Ctrl/Cmd key state
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey) {
+        ctrlPressedRef.current = true
+      }
+    }
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (!e.ctrlKey && !e.metaKey) {
+        ctrlPressedRef.current = false
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    window.addEventListener('keyup', handleKeyUp)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+      window.removeEventListener('keyup', handleKeyUp)
+    }
+  }, [])
+
   const handleSelect = (value: Date[] | undefined) => {
-    if (!value) {
-      resetSelections()
+    // In auto mode, prevent manual selection/deselection
+    if (selectionMode === "auto") {
       return
     }
 
-    const normalized = uniqueDates(value)
+    if (!value) {
+      resetSelections()
+      lastClickedDateRef.current = null
+      return
+    }
+
+    let normalized = uniqueDates(value)
     const autoKeys = autoHolidayKeysRef.current
+
+    // Find which date was just clicked (new date not in previous manual selection)
+    const previousManualKeys = new Set(manualSelectionRef.current.map(dateKey))
+    const manualCandidates = normalized.filter(date => !autoKeys.has(dateKey(date)))
+    const newlyClicked = manualCandidates.find(d => !previousManualKeys.has(dateKey(d)))
+
+    // Check if Ctrl/Cmd key was pressed and we have a previous selection AND a newly clicked date
+    const isCtrlClick = ctrlPressedRef.current
+    if (isCtrlClick && lastClickedDateRef.current && newlyClicked) {
+      // Fill in all dates between lastClickedDate and newlyClicked
+      const start = lastClickedDateRef.current
+      const end = newlyClicked
+      const [earlierDate, laterDate] = start.getTime() < end.getTime() ? [start, end] : [end, start]
+
+      const rangeDates: Date[] = []
+      const currentDate = new Date(earlierDate)
+      while (currentDate <= laterDate) {
+        rangeDates.push(new Date(currentDate))
+        currentDate.setDate(currentDate.getDate() + 1)
+      }
+
+      // Combine existing selection with the range
+      normalized = uniqueDates([...normalized, ...rangeDates])
+    }
+
+    // Update last clicked date if there was a newly clicked date
+    if (newlyClicked) {
+      lastClickedDateRef.current = newlyClicked
+    }
     const manual = uniqueDates(
       normalized.filter((date) => {
         if (autoKeys.has(dateKey(date))) {
@@ -444,8 +523,17 @@ function App() {
 
   // const hasManualSelections = normalizedManualSelection.length > 0
   const hasHolidays = normalizedSelection.length > 0
-  const isCalculateDisabled = isLoadingHolidays || isCalculating || !hasHolidays
-  const shouldShowCalculateTooltip = !hasHolidays && !isLoadingHolidays && !isCalculating
+  const hasManualHolidays = manualSelectedDates.length > 0
+  const hasChains = Object.keys(chainResultsByMonth).length > 0
+
+  // In user mode, enable Calculate only if user has manually selected at least one holiday
+  const isCalculateDisabled = selectionMode === "user"
+    ? (isLoadingHolidays || isCalculating || !hasManualHolidays)
+    : (isLoadingHolidays || isCalculating || !hasHolidays)
+
+  const shouldShowCalculateTooltip = selectionMode === "user"
+    ? (!hasManualHolidays && !isLoadingHolidays && !isCalculating)
+    : (!hasHolidays && !isLoadingHolidays && !isCalculating)
 
   const modifiers = useMemo(() => {
     const longestDatesMap = new Map<string, Date>()
@@ -514,7 +602,7 @@ function App() {
         : ''
       setStatusMessage(
         count
-          ? `Loaded ${count} cached holiday${count === 1 ? "" : "s"} for ${
+          ? `Loaded ${count} holiday${count === 1 ? "" : "s"} for ${
               getCountryName(currentCountry)
             }${locationName ? ` (${locationName})` : ''} ${currentYear}${typesDesc}.`
           : `No holidays found for ${getCountryName(currentCountry)}${
@@ -584,7 +672,7 @@ function App() {
     return () => {
       cancelHolidayFetch({ silent: true })
     }
-  }, [applyHolidayData, cancelHolidayFetch, currentCountry, currentYear, selectedLocation, selectedTypes])
+  }, [applyHolidayData, cancelHolidayFetch, currentCountry, currentYear, selectedLocation, selectedTypes, forceHolidayReload])
 
   const getDayTooltip = useCallback((date: Date) => {
     const labels = holidayDescriptions[dateKey(date)]
@@ -623,6 +711,72 @@ function App() {
     } else {
       setChainMode("optimal")
       setUserLeaveDays(null)
+    }
+  }
+
+  const handleSelectionModeChange = (mode: "auto" | "user") => {
+    setSelectionMode(mode)
+    setModeHoverOpen(false)
+
+    // Save selection mode to localStorage
+    try {
+      localStorage.setItem(LAST_SELECTION_MODE_KEY, mode)
+    } catch (e) {
+      console.error('Failed to save selection mode', e)
+    }
+
+    // Clear manual selections when switching modes, but keep API holidays
+    manualSelectionRef.current = []
+    setManualSelectedDates([])
+
+    const autoDates = Array.from(autoHolidayKeysRef.current)
+      .map(parseDateKeyToDate)
+      .filter((date): date is Date => Boolean(date))
+      .filter((date) => date.getFullYear() === currentYear)
+
+    setSelectedDates(autoDates)
+    setChainResultsByMonth({})
+    setAllChainsByMonth({})
+    setSelectedChainIndexByMonth({})
+
+    // If switching to auto mode, trigger calculate chain (same as clicking Calculate Chain button)
+    if (mode === "auto") {
+      // Check if holidays need to be loaded first
+      if (autoHolidayKeysRef.current.size === 0) {
+        // Force holiday reload by incrementing the reload counter
+        setForceHolidayReload(prev => prev + 1)
+        setStatusMessage("Loading public holidays...")
+      } else if (autoDates.length > 0) {
+        // Only trigger calculation if we have holidays loaded
+        setTimeout(() => {
+          handleCalculateChain("auto")
+        }, 100) // Increase timeout to ensure state has updated
+      } else {
+        // No holidays for current year, but we have some in the ref
+        setStatusMessage("No holidays available for current year. Please wait for holidays to load.")
+      }
+    }
+  }
+
+  const handleClearAll = () => {
+    resetSelections(true) // Pass true to clear public holidays as well
+    setClearHoverOpen(false)
+    // Switch to user mode after clearing everything
+    setSelectionMode("user")
+  }
+
+  const handleClearSelection = () => {
+    // Clear only the calculated chains, keep user selections
+    setChainResultsByMonth({})
+    setAllChainsByMonth({})
+    setSelectedChainIndexByMonth({})
+    setClearHoverOpen(false)
+
+    // Clear saved chain state
+    try {
+      localStorage.removeItem(CHAIN_STATE_KEY)
+    } catch (e) {
+      console.error('Failed to clear chain state', e)
     }
   }
 
@@ -702,7 +856,7 @@ function App() {
     }
   }
 
-  const handleCalculateChain = () => {
+  const handleCalculateChain = (modeOverride?: "auto" | "user") => {
     if (!normalizedSelection.length) {
       setChainResultsByMonth({})
       setAllChainsByMonth({})
@@ -718,6 +872,8 @@ function App() {
 
     if (isCalculating) return
 
+    const selectionModeOverride = modeOverride ?? selectionMode
+
     if (computeTimeoutRef.current) {
       clearTimeout(computeTimeoutRef.current)
       computeTimeoutRef.current = null
@@ -730,7 +886,13 @@ function App() {
     setIsCalculating(true)
     setStatusMessage(null)
 
-    const selectionSnapshot = normalizedSelection.map((date) => new Date(date))
+    // Determine which dates to use for calculation based on mode and context:
+    // - Auto mode: Always use all public holidays
+    // - User mode: Use only manual selections as "public holiday anchor points"
+    //   The algorithm will then suggest optimal leave days to bridge these anchor points
+    const datesForCalculation = selectionModeOverride === "user"
+      ? manualSelectedDates.map((date) => new Date(date)) // Only manual selections as anchor points
+      : normalizedSelection.map((date) => new Date(date)) // Auto mode: all public holidays
 
     computeTimeoutRef.current = window.setTimeout(() => {
       computeTimeoutRef.current = null
@@ -748,7 +910,7 @@ function App() {
         leavesBudget: effectiveLeaves,
         startDate,
         endDate,
-        holidayDates: selectionSnapshot,
+        holidayDates: datesForCalculation,
         maxLeavesPerMonth: effectiveLeaves,
       })
 
@@ -805,6 +967,7 @@ function App() {
           chainResultsByMonth: updates,
           chainMode,
           userLeaveDays,
+          selectionMode: selectionModeOverride,
           country: currentCountry,
           year: currentYear,
         }
@@ -823,14 +986,21 @@ function App() {
     }, SPINNER_DURATION_MS)
   }
 
-  // Restore chain state on mount or when country/year changes
+  // Restore chain state on initial mount only
   useEffect(() => {
+    // Only restore on initial mount, not when country/year changes
+    if (!isInitialMount.current) {
+      return
+    }
+
+    isInitialMount.current = false
+
     try {
       const savedState = localStorage.getItem(CHAIN_STATE_KEY)
       if (savedState) {
         const parsed = JSON.parse(savedState)
-        // Only restore if it matches current country/year
-        if (parsed.country === currentCountry && parsed.year === currentYear) {
+        // Only restore if it matches current country/year/selectionMode
+        if (parsed.country === currentCountry && parsed.year === currentYear && parsed.selectionMode === selectionMode) {
           // Convert date strings back to Date objects
           if (parsed.allChainsByMonth) {
             const restoredAllChains: Record<string, HolidayChainResult[]> = {}
@@ -880,7 +1050,7 @@ function App() {
     } catch (e) {
       console.error('Failed to restore chain state', e)
     }
-  }, [currentCountry, currentYear])
+  }, [currentCountry, currentYear, selectionMode])
 
   useEffect(() => {
     return () => {
@@ -925,7 +1095,7 @@ function App() {
 
   return (
     <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
-      <div className="min-h-screen flex flex-col">
+      <div className="h-screen flex flex-col overflow-hidden scrollbar-hidden">
         <div
           ref={headerRef}
           className="sticky top-0 z-20 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/75 transition-colors p-4"
@@ -1024,6 +1194,9 @@ function App() {
                       return (
                         <DropdownMenuItem
                           key={type.value}
+                          onSelect={(e) => {
+                            e.preventDefault()
+                          }}
                           onClick={(e) => {
                             e.preventDefault()
                             const newTypes = isSelected
@@ -1036,8 +1209,8 @@ function App() {
                           <input
                             type="checkbox"
                             checked={isSelected}
-                            onChange={() => {}}
-                            className="cursor-pointer w-4 h-4 rounded-none border-2 border-input bg-background checked:bg-foreground checked:border-foreground dark:checked:bg-white dark:checked:border-white appearance-none relative checked:after:content-['✓'] checked:after:absolute checked:after:top-1/2 checked:after:left-1/2 checked:after:-translate-x-1/2 checked:after:-translate-y-1/2 checked:after:text-background dark:checked:after:text-black checked:after:text-xs checked:after:font-bold"
+                            readOnly
+                            className="cursor-pointer w-4 h-4 rounded-none border-2 border-input bg-background checked:bg-foreground checked:border-foreground dark:checked:bg-white dark:checked:border-white appearance-none relative checked:after:content-['✓'] checked:after:absolute checked:after:top-1/2 checked:after:left-1/2 checked:after:-translate-x-1/2 checked:after:-translate-y-1/2 checked:after:text-background dark:checked:after:text-black checked:after:text-xs checked:after:font-bold pointer-events-none"
                           />
                           <div className="flex flex-col">
                             <span className="font-medium">{type.label}</span>
@@ -1096,7 +1269,7 @@ function App() {
                   <span className="inline-flex pointer-events-auto">
                     <Button
                       variant="default"
-                      onClick={handleCalculateChain}
+                      onClick={() => handleCalculateChain()}
                       disabled={isCalculateDisabled}
                       data-testid="calculate-chain-button"
                       className="rounded-none"
@@ -1107,7 +1280,11 @@ function App() {
                 </TooltipTrigger>
                 {shouldShowCalculateTooltip && (
                   <TooltipContent>
-                    <p>Please wait for holidays to load before calculating chains.</p>
+                    <p>
+                      {selectionMode === "user"
+                        ? "Please mark at least one holiday manually to calculate chains."
+                        : "Please wait for holidays to load before calculating chains."}
+                    </p>
                   </TooltipContent>
                 )}
               </Tooltip>
@@ -1238,11 +1415,9 @@ function App() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen} data-testid="user-mode-dialog">
         <DialogContent className="rounded-none">
           <DialogHeader>
-            <DialogTitle>User Mode Configuration</DialogTitle>
+            <DialogTitle>Custom Mode Configuration</DialogTitle>
             <DialogDescription>
-              Enter the total number of leave days you want to use (1-15 days).
-              <br />
-              <span className="text-xs text-muted-foreground">Note: Optimal mode uses 2 days by default.</span>
+              Enter the total number of consecutive days you want to use (1-15 days).
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
@@ -1251,7 +1426,7 @@ function App() {
                 type="number"
                 min="1"
                 max="15"
-                placeholder="Enter leave days"
+                placeholder="Enter consecutive days"
                 value={dialogInput}
                 onChange={(e) => setDialogInput(e.target.value)}
                 onKeyDown={(e) => {
@@ -1260,7 +1435,7 @@ function App() {
                   }
                 }}
                 data-testid="leave-days-input"
-                className="rounded-none"
+                className="rounded-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               />
               {dialogError && (
                 <p className="text-sm text-destructive">{dialogError}</p>
@@ -1318,6 +1493,134 @@ function App() {
           </CommandGroup>
         </CommandList>
       </CommandDialog>
+
+      {/* Fixed mode selection button at bottom of screen */}
+      <HoverCard open={modeHoverOpen} onOpenChange={setModeHoverOpen}>
+        <HoverCardTrigger asChild>
+          <Button
+            variant="outline"
+            size="icon"
+            className="fixed bottom-6 right-20 z-50 h-12 w-12 rounded-none border-2 shadow-lg hover:bg-accent"
+            aria-label="Selection mode settings"
+          >
+            {selectionMode === "auto" ? (
+              <Sparkles className="h-6 w-6" />
+            ) : (
+              <User className="h-6 w-6" />
+            )}
+          </Button>
+        </HoverCardTrigger>
+        <HoverCardContent
+          className="w-64 rounded-none"
+          side="top"
+          sideOffset={10}
+          align="end"
+        >
+          <div className="space-y-3">
+            <h4 className="text-sm font-semibold">Selection Mode</h4>
+            <div className="space-y-2">
+              <button
+                onClick={() => handleSelectionModeChange("auto")}
+                className={`w-full text-left rounded-none px-3 py-2 text-sm transition-colors ${
+                  selectionMode === "auto"
+                    ? "bg-primary text-primary-foreground"
+                    : "hover:bg-accent hover:text-accent-foreground"
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Sparkles className="h-4 w-4" />
+                  <div className="flex-1">
+                    <div className="font-medium">Auto Mode</div>
+                    <div className="text-xs opacity-80">
+                      Public holidays only. Calculate chains with Optimal or Custom days.
+                    </div>
+                  </div>
+                  {selectionMode === "auto" && <span className="text-xs">✓</span>}
+                </div>
+              </button>
+              <button
+                onClick={() => handleSelectionModeChange("user")}
+                className={`w-full text-left rounded-none px-3 py-2 text-sm transition-colors ${
+                  selectionMode === "user"
+                    ? "bg-primary text-primary-foreground"
+                    : "hover:bg-accent hover:text-accent-foreground"
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <User className="h-4 w-4" />
+                  <div className="flex-1">
+                    <div className="font-medium">User Mode</div>
+                    <div className="text-xs opacity-80">
+                      Manually mark any day as holiday. Full control over selections.
+                    </div>
+                  </div>
+                  {selectionMode === "user" && <span className="text-xs">✓</span>}
+                </div>
+              </button>
+            </div>
+          </div>
+        </HoverCardContent>
+      </HoverCard>
+
+      {/* Fixed clear button at bottom of screen */}
+      <HoverCard open={clearHoverOpen} onOpenChange={setClearHoverOpen}>
+        <HoverCardTrigger asChild>
+          <Button
+            variant="outline"
+            size="icon"
+            className="fixed bottom-6 right-6 z-50 h-12 w-12 rounded-none border-2 shadow-lg hover:bg-accent"
+            aria-label="Clear options"
+          >
+            <Trash2 className="h-6 w-6" />
+          </Button>
+        </HoverCardTrigger>
+        <HoverCardContent
+          className="w-64 rounded-none"
+          side="top"
+          sideOffset={10}
+          align="end"
+        >
+          <div className="space-y-3">
+            <h4 className="text-sm font-semibold">Clear Options</h4>
+            <div className="space-y-2">
+              {/* Only show "Clear Everything" in User mode */}
+              {selectionMode === "user" && (
+                <button
+                  onClick={handleClearAll}
+                  className="w-full text-left rounded-none px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
+                >
+                  <div className="flex items-center gap-2">
+                    <XCircle className="h-4 w-4" />
+                    <div className="flex-1">
+                      <div className="font-medium">Clear Everything</div>
+                      <div className="text-xs opacity-80">
+                        Clear all holidays including public holidays and chains
+                      </div>
+                    </div>
+                  </div>
+                </button>
+              )}
+              <button
+                onClick={handleClearSelection}
+                disabled={!hasChains}
+                className="w-full text-left rounded-none px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+              >
+                <div className="flex items-center gap-2">
+                  <Eraser className="h-4 w-4" />
+                  <div className="flex-1">
+                    <div className="font-medium">Clear Chain</div>
+                    <div className="text-xs opacity-80">
+                      {hasChains
+                        ? "Clear calculated chains, keep your holiday selections"
+                        : "No chains to clear"}
+                    </div>
+                  </div>
+                </div>
+              </button>
+            </div>
+          </div>
+        </HoverCardContent>
+      </HoverCard>
     </ThemeProvider>
   )
 }

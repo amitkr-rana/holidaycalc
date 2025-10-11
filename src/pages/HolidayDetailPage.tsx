@@ -135,12 +135,7 @@ export function HolidayDetailPage() {
         next.set(yearToLoad, data)
         return next
       })
-      const count = Object.keys(data.labels).length
-      setStatusMessage(
-        count
-          ? `Successfully Loaded ${count} Holiday${count === 1 ? "" : "s"} for ${countryName}`
-          : `No Holidays found for ${countryName}`
-      )
+      setStatusMessage(null)
     } catch (error) {
       if ((error as Error)?.name !== "AbortError") {
         console.error("Failed to fetch holidays", error)
@@ -260,8 +255,27 @@ export function HolidayDetailPage() {
       .split(/[\(\)\/]/) // Split on parentheses or forward slash
       .map(part => part.trim())
       .filter(Boolean)[0] || occasion // Take first part or fall back to original
-    
-    const searchQuery = cleanOccasion
+
+    // For country-specific holidays, include country name in search
+    const countrySpecificKeywords = [
+      'independence day',
+      'republic day',
+      'national day',
+      'liberation day',
+      'constitution day',
+      'unification day',
+      'revolution day',
+      'freedom day',
+      'founding day',
+    ]
+
+    const shouldIncludeCountry = countrySpecificKeywords.some(keyword =>
+      cleanOccasion.toLowerCase().includes(keyword)
+    )
+
+    const searchQuery = shouldIncludeCountry
+      ? `${cleanOccasion} ${countryName}`
+      : cleanOccasion
     const fallbackSearchUrl = searchQuery
       ? `https://www.pexels.com/search/${encodeURIComponent(searchQuery)}/`
       : "https://www.pexels.com"
