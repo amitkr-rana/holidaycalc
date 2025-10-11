@@ -202,6 +202,7 @@ function App() {
   const [modeHoverOpen, setModeHoverOpen] = useState(false)
   const [clearHoverOpen, setClearHoverOpen] = useState(false)
   const [forceHolidayReload, setForceHolidayReload] = useState(0)
+  const [showCtrlClickHint, setShowCtrlClickHint] = useState(false)
 
   const autoHolidayKeysRef = useRef<Set<string>>(new Set())
   const manualSelectionRef = useRef<Date[]>([])
@@ -212,6 +213,7 @@ function App() {
   const headerRef = useRef<HTMLDivElement | null>(null)
   const [headerHeight, setHeaderHeight] = useState(0)
   const isInitialMount = useRef(true)
+  const ctrlClickHintTimeoutRef = useRef<number | null>(null)
 
   const months = useMemo(() => {
     const currentYearMonths = Array.from({ length: 12 }, (_, index) => new Date(currentYear, index, 1))
@@ -490,6 +492,22 @@ function App() {
 
     manualSelectionRef.current = manual
     setManualSelectedDates(manual)
+
+    // Show ctrl+click hint when user makes first manual selection in user mode
+    if (manual.length > 0 && selectionMode === "user") {
+      setShowCtrlClickHint(true)
+
+      // Clear any existing timeout
+      if (ctrlClickHintTimeoutRef.current) {
+        clearTimeout(ctrlClickHintTimeoutRef.current)
+      }
+
+      // Auto-hide after 5 seconds
+      ctrlClickHintTimeoutRef.current = window.setTimeout(() => {
+        setShowCtrlClickHint(false)
+        ctrlClickHintTimeoutRef.current = null
+      }, 5000)
+    }
 
     const autoDates = Array.from(autoKeys)
       .map(parseDateKeyToDate)
@@ -1068,6 +1086,9 @@ function App() {
       if (hideTimeoutRef.current) {
         clearTimeout(hideTimeoutRef.current)
       }
+      if (ctrlClickHintTimeoutRef.current) {
+        clearTimeout(ctrlClickHintTimeoutRef.current)
+      }
       cancelHolidayFetch({ silent: true })
     }
   }, [cancelHolidayFetch])
@@ -1629,6 +1650,29 @@ function App() {
           </div>
         </HoverCardContent>
       </HoverCard>
+
+      {/* Ctrl+Click hint banner - fixed at bottom left */}
+      {showCtrlClickHint && (
+        <div
+          className="fixed z-50 border-2 shadow-lg animate-in fade-in slide-in-from-bottom-5 duration-300"
+          style={{
+            left: 'clamp(1.25rem, 4vw, 2.5rem)',
+            bottom: 'clamp(1rem, 3vw, 2rem)',
+            padding: 'clamp(0.65rem, 1.5vw, 0.9rem) clamp(0.8rem, 2vw, 1.4rem)',
+            fontSize: '0.8rem',
+            textAlign: 'left',
+            color: 'color-mix(in srgb, var(--muted-foreground) 80%, var(--foreground) 20%)',
+            background: 'color-mix(in srgb, var(--background) 92%, var(--muted) 8%)',
+            backdropFilter: 'blur(6px)',
+            borderRadius: '0',
+            maxWidth: 'min(24rem, 80%)',
+            lineHeight: '1.45',
+          }}
+        >
+          <strong>Pro Tip:</strong> Hold <kbd className="px-1.5 py-0.5 text-xs font-semibold bg-muted rounded">Ctrl</kbd> (or{" "}
+          <kbd className="px-1.5 py-0.5 text-xs font-semibold bg-muted rounded">⌘</kbd>) and click another date to select all dates in between!
+        </div>
+      )}
     </ThemeProvider>
   )
 }
