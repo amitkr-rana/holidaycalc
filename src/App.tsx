@@ -874,144 +874,6 @@ function App() {
     }
   }
 
-  const handleCalculateChain = (modeOverride?: "auto" | "user") => {
-    if (!normalizedSelection.length) {
-      setChainResultsByMonth({})
-      setAllChainsByMonth({})
-      setSelectedChainIndexByMonth({})
-      setStatusMessage("No holidays available to calculate chains. Please wait for holidays to load.")
-      return
-    }
-
-    if (chainMode === "user-total" && !userLeaveDays) {
-      setStatusMessage("Please set the number of leave days in User mode.")
-      return
-    }
-
-    if (isCalculating) return
-
-    const selectionModeOverride = modeOverride ?? selectionMode
-
-    if (computeTimeoutRef.current) {
-      clearTimeout(computeTimeoutRef.current)
-      computeTimeoutRef.current = null
-    }
-    if (hideTimeoutRef.current) {
-      clearTimeout(hideTimeoutRef.current)
-      hideTimeoutRef.current = null
-    }
-
-    setIsCalculating(true)
-    setStatusMessage(null)
-
-    // Determine which dates to use for calculation based on mode and context:
-    // - Auto mode: Always use all public holidays
-    // - User mode:
-    //   - If public holidays cleared (Clear Everything clicked): Use only manual selections
-    //   - If public holidays still loaded: Use both public holidays AND manual selections
-    const datesForCalculation = selectionModeOverride === "user"
-      ? autoHolidayKeysRef.current.size === 0
-        ? manualSelectedDates.map((date) => new Date(date)) // Only manual selections if PH cleared
-        : uniqueDates([
-            ...manualSelectedDates,
-            ...Array.from(autoHolidayKeysRef.current)
-              .map(parseDateKeyToDate)
-              .filter((date): date is Date => Boolean(date))
-          ]).map((date) => new Date(date)) // Combine manual and public holidays
-      : normalizedSelection.map((date) => new Date(date)) // Auto mode: all public holidays
-
-    computeTimeoutRef.current = window.setTimeout(() => {
-      computeTimeoutRef.current = null
-
-      // Use the new algorithm
-      const startDate = new Date(currentYear, 0, 1)
-      const endDate = new Date(currentYear + 1, 3, 0) // End of April next year
-
-      // Optimal mode uses 2 leaves by default (like user-total with 2)
-      const effectiveMode: HolidayChainMode = chainMode === "optimal" ? "user-total" : "user-total"
-      const effectiveLeaves = chainMode === "optimal" ? 2 : (userLeaveDays ?? 2)
-
-      const chains = calculateHolidayChains({
-        mode: effectiveMode,
-        leavesBudget: effectiveLeaves,
-        startDate,
-        endDate,
-        holidayDates: datesForCalculation,
-        maxLeavesPerMonth: effectiveLeaves,
-      })
-
-      // Group chains by ALL months they touch (not just primary month)
-      const chainsByMonth: Record<string, HolidayChainResult[]> = {}
-      const selectedIndexes: Record<string, number> = {}
-
-      chains.forEach((chain) => {
-        // Add this chain to all months it touches
-        chain.monthKeys.forEach((monthKey) => {
-          if (!chainsByMonth[monthKey]) {
-            chainsByMonth[monthKey] = []
-            selectedIndexes[monthKey] = 0
-          }
-          // Only add if not already in this month's list (avoid duplicates)
-          const isDuplicate = chainsByMonth[monthKey].some(
-            (existingChain) => existingChain.id === chain.id
-          )
-          if (!isDuplicate) {
-            chainsByMonth[monthKey].push(chain)
-          }
-        })
-      })
-
-      setAllChainsByMonth(chainsByMonth)
-      setSelectedChainIndexByMonth(selectedIndexes)
-
-      // Update chainResultsByMonth - show all first chains (overlaps allowed)
-      const updates: Record<string, { longest: ChainResult | null; shortest: ChainResult | null }> = {}
-      Object.entries(chainsByMonth).forEach(([monthKey, chains]) => {
-        if (chains.length > 0) {
-          const selectedIndex = selectedIndexes[monthKey] || 0
-          const selectedChain = chains[selectedIndex] || chains[0]
-          updates[monthKey] = {
-            longest: {
-              dates: selectedChain.dates,
-              leaveDays: selectedChain.leaveDates,
-              totalDays: selectedChain.length,
-              start: selectedChain.start,
-              end: selectedChain.end,
-            },
-            shortest: null,
-          }
-        }
-      })
-
-      setChainResultsByMonth(updates)
-
-      // Save chain state to localStorage
-      try {
-        const chainState = {
-          allChainsByMonth: chainsByMonth,
-          selectedChainIndexByMonth: selectedIndexes,
-          chainResultsByMonth: updates,
-          chainMode,
-          userLeaveDays,
-          selectionMode: selectionModeOverride,
-          country: currentCountry,
-          year: currentYear,
-        }
-        localStorage.setItem(CHAIN_STATE_KEY, JSON.stringify(chainState))
-      } catch (e) {
-        console.error('Failed to save chain state', e)
-      }
-
-      // Only show message if no chains were found
-      setStatusMessage(Object.keys(chainsByMonth).length === 0 ? "No chains found." : null)
-    }, CALCULATION_DELAY_MS)
-
-    hideTimeoutRef.current = window.setTimeout(() => {
-      hideTimeoutRef.current = null
-      setIsCalculating(false)
-    }, SPINNER_DURATION_MS)
-  }
-
   // Restore chain state on initial mount only
   useEffect(() => {
     // Only restore on initial mount, not when country/year changes
@@ -1077,6 +939,125 @@ function App() {
       console.error('Failed to restore chain state', e)
     }
   }, [currentCountry, currentYear, selectionMode])
+
+  const handleCalculateChain = (modeOverride?: "auto" | "user") => {
+    const selectionModeOverride = modeOverride ?? selectionMode
+
+    // Determine which dates to use for calculation based on the effective mode.
+    // This logic is now self-contained and does not depend on a potentially stale `selectedDates` state.
+    const datesForCalculation =
+      selectionModeOverride === "user"
+        ? // User mode: Combine manual selections with any available public holidays.
+          uniqueDates([
+            ...manualSelectedDates,
+            ...Array.from(autoHolidayKeysRef.current)
+              .map(parseDateKeyToDate)
+              .filter((date): date is Date => Boolean(date)),
+          ]).map((d) => new Date(d))
+        : // Auto mode: Use ONLY public holidays from the reference, ignoring any manual selections.
+          Array.from(autoHolidayKeysRef.current)
+            .map(parseDateKeyToDate)
+            .filter((date): date is Date => Boolean(date))
+            .map((d) => new Date(d))
+
+    if (datesForCalculation.length === 0) {
+      setChainResultsByMonth({})
+      setAllChainsByMonth({})
+      setSelectedChainIndexByMonth({})
+      setStatusMessage(
+        selectionModeOverride === "user"
+          ? "Please mark at least one holiday manually to calculate chains."
+          : "No holidays available to calculate chains. Please wait for holidays to load."
+      )
+      return
+    }
+
+    if (chainMode === "user-total" && !userLeaveDays) {
+      setStatusMessage("Please set the number of leave days in Custom mode.")
+      return
+    }
+
+    if (isCalculating) return
+
+    if (computeTimeoutRef.current) {
+      clearTimeout(computeTimeoutRef.current)
+      computeTimeoutRef.current = null
+    }
+    if (hideTimeoutRef.current) {
+      clearTimeout(hideTimeoutRef.current)
+      hideTimeoutRef.current = null
+    }
+
+    setIsCalculating(true)
+    setStatusMessage(null)
+
+    computeTimeoutRef.current = window.setTimeout(() => {
+      computeTimeoutRef.current = null
+
+      const startDate = new Date(currentYear, 0, 1)
+      const endDate = new Date(currentYear + 1, 3, 0) // End of April next year
+
+      const effectiveMode: HolidayChainMode = chainMode === "optimal" ? "user-total" : "user-total"
+      const effectiveLeaves = chainMode === "optimal" ? 2 : userLeaveDays ?? 2
+
+      const chains = calculateHolidayChains({
+        mode: effectiveMode,
+        leavesBudget: effectiveLeaves,
+        startDate,
+        endDate,
+        holidayDates: datesForCalculation,
+        maxLeavesPerMonth: effectiveLeaves,
+      })
+
+      const chainsByMonth: Record<string, HolidayChainResult[]> = {}
+      const selectedIndexes: Record<string, number> = {}
+
+      chains.forEach((chain) => {
+        chain.monthKeys.forEach((monthKey) => {
+          if (!chainsByMonth[monthKey]) {
+            chainsByMonth[monthKey] = []
+            selectedIndexes[monthKey] = 0
+          }
+          const isDuplicate = chainsByMonth[monthKey].some(
+            (existingChain) => existingChain.id === chain.id
+          )
+          if (!isDuplicate) {
+            chainsByMonth[monthKey].push(chain)
+          }
+        })
+      })
+
+      setAllChainsByMonth(chainsByMonth)
+      setSelectedChainIndexByMonth(selectedIndexes)
+
+      const updates: Record<string, { longest: ChainResult | null; shortest: ChainResult | null }> = {}
+      Object.entries(chainsByMonth).forEach(([monthKey, chains]) => {
+        if (chains.length > 0) {
+          const selectedIndex = selectedIndexes[monthKey] || 0
+          const selectedChain = chains[selectedIndex] || chains[0]
+          updates[monthKey] = {
+            longest: {
+              dates: selectedChain.dates,
+              leaveDays: selectedChain.leaveDates,
+              totalDays: selectedChain.length,
+              start: selectedChain.start,
+              end: selectedChain.end,
+            },
+            shortest: null,
+          }
+        }
+      })
+
+      setChainResultsByMonth(updates)
+
+      setStatusMessage(Object.keys(chainsByMonth).length === 0 ? "No chains found." : null)
+    }, CALCULATION_DELAY_MS)
+
+    hideTimeoutRef.current = window.setTimeout(() => {
+      hideTimeoutRef.current = null
+      setIsCalculating(false)
+    }, SPINNER_DURATION_MS)
+  }
 
   useEffect(() => {
     return () => {
@@ -1872,5 +1853,3 @@ function MonthGridCell({
 }
 
 export default App
-
-
