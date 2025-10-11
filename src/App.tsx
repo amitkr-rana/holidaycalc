@@ -180,6 +180,7 @@ function App() {
   const [isCalculating, setIsCalculating] = useState(false)
   const [isLoadingHolidays, setIsLoadingHolidays] = useState(false)
   const [loadingMessage, setLoadingMessage] = useState<string | null>(null)
+  const [isChangingYear, setIsChangingYear] = useState(false)
 
   // New state for chain algorithm mode and user input
   const [chainMode, setChainMode] = useState<HolidayChainMode>("optimal")
@@ -216,6 +217,7 @@ function App() {
   const isInitialMount = useRef(true)
   const ctrlClickHintTimeoutRef = useRef<number | null>(null)
   const ctrlShiftClickHintTimeoutRef = useRef<number | null>(null) // NEW: timeout ref for the new hint
+  const calendarGridRef = useRef<HTMLDivElement | null>(null)
 
   const months = useMemo(() => {
     const currentYearMonths = Array.from({ length: 12 }, (_, index) => new Date(currentYear, index, 1))
@@ -244,6 +246,29 @@ function App() {
   useEffect(() => {
     manualSelectionRef.current = manualSelectedDates
   }, [manualSelectedDates])
+
+  useEffect(() => {
+    // If we are not changing the year or if the ref isn't attached yet, do nothing.
+    if (!isChangingYear || !calendarGridRef.current) return;
+
+    // If holidays are currently loading, wait.
+    if (isLoadingHolidays) return;
+
+    // If holidays are finished loading, delay scroll to allow UI to sync and then scroll to the top.
+    const scrollTimeout = window.setTimeout(() => {
+      if (calendarGridRef.current) {
+        calendarGridRef.current.scrollTo({
+          top: 0,
+          behavior: "smooth",
+        });
+      }
+      setIsChangingYear(false);
+    }, 500); // 500ms delay to ensure dropdown and calendar fully sync before scrolling
+
+    return () => {
+      clearTimeout(scrollTimeout);
+    };
+  }, [isLoadingHolidays, isChangingYear])
 
   const cancelHolidayFetch = useCallback(
     ({ silent }: { silent?: boolean } = {}) => {
@@ -305,6 +330,7 @@ function App() {
     if (!Number.isFinite(year) || year === currentYear) {
       return
     }
+    setIsChangingYear(true)
     cancelHolidayFetch({ silent: true })
     resetSelections()
     setCurrentYear(year)
@@ -1335,10 +1361,10 @@ function App() {
               </div>
             </div>
           </div>
-          <div className="flex-1 overflow-auto scrollbar-hidden">
+          <div className="flex-1 overflow-auto scrollbar-hidden" ref={calendarGridRef}>
             <div className="container mx-auto px-4 pb-4">
               <div className="calendar-grid">
-                {months.map((month, index) => {
+                {months.slice(0, 13).map((month, index) => {
                   const monthKey = monthKeyFromDate(month)
                   return (
                     <MonthGridCell
@@ -1357,6 +1383,16 @@ function App() {
                     />
                   )
                 })}
+                {/* Custom button to span remaining grid space */}
+                <div className="calendar-grid-cell flex items-center justify-center p-0 sm:col-span-1 lg:col-span-2 xl:col-span-3">
+                  <Button
+                    variant="outline"
+                    className="h-full w-full rounded-none border-0 text-base font-semibold text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                    onClick={() => handleYearChange(currentYear + 1)}
+                  >
+                    View next months →
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
