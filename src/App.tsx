@@ -836,56 +836,58 @@ function App() {
   }
 
   const handleChainSelection = (monthKey: string, chainIndex: number) => {
-    const chains = allChainsByMonth[monthKey]
-    if (!chains || !chains[chainIndex]) return
+    const chainsForMonth = allChainsByMonth[monthKey];
+    if (!chainsForMonth || !chainsForMonth[chainIndex]) return;
 
-    const selectedChain = chains[chainIndex]
+    // 1. Update the state that tracks which index is selected for the clicked month.
+    const nextSelectedIndexes = { ...selectedChainIndexByMonth, [monthKey]: chainIndex };
+    setSelectedChainIndexByMonth(nextSelectedIndexes);
 
-    const nextSelectedIndexes = { ...selectedChainIndexByMonth }
-    selectedChain.monthKeys.forEach((key) => {
-      const monthChains = allChainsByMonth[key]
-      if (monthChains) {
-        const idx = monthChains.findIndex(c => c.id === selectedChain.id)
-        if (idx >= 0) {
-          nextSelectedIndexes[key] = idx
-        }
+    // 2. Rebuild the entire highlight map from the ground up based on the latest selections.
+    setChainResultsByMonth(() => { // Removed unused 'prevResults'
+      const nextResults: Record<string, { longest: ChainResult | null; shortest: ChainResult | null }> = {};
+      const processedChainIds = new Set<string>();
+
+      Object.entries(nextSelectedIndexes).forEach(([mk, sIdx]) => {
+          const chainToDisplay = allChainsByMonth[mk]?.[sIdx];
+          if (chainToDisplay && !processedChainIds.has(chainToDisplay.id)) {
+              chainToDisplay.monthKeys.forEach(touchedKey => {
+                  nextResults[touchedKey] = {
+                      longest: {
+                          dates: chainToDisplay.dates,
+                          leaveDays: chainToDisplay.leaveDates,
+                          totalDays: chainToDisplay.length,
+                          start: chainToDisplay.start,
+                          end: chainToDisplay.end,
+                      },
+                      shortest: null,
+                  };
+              });
+              processedChainIds.add(chainToDisplay.id);
+          }
+      });
+
+      // 3. Persist the new, correct state to localStorage.
+      try {
+        localStorage.setItem(CHAIN_STATE_KEY, JSON.stringify({
+            allChainsByMonth,
+            selectedChainIndexByMonth: nextSelectedIndexes,
+            chainResultsByMonth: nextResults,
+            chainMode,
+            userLeaveDays,
+            country: currentCountry,
+            year: currentYear,
+        }));
+      } catch (e) {
+        console.error('Failed to save chain state', e);
       }
-    })
-    setSelectedChainIndexByMonth(nextSelectedIndexes)
 
-    const nextChainResults = { ...chainResultsByMonth }
-    selectedChain.monthKeys.forEach((key) => {
-      nextChainResults[key] = {
-        longest: {
-          dates: selectedChain.dates,
-          leaveDays: selectedChain.leaveDates,
-          totalDays: selectedChain.length,
-          start: selectedChain.start,
-          end: selectedChain.end,
-        },
-        shortest: null,
-      }
-    })
-    setChainResultsByMonth(nextChainResults)
-
-    try {
-      const chainState = {
-        allChainsByMonth,
-        selectedChainIndexByMonth: nextSelectedIndexes,
-        chainResultsByMonth: nextChainResults,
-        chainMode,
-        userLeaveDays,
-        country: currentCountry,
-        year: currentYear,
-      }
-      localStorage.setItem(CHAIN_STATE_KEY, JSON.stringify(chainState))
-    } catch (e) {
-      console.error('Failed to save chain state', e)
-    }
-  }
+      return nextResults;
+    });
+  };
 
   const handleCalculateChain = (modeOverride?: "auto" | "user") => {
-    const selectionModeOverride = modeOverride ?? selectionMode
+    const selectionModeOverride = modeOverride ?? selectionMode;
 
     const datesForCalculation =
       selectionModeOverride === "user"
@@ -898,47 +900,41 @@ function App() {
         : Array.from(autoHolidayKeysRef.current)
             .map(parseDateKeyToDate)
             .filter((date): date is Date => Boolean(date))
-            .map((d) => new Date(d))
+            .map((d) => new Date(d));
 
     if (datesForCalculation.length === 0) {
-      setChainResultsByMonth({})
-      setAllChainsByMonth({})
-      setSelectedChainIndexByMonth({})
+      setChainResultsByMonth({});
+      setAllChainsByMonth({});
+      setSelectedChainIndexByMonth({});
       setStatusMessage(
         selectionModeOverride === "user"
           ? "Please mark at least one holiday manually to calculate chains."
           : "No holidays available to calculate chains. Please wait for holidays to load."
-      )
-      return
+      );
+      return;
     }
 
     if (chainMode === "user-total" && !userLeaveDays) {
-      setStatusMessage("Please set the number of leave days in Custom mode.")
-      return
+      setStatusMessage("Please set the number of leave days in Custom mode.");
+      return;
     }
 
-    if (isCalculating) return
+    if (isCalculating) return;
 
-    if (computeTimeoutRef.current) {
-      clearTimeout(computeTimeoutRef.current)
-      computeTimeoutRef.current = null
-    }
-    if (hideTimeoutRef.current) {
-      clearTimeout(hideTimeoutRef.current)
-      hideTimeoutRef.current = null
-    }
+    if (computeTimeoutRef.current) clearTimeout(computeTimeoutRef.current);
+    if (hideTimeoutRef.current) clearTimeout(hideTimeoutRef.current);
 
-    setIsCalculating(true)
-    setStatusMessage(null)
+    setIsCalculating(true);
+    setStatusMessage(null);
 
     computeTimeoutRef.current = window.setTimeout(() => {
-      computeTimeoutRef.current = null
+      computeTimeoutRef.current = null;
 
-      const startDate = new Date(currentYear, 0, 1)
-      const endDate = new Date(currentYear + 1, 3, 0)
+      const startDate = new Date(currentYear, 0, 1);
+      const endDate = new Date(currentYear + 1, 3, 0);
 
-      const effectiveMode: HolidayChainMode = "user-total"
-      const effectiveLeaves = chainMode === "optimal" ? 2 : userLeaveDays ?? 2
+      const effectiveMode: HolidayChainMode = "user-total";
+      const effectiveLeaves = chainMode === "optimal" ? 2 : userLeaveDays ?? 2;
 
       const chains = calculateHolidayChains({
         mode: effectiveMode,
@@ -946,58 +942,67 @@ function App() {
         startDate,
         endDate,
         holidayDates: datesForCalculation,
-        maxLeavesPerMonth: effectiveLeaves,
-      })
+      });
 
-      const chainsByMonth: Record<string, HolidayChainResult[]> = {}
-      const selectedIndexes: Record<string, number> = {}
-
+      const chainsByMonth: Record<string, HolidayChainResult[]> = {};
+      
+      // Group all chains by the month their start date is in.
       chains.forEach((chain) => {
-        chain.monthKeys.forEach((monthKey) => {
-          if (!chainsByMonth[monthKey]) {
-            chainsByMonth[monthKey] = []
-            selectedIndexes[monthKey] = 0
-          }
-          const isDuplicate = chainsByMonth[monthKey].some(
-            (existingChain) => existingChain.id === chain.id
-          )
-          if (!isDuplicate) {
-            chainsByMonth[monthKey].push(chain)
-          }
-        })
-      })
-
-      setAllChainsByMonth(chainsByMonth)
-      setSelectedChainIndexByMonth(selectedIndexes)
-
-      const updates: Record<string, { longest: ChainResult | null; shortest: ChainResult | null }> = {}
-      Object.entries(chainsByMonth).forEach(([monthKey, chains]) => {
-        if (chains.length > 0) {
-          const selectedIndex = selectedIndexes[monthKey] || 0
-          const selectedChain = chains[selectedIndex] || chains[0]
-          updates[monthKey] = {
-            longest: {
-              dates: selectedChain.dates,
-              leaveDays: selectedChain.leaveDates,
-              totalDays: selectedChain.length,
-              start: selectedChain.start,
-              end: selectedChain.end,
-            },
-            shortest: null,
-          }
+        const startMonthKey = monthKeyFromDate(chain.start);
+        if (!chainsByMonth[startMonthKey]) {
+          chainsByMonth[startMonthKey] = [];
         }
-      })
+        chainsByMonth[startMonthKey].push(chain);
+      });
+      
+      // Sort chains within each month's list.
+      Object.values(chainsByMonth).forEach(monthChains => {
+          monthChains.sort((a, b) => {
+              if (a.length !== b.length) return b.length - a.length;
+              return a.start.getTime() - b.start.getTime();
+          });
+      });
 
-      setChainResultsByMonth(updates)
+      const selectedIndexes: Record<string, number> = {};
+      Object.keys(chainsByMonth).forEach(key => {
+        selectedIndexes[key] = 0;
+      });
 
-      setStatusMessage(Object.keys(chainsByMonth).length === 0 ? "No chains found." : null)
-    }, CALCULATION_DELAY_MS)
+      setAllChainsByMonth(chainsByMonth);
+      setSelectedChainIndexByMonth(selectedIndexes);
+
+      const nextChainResults: Record<string, { longest: ChainResult | null; shortest: ChainResult | null }> = {};
+      const processedChainIds = new Set<string>();
+
+      Object.keys(chainsByMonth).forEach(mk => {
+          const sIdx = selectedIndexes[mk];
+          const chainToDisplay = chainsByMonth[mk][sIdx];
+          if (chainToDisplay && !processedChainIds.has(chainToDisplay.id)) {
+            chainToDisplay.monthKeys.forEach(touchedKey => {
+                nextChainResults[touchedKey] = {
+                    longest: {
+                        dates: chainToDisplay.dates,
+                        leaveDays: chainToDisplay.leaveDates,
+                        totalDays: chainToDisplay.length,
+                        start: chainToDisplay.start,
+                        end: chainToDisplay.end,
+                    },
+                    shortest: null,
+                };
+            });
+            processedChainIds.add(chainToDisplay.id);
+          }
+      });
+      setChainResultsByMonth(nextChainResults);
+
+      setStatusMessage(chains.length === 0 ? "No chains found." : null);
+    }, CALCULATION_DELAY_MS);
 
     hideTimeoutRef.current = window.setTimeout(() => {
-      hideTimeoutRef.current = null
-      setIsCalculating(false)
-    }, SPINNER_DURATION_MS)
-  }
+      hideTimeoutRef.current = null;
+      setIsCalculating(false);
+    }, SPINNER_DURATION_MS);
+  };
 
   // Restore chain state on initial mount only
   useEffect(() => {

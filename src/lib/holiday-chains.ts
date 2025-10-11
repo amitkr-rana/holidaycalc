@@ -19,257 +19,194 @@ export type CalculateHolidayChainsOptions = {
   startDate: Date
   endDate: Date
   holidayDates: Date[]
-  maxLeavesPerMonth: number
 }
 
-type CalendarDay = {
-  date: Date
-  type: "WD" | "W" | "PH" | "W-PH"
-  monthKey: string
-  monthName: string
-  timestamp: number
+const addDays = (date: Date, days: number): Date => {
+  const newDate = new Date(date)
+  newDate.setDate(newDate.getDate() + days)
+  return newDate
 }
 
-const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+const getDaysBetween = (start: Date, end: Date): Date[] => {
+  if (start > end) return []
+  const days: Date[] = []
+  let current = new Date(start)
+  while (current <= end) {
+    days.push(new Date(current))
+    current = addDays(current, 1)
+  }
+  return days
+}
 
 const monthKeyFromDate = (date: Date) =>
   `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`
 
-const normalizeUniqueDates = (dates: Date[]) => {
-  const map = new Map<string, Date>()
-  dates.forEach((date) => {
-    const normalized = normalizeDate(date)
-    const key = dateKey(normalized)
-    if (!map.has(key)) {
-      map.set(key, normalized)
-    }
-  })
-  return Array.from(map.values()).sort((a, b) => a.getTime() - b.getTime())
-}
-
 /**
- * Generates the calendar array with categorized days for the defined period.
- */
-const buildCalendar = (startDate: Date, endDate: Date, holidayDates: Date[]): CalendarDay[] => {
-  const normalizedStart = normalizeDate(startDate)
-  const normalizedEnd = normalizeDate(endDate)
-  if (normalizedStart.getTime() > normalizedEnd.getTime()) {
-    return []
-  }
-
-  const holidaySet = new Set(holidayDates.map((date) => dateKey(normalizeDate(date))))
-  const calendar: CalendarDay[] = []
-  const cursor = new Date(normalizedStart)
-
-  while (cursor.getTime() <= normalizedEnd.getTime()) {
-    const current = normalizeDate(cursor)
-    const key = dateKey(current)
-    const dayOfWeek = current.getDay()
-    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6
-    const isPublicHoliday = holidaySet.has(key)
-
-    let type: CalendarDay["type"] = "WD" // Work Day is default
-    if (isWeekend && !isPublicHoliday) {
-      type = "W"
-    } else if (isWeekend && isPublicHoliday) {
-      type = "W-PH" // Weekend PH (no value)
-    } else if (isPublicHoliday) {
-      type = "PH" // Weekday PH (valuable)
-    }
-
-    const monthKey = monthKeyFromDate(current)
-
-    calendar.push({
-      date: new Date(current),
-      type,
-      monthKey,
-      monthName: MONTH_NAMES[current.getMonth()],
-      timestamp: current.getTime(),
-    })
-
-    cursor.setDate(cursor.getDate() + 1)
-  }
-
-  return calendar
-}
-
-const buildResult = (
-  calendar: CalendarDay[],
-  startIndex: number,
-  endIndex: number,
-  leaves: number
-): HolidayChainResult => {
-  const slice = calendar.slice(startIndex, endIndex + 1)
-  const dates = slice.map((day) => new Date(day.date))
-  const leaveDates = slice.filter((day) => day.type === "WD").map((day) => new Date(day.date))
-
-  const start = new Date(slice[0]?.date ?? 0)
-  const end = new Date(slice[slice.length - 1]?.date ?? 0)
-  const monthKeys = Array.from(new Set(slice.map((day) => day.monthKey)))
-
-  return {
-    id: `${slice[0]?.timestamp ?? 0}-${slice[slice.length - 1]?.timestamp ?? 0}`,
-    start,
-    end,
-    length: slice.length,
-    leaves,
-    dates,
-    leaveDates,
-    monthKeys,
-  }
-}
-
-/**
- * Finds all possible chains per month, respecting max leaves per month and overflow rules
- */
-const computeChainsPerMonth = (
-  calendar: CalendarDay[],
-  mode: HolidayChainMode,
-  leavesBudget: number,
-  maxPolicy: number
-): HolidayChainResult[] => {
-  if (calendar.length === 0) return []
-
-  // Group calendar days by month
-  const daysByMonth = new Map<string, { days: CalendarDay[]; startIndex: number }>()
-  calendar.forEach((day, index) => {
-    if (!daysByMonth.has(day.monthKey)) {
-      daysByMonth.set(day.monthKey, { days: [], startIndex: index })
-    }
-    daysByMonth.get(day.monthKey)!.days.push(day)
-  })
-
-  const allChains: HolidayChainResult[] = []
-  const usedMonths = new Set<string>()
-
-  // Process each month independently
-  for (const [monthKey, { startIndex }] of daysByMonth) {
-    if (usedMonths.has(monthKey)) continue
-
-    const monthChains = new Map<string, HolidayChainResult>()
-    let maxLength = 0
-    let minLeaves = Infinity
-
-    // Try all possible chains starting from this month
-    for (let S = startIndex; S < calendar.length; S++) {
-      const leavesByMonth: Record<string, number> = {}
-      let hasWeekdayPublicHoliday = false
-      let currentLeavesUsed = 0
-      let chainStartMonth = calendar[S].monthKey
-
-      // Only process chains that start in this month
-      if (chainStartMonth !== monthKey) break
-
-      for (let E = S; E < calendar.length; E++) {
-        const D = calendar[E]
-
-        if (D.type === "WD") {
-          leavesByMonth[D.monthKey] = (leavesByMonth[D.monthKey] || 0) + 1
-          currentLeavesUsed++
-        }
-        if (D.type === "PH") hasWeekdayPublicHoliday = true
-
-        const maxLeavesInAnyMonth = Object.values(leavesByMonth).reduce(
-          (max, val) => Math.max(max, val),
-          0
-        )
-        if (maxLeavesInAnyMonth > maxPolicy) break
-
-        const monthKeys = Object.keys(leavesByMonth)
-        const numMonths = monthKeys.length
-
-        // Don't allow chains spanning more than 2 months
-        if (numMonths > 2) break
-
-        // Check user-total mode constraints
-        if (mode === "user-total") {
-          if (currentLeavesUsed > leavesBudget) break
-
-          if (hasWeekdayPublicHoliday && currentLeavesUsed === leavesBudget) {
-            // Constraint: Odd X spanning exactly 2 months MUST be 1 and X-1 split
-            if (leavesBudget % 2 !== 0 && numMonths === 2) {
-              const L1 = leavesByMonth[monthKeys[0]]
-              const L2 = leavesByMonth[monthKeys[1]]
-              const isUnevenSplit =
-                (L1 === 1 && L2 === leavesBudget - 1) || (L1 === leavesBudget - 1 && L2 === 1)
-              if (!isUnevenSplit) continue
-            }
-
-            // Constraint: Even X spanning 2+ months should distribute evenly
-            if (leavesBudget === 2 && numMonths >= 2) {
-              const leavesPerMonth = Object.values(leavesByMonth)
-              const isEvenDistribution = leavesPerMonth.every(count => count === 1)
-              if (!isEvenDistribution) continue
-            }
-
-            const currentLength = E - S + 1
-            const chainKey = `${calendar[S].timestamp}-${calendar[E].timestamp}`
-
-            // Keep all chains with max length
-            if (currentLength >= maxLength) {
-              if (currentLength > maxLength) {
-                monthChains.clear()
-                maxLength = currentLength
-                minLeaves = currentLeavesUsed
-              }
-              if (!monthChains.has(chainKey)) {
-                monthChains.set(chainKey, buildResult(calendar, S, E, currentLeavesUsed))
-              }
-            }
-          }
-        } else {
-          // Optimal mode
-          if (hasWeekdayPublicHoliday) {
-            const currentLength = E - S + 1
-            const chainKey = `${calendar[S].timestamp}-${calendar[E].timestamp}`
-
-            // Keep all chains with max length and min leaves
-            if (currentLength > maxLength || (currentLength === maxLength && currentLeavesUsed <= minLeaves)) {
-              if (currentLength > maxLength) {
-                monthChains.clear()
-                maxLength = currentLength
-                minLeaves = currentLeavesUsed
-              } else if (currentLeavesUsed < minLeaves) {
-                monthChains.clear()
-                minLeaves = currentLeavesUsed
-              }
-
-              if (currentLeavesUsed === minLeaves && !monthChains.has(chainKey)) {
-                monthChains.set(chainKey, buildResult(calendar, S, E, currentLeavesUsed))
-              }
-            }
-          }
-        }
-      }
-    }
-
-    // Add all chains found for this month
-    monthChains.forEach(chain => {
-      allChains.push(chain)
-      // Mark all months touched by this chain as used
-      chain.monthKeys.forEach(mk => usedMonths.add(mk))
-    })
-  }
-
-  return allChains
-}
-
-/**
- * Calculates the array of optimal holiday chain possibilities based on the given mode.
- * @param options - Configuration including mode, dates, holidays, and constraints
- * @returns Array of the best chain possibilities found
+ * The primary function to calculate holiday chains based on the refined logic.
  */
 export const calculateHolidayChains = (
   options: CalculateHolidayChainsOptions
 ): HolidayChainResult[] => {
-  const holidayDates = normalizeUniqueDates(options.holidayDates)
-  const calendar = buildCalendar(options.startDate, options.endDate, holidayDates)
-  if (!calendar.length) {
-    return []
+  const { startDate, endDate, holidayDates: rawHolidayDates, mode } = options
+  const leavesBudget =
+    mode === "user-total" ? Math.max(0, options.leavesBudget ?? 0) : 2
+
+  if (leavesBudget === 0 || rawHolidayDates.length === 0) return []
+
+  const normalizedStartDate = normalizeDate(startDate)
+  const normalizedEndDate = normalizeDate(endDate)
+
+  // Create a set of all "off days" (weekends and holidays) for quick lookups.
+  const offDays = new Set<string>()
+  const holidaySet = new Set<string>()
+  
+  // FIX 1: Use a Set of strings for proper deduplication.
+  new Set(rawHolidayDates.map(d => dateKey(normalizeDate(d)))).forEach(key => {
+    holidaySet.add(key)
+  });
+
+  for (
+    let d = new Date(normalizedStartDate);
+    d <= normalizedEndDate;
+    d = addDays(d, 1)
+  ) {
+    const day = d.getDay()
+    const key = dateKey(d)
+    if (day === 0 || day === 6 || holidaySet.has(key)) {
+      offDays.add(key)
+    }
   }
 
-  const leavesBudget = options.mode === "user-total" ? options.leavesBudget ?? 0 : 0
-  const chains = computeChainsPerMonth(calendar, options.mode, leavesBudget, options.maxLeavesPerMonth)
+  // 1. Identify and merge consecutive holidays/weekends into "anchor blocks".
+  const anchorBlocks: Date[][] = []
+  const sortedHolidays = [...holidaySet].map(key => new Date(key)).sort(
+    (a, b) => a.getTime() - b.getTime()
+  )
 
-  return chains
+  if (sortedHolidays.length > 0) {
+    let currentBlock = [sortedHolidays[0]]
+    for (let i = 1; i < sortedHolidays.length; i++) {
+      const prevDate = sortedHolidays[i - 1]
+      const currentDate = sortedHolidays[i]
+      
+      let cursor = addDays(prevDate, 1)
+      let isConsecutive = false
+      while(cursor <= currentDate) {
+        if (isSameDay(cursor, currentDate)) {
+          isConsecutive = true
+          break
+        }
+        if (!offDays.has(dateKey(cursor))) {
+          isConsecutive = false
+          break
+        }
+        cursor = addDays(cursor, 1)
+      }
+
+      if (isConsecutive) {
+        getDaysBetween(addDays(prevDate, 1), currentDate).forEach(d => currentBlock.push(d))
+      } else {
+        anchorBlocks.push(currentBlock)
+        currentBlock = [currentDate]
+      }
+    }
+    anchorBlocks.push(currentBlock)
+  }
+
+  const allChains: HolidayChainResult[] = []
+  const seenChains = new Set<string>()
+
+  // 2. For each anchor block, generate all possible leave combinations.
+  for (const block of anchorBlocks) {
+    const blockStart = block[0]
+    const blockEnd = block[block.length - 1]
+
+    // Slide the window of leave days
+    for (let leavesBefore = leavesBudget; leavesBefore >= 0; leavesBefore--) {
+      const leavesAfter = leavesBudget - leavesBefore
+
+      const potentialLeaveDates: Date[] = []
+      let isValidPlacement = true
+
+      // Find workdays for leave BEFORE the block
+      let cursor = addDays(blockStart, -1)
+      for (let i = 0; i < leavesBefore; i++) {
+        // FIX 2: Enforce range bounds.
+        while (offDays.has(dateKey(cursor)) && cursor >= normalizedStartDate) {
+          cursor = addDays(cursor, -1)
+        }
+        if (cursor < normalizedStartDate || cursor.getFullYear() < blockStart.getFullYear()) {
+          isValidPlacement = false
+          break
+        }
+        potentialLeaveDates.unshift(cursor)
+        cursor = addDays(cursor, -1)
+      }
+      if (!isValidPlacement) continue
+
+      // Find workdays for leave AFTER the block
+      cursor = addDays(blockEnd, 1)
+      for (let i = 0; i < leavesAfter; i++) {
+        // FIX 2: Enforce range bounds.
+        while (offDays.has(dateKey(cursor)) && cursor <= normalizedEndDate) {
+          cursor = addDays(cursor, 1)
+        }
+        if (cursor > normalizedEndDate) {
+            isValidPlacement = false
+            break
+        }
+        potentialLeaveDates.push(cursor)
+        cursor = addDays(cursor, 1)
+      }
+      if (!isValidPlacement || potentialLeaveDates.length !== leavesBudget) continue
+
+      // 3. Expand the chain to include all adjacent off days.
+      let chainStart = potentialLeaveDates[0] ?? blockStart
+      let chainEnd =
+        potentialLeaveDates[potentialLeaveDates.length - 1] ?? blockEnd
+
+      while (addDays(chainStart, -1) >= normalizedStartDate && offDays.has(dateKey(addDays(chainStart, -1)))) {
+        chainStart = addDays(chainStart, -1)
+      }
+      while (addDays(chainEnd, 1) <= normalizedEndDate && offDays.has(dateKey(addDays(chainEnd, 1)))) {
+        chainEnd = addDays(chainEnd, 1)
+      }
+      
+      const dates = getDaysBetween(chainStart, chainEnd)
+      const id = `${dateKey(chainStart)}-${dateKey(chainEnd)}`
+
+      if (!seenChains.has(id)) {
+        const leaveDates = dates.filter(d => !offDays.has(dateKey(d)))
+        const monthKeys = [...new Set(dates.map(monthKeyFromDate))].sort()
+        allChains.push({
+          id,
+          start: chainStart,
+          end: chainEnd,
+          length: dates.length,
+          leaves: leaveDates.length,
+          dates,
+          leaveDates,
+          monthKeys,
+        })
+        seenChains.add(id)
+      }
+    }
+  }
+  
+  // Sort by length (desc), then by start date (asc) for stable ordering
+  allChains.sort((a, b) => {
+    if (b.length !== a.length) {
+      return b.length - a.length
+    }
+    return a.start.getTime() - b.start.getTime()
+  })
+
+  return allChains
+}
+
+// Helper function not in original code, but useful for the anchor block logic
+const isSameDay = (a: Date, b: Date) => {
+    return a.getFullYear() === b.getFullYear() &&
+           a.getMonth() === b.getMonth() &&
+           a.getDate() === b.getDate();
 }
