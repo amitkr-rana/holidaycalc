@@ -203,6 +203,7 @@ function App() {
   const [clearHoverOpen, setClearHoverOpen] = useState(false)
   const [forceHolidayReload, setForceHolidayReload] = useState(0)
   const [showCtrlClickHint, setShowCtrlClickHint] = useState(false)
+  const [showCtrlShiftClickHint, setShowCtrlShiftClickHint] = useState(false) // NEW: hint for Ctrl+Shift+Click
 
   const autoHolidayKeysRef = useRef<Set<string>>(new Set())
   const manualSelectionRef = useRef<Date[]>([])
@@ -214,6 +215,7 @@ function App() {
   const [headerHeight, setHeaderHeight] = useState(0)
   const isInitialMount = useRef(true)
   const ctrlClickHintTimeoutRef = useRef<number | null>(null)
+  const ctrlShiftClickHintTimeoutRef = useRef<number | null>(null) // NEW: timeout ref for the new hint
 
   const months = useMemo(() => {
     const currentYearMonths = Array.from({ length: 12 }, (_, index) => new Date(currentYear, index, 1))
@@ -291,7 +293,6 @@ function App() {
       setHolidayDescriptions({})
     }
 
-    // Location and types are preserved across resets
     // Clear saved chain state
     try {
       localStorage.removeItem(CHAIN_STATE_KEY)
@@ -311,15 +312,12 @@ function App() {
 
   const handleCountryChange = useCallback(
     (code: CountryCode) => {
-      if (code === currentCountry) {
-        return
-      }
+      if (code === currentCountry) return
       cancelHolidayFetch({ silent: true })
       resetSelections()
       setCurrentCountry(code)
       localStorage.setItem(LAST_COUNTRY_KEY, code)
 
-      // Load location preference for this country, or reset if country has no states
       if (hasStates(code)) {
         try {
           const savedLocation = localStorage.getItem(`${LAST_LOCATION_KEY_PREFIX}:${code}`)
@@ -330,12 +328,10 @@ function App() {
       } else {
         setSelectedLocation(null)
       }
-      // Types selection persists across country changes
     },
     [cancelHolidayFetch, currentCountry, resetSelections]
   )
 
-  // Handler for location change
   const handleLocationChange = useCallback(
     (locationCode: string | null) => {
       setSelectedLocation(locationCode)
@@ -348,13 +344,11 @@ function App() {
       } catch (e) {
         console.error('Failed to save location preference', e)
       }
-      // Reset holiday data when location changes
       resetSelections()
     },
     [currentCountry, resetSelections]
   )
 
-  // Handler for types change
   const handleTypesChange = useCallback(
     (types: HolidayType[]) => {
       setSelectedTypes(types)
@@ -363,39 +357,31 @@ function App() {
       } catch (e) {
         console.error('Failed to save types preference', e)
       }
-      // Reset holiday data when types change
       resetSelections()
     },
     [resetSelections]
   )
 
-  // Handler for types dropdown open/close
   const handleTypesDropdownOpenChange = useCallback((open: boolean) => {
     setTypesDropdownOpen(open)
-    if (open) {
-      // Sync temp types with selected types when opening
-      setTempTypes(selectedTypes)
-    }
+    if (open) setTempTypes(selectedTypes)
   }, [selectedTypes])
 
-  // Handler for Apply button in types dropdown
   const handleTypesApply = useCallback(() => {
     handleTypesChange(tempTypes)
     setTypesDropdownOpen(false)
   }, [tempTypes, handleTypesChange])
 
-  // Handler for Clear button in types dropdown
   const handleTypesClear = useCallback(() => {
     setTempTypes([])
   }, [])
 
-  // Search handler - navigate to holiday detail page
-  const handleSearchSelect = useCallback((dateKey: string, holidayName: string) => {
-    const [year, month, day] = dateKey.split('-')
+  const handleSearchSelect = useCallback((dateKeyStr: string, holidayName: string) => {
+    const [year, month, day] = dateKeyStr.split('-')
     navigate(`/holiday/${currentCountry}/${year}/${month}/${day}`, {
       state: {
-        dateKey,
-        labels: holidayDescriptions[dateKey] || [holidayName],
+        dateKey: dateKeyStr,
+        labels: holidayDescriptions[dateKeyStr] || [holidayName],
         countryName: getCountryName(currentCountry),
         cacheVersion: HOLIDAY_CACHE_VERSION,
       },
@@ -403,7 +389,7 @@ function App() {
     setSearchOpen(false)
   }, [currentCountry, holidayDescriptions, navigate])
 
-  // Keyboard shortcut for search (Cmd+K / Ctrl+K)
+  // Cmd/Ctrl+K search
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
@@ -417,18 +403,17 @@ function App() {
 
   const lastClickedDateRef = useRef<Date | null>(null)
   const ctrlPressedRef = useRef(false)
+  const shiftPressedRef = useRef(false)
 
-  // Track Ctrl/Cmd key state
+  // Track Ctrl/Cmd and Shift
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.ctrlKey || e.metaKey) {
-        ctrlPressedRef.current = true
-      }
+      if (e.ctrlKey || e.metaKey) ctrlPressedRef.current = true
+      if (e.shiftKey) shiftPressedRef.current = true
     }
     const handleKeyUp = (e: KeyboardEvent) => {
-      if (!e.ctrlKey && !e.metaKey) {
-        ctrlPressedRef.current = false
-      }
+      if (!e.ctrlKey && !e.metaKey) ctrlPressedRef.current = false
+      if (!e.shiftKey) shiftPressedRef.current = false
     }
     window.addEventListener('keydown', handleKeyDown)
     window.addEventListener('keyup', handleKeyUp)
@@ -438,11 +423,41 @@ function App() {
     }
   }, [])
 
-  const handleSelect = (value: Date[] | undefined) => {
-    // In auto mode, prevent manual selection/deselection
-    if (selectionMode === "auto") {
-      return
+  // Helpers to show hints exclusively
+  const triggerCtrlHint = useCallback(() => {
+    // hide ctrl+shift hint & timer
+    setShowCtrlShiftClickHint(false)
+    if (ctrlShiftClickHintTimeoutRef.current) {
+      clearTimeout(ctrlShiftClickHintTimeoutRef.current)
+      ctrlShiftClickHintTimeoutRef.current = null
     }
+    // show ctrl hint
+    setShowCtrlClickHint(true)
+    if (ctrlClickHintTimeoutRef.current) clearTimeout(ctrlClickHintTimeoutRef.current)
+    ctrlClickHintTimeoutRef.current = window.setTimeout(() => {
+      setShowCtrlClickHint(false)
+      ctrlClickHintTimeoutRef.current = null
+    }, 5000)
+  }, [])
+
+  const triggerCtrlShiftHint = useCallback(() => {
+    // hide ctrl hint & timer
+    setShowCtrlClickHint(false)
+    if (ctrlClickHintTimeoutRef.current) {
+      clearTimeout(ctrlClickHintTimeoutRef.current)
+      ctrlClickHintTimeoutRef.current = null
+    }
+    // show ctrl+shift hint
+    setShowCtrlShiftClickHint(true)
+    if (ctrlShiftClickHintTimeoutRef.current) clearTimeout(ctrlShiftClickHintTimeoutRef.current)
+    ctrlShiftClickHintTimeoutRef.current = window.setTimeout(() => {
+      setShowCtrlShiftClickHint(false)
+      ctrlShiftClickHintTimeoutRef.current = null
+    }, 5000)
+  }, [])
+
+  const handleSelect = (value: Date[] | undefined) => {
+    if (selectionMode === "auto") return
 
     if (!value) {
       resetSelections()
@@ -453,17 +468,28 @@ function App() {
     let normalized = uniqueDates(value)
     const autoKeys = autoHolidayKeysRef.current
 
-    // Find which date was just clicked (new date not in previous manual selection)
     const previousManualKeys = new Set(manualSelectionRef.current.map(dateKey))
-    const manualCandidates = normalized.filter(date => !autoKeys.has(dateKey(date)))
-    const newlyClicked = manualCandidates.find(d => !previousManualKeys.has(dateKey(d)))
+    const currentManualCandidates = normalized.filter(date => !autoKeys.has(dateKey(date)))
+    const currentManualKeys = new Set(currentManualCandidates.map(dateKey))
 
-    // Check if Ctrl/Cmd key was pressed and we have a previous selection AND a newly clicked date
+    const addedKey = [...currentManualKeys].find(key => !previousManualKeys.has(key))
+    const removedKey = [...previousManualKeys].find(key => !currentManualKeys.has(key))
+    const clickedDateKey = addedKey ?? removedKey
+    const clickedDate = clickedDateKey ? parseDateKeyToDate(clickedDateKey) : null
+
     const isCtrlClick = ctrlPressedRef.current
-    if (isCtrlClick && lastClickedDateRef.current && newlyClicked) {
-      // Fill in all dates between lastClickedDate and newlyClicked
+    const isShiftClick = shiftPressedRef.current
+
+    // Determine action type for hint logic
+    type Action = "rangeAdd" | "rangeRemove" | "singleAdd" | "singleRemove" | null
+    let action: Action = null
+
+    if (isCtrlClick && lastClickedDateRef.current && clickedDate) {
+      // Range gesture
+      action = isShiftClick ? "rangeRemove" : "rangeAdd"
+
       const start = lastClickedDateRef.current
-      const end = newlyClicked
+      const end = clickedDate
       const [earlierDate, laterDate] = start.getTime() < end.getTime() ? [start, end] : [end, start]
 
       const rangeDates: Date[] = []
@@ -473,41 +499,70 @@ function App() {
         currentDate.setDate(currentDate.getDate() + 1)
       }
 
-      // Combine existing selection with the range
-      normalized = uniqueDates([...normalized, ...rangeDates])
+      if (isShiftClick) {
+        const rangeDateKeys = new Set(rangeDates.map(d => dateKey(d)))
+        normalized = uniqueDates(manualSelectionRef.current.filter(d => !rangeDateKeys.has(dateKey(d))))
+      } else {
+        normalized = uniqueDates([...manualSelectionRef.current, ...rangeDates])
+      }
+    } else {
+      // Single day toggle
+      if (addedKey) action = "singleAdd"
+      else if (removedKey) action = "singleRemove"
     }
 
-    // Update last clicked date if there was a newly clicked date
-    if (newlyClicked) {
-      lastClickedDateRef.current = newlyClicked
+    if (clickedDate) {
+      lastClickedDateRef.current = clickedDate
     }
+
+    // Recompute manual selection
     const manual = uniqueDates(
       normalized.filter((date) => {
-        if (autoKeys.has(dateKey(date))) {
-          return false
-        }
+        if (autoKeys.has(dateKey(date))) return false
         return date.getFullYear() === currentYear
       })
     )
 
+    // Decide which hint to show:
+    // - Show Ctrl hint for rangeAdd (Ctrl/Cmd+Click) OR if a user manually clicks an adjacent date.
+    // - Show Ctrl+Shift hint for rangeRemove (Ctrl/Cmd+Shift+Click) OR if a user removes a date from a block.
+    const removedKeyWasFromBlock = (() => {
+      if (!removedKey) return false
+      const d = parseDateKeyToDate(removedKey)
+      if (!d) return false
+      const prev = new Date(d); prev.setDate(d.getDate() - 1)
+      const next = new Date(d); next.setDate(d.getDate() + 1)
+      return previousManualKeys.has(dateKey(prev)) || previousManualKeys.has(dateKey(next))
+    })()
+
+    // Check if the newly added date is adjacent to a previously selected one
+    const addedKeyWasAdjacent = (() => {
+      if (!addedKey) return false;
+      const d = parseDateKeyToDate(addedKey);
+      if (!d) return false;
+      const prev = new Date(d); prev.setDate(d.getDate() - 1);
+      const next = new Date(d); next.setDate(d.getDate() + 1);
+      return previousManualKeys.has(dateKey(prev)) || previousManualKeys.has(dateKey(next));
+    })();
+
+
+    if (action === "rangeAdd") {
+      triggerCtrlHint()
+    } else if (action === "rangeRemove") {
+      triggerCtrlShiftHint()
+    } else if (action === "singleRemove" && removedKeyWasFromBlock) {
+      // User clicked to remove a cell inside a previously selected range:
+      // recommend Ctrl+Shift as a faster way to remove the whole range.
+      triggerCtrlShiftHint()
+    } else if (action === "singleAdd" && addedKeyWasAdjacent) {
+      // User just clicked to add a cell next to a previously selected one:
+      // recommend Ctrl as a faster way to select the whole range.
+      triggerCtrlHint();
+    }
+    // Note: no hint for singleAdd unless adjacent
+
     manualSelectionRef.current = manual
     setManualSelectedDates(manual)
-
-    // Show ctrl+click hint when user makes first manual selection in user mode
-    if (manual.length > 0 && selectionMode === "user") {
-      setShowCtrlClickHint(true)
-
-      // Clear any existing timeout
-      if (ctrlClickHintTimeoutRef.current) {
-        clearTimeout(ctrlClickHintTimeoutRef.current)
-      }
-
-      // Auto-hide after 5 seconds
-      ctrlClickHintTimeoutRef.current = window.setTimeout(() => {
-        setShowCtrlClickHint(false)
-        ctrlClickHintTimeoutRef.current = null
-      }, 5000)
-    }
 
     const autoDates = Array.from(autoKeys)
       .map(parseDateKeyToDate)
@@ -522,29 +577,17 @@ function App() {
     setChainResultsByMonth((prev) => {
       const next: Record<string, { longest: ChainResult | null; shortest: ChainResult | null }> = {}
       Object.entries(prev).forEach(([key, value]) => {
-        if (manualMonthKeys.has(key)) {
-          next[key] = value
-        }
+        if (manualMonthKeys.has(key)) next[key] = value
       })
       return next
     })
   }
 
   const normalizedSelection = useMemo(() => uniqueDates(selectedDates), [selectedDates])
-
-  /*
-  const normalizedManualSelection = useMemo(
-    () => uniqueDates(manualSelectedDates),
-    [manualSelectedDates]
-  )
-  */
-
-  // const hasManualSelections = normalizedManualSelection.length > 0
   const hasHolidays = normalizedSelection.length > 0
   const hasManualHolidays = manualSelectedDates.length > 0
   const hasChains = Object.keys(chainResultsByMonth).length > 0
 
-  // In user mode, enable Calculate only if user has manually selected at least one holiday
   const isCalculateDisabled = selectionMode === "user"
     ? (isLoadingHolidays || isCalculating || !hasManualHolidays)
     : (isLoadingHolidays || isCalculating || !hasHolidays)
@@ -604,9 +647,7 @@ function App() {
   }, [chainResultsByMonth, normalizedSelection])
 
   useEffect(() => {
-    if (typeof window === "undefined") {
-      return
-    }
+    if (typeof window === "undefined") return
 
     cancelHolidayFetch({ silent: true })
 
@@ -620,12 +661,8 @@ function App() {
         : ''
       setStatusMessage(
         count
-          ? `Loaded ${count} holiday${count === 1 ? "" : "s"} for ${
-              getCountryName(currentCountry)
-            }${locationName ? ` (${locationName})` : ''} ${currentYear}${typesDesc}.`
-          : `No holidays found for ${getCountryName(currentCountry)}${
-              locationName ? ` (${locationName})` : ''
-            } ${currentYear}${typesDesc}.`
+          ? `Loaded ${count} holiday${count === 1 ? "" : "s"} for ${getCountryName(currentCountry)}${locationName ? ` (${locationName})` : ''} ${currentYear}${typesDesc}.`
+          : `No holidays found for ${getCountryName(currentCountry)}${locationName ? ` (${locationName})` : ''} ${currentYear}${typesDesc}.`
       )
       return
     }
@@ -636,17 +673,13 @@ function App() {
     setIsLoadingHolidays(true)
     const locationName = selectedLocation ? getLocationName(selectedLocation) : null
     setLoadingMessage(
-      `Fetching holidays for ${getCountryName(currentCountry)}${
-        locationName ? ` (${locationName})` : ''
-      } ${currentYear}...`
+      `Fetching holidays for ${getCountryName(currentCountry)}${locationName ? ` (${locationName})` : ''} ${currentYear}...`
     )
 
     const load = async () => {
       try {
         const data = await fetchHolidayData(currentCountry, currentYear, controller.signal, selectedLocation, selectedTypes)
-        if (holidayFetchCancelledRef.current) {
-          return
-        }
+        if (holidayFetchCancelledRef.current) return
 
         applyHolidayData(data)
         writeHolidayCache(currentCountry, currentYear, data, selectedLocation, selectedTypes)
@@ -658,24 +691,16 @@ function App() {
           : ''
         setStatusMessage(
           count
-            ? `Loaded ${count} holiday${count === 1 ? "" : "s"} for ${getCountryName(currentCountry)}${
-                locationName ? ` (${locationName})` : ''
-              } ${currentYear}${typesDesc}.`
-            : `No holidays found for ${getCountryName(currentCountry)}${
-                locationName ? ` (${locationName})` : ''
-              } ${currentYear}${typesDesc}.`
+            ? `Loaded ${count} holiday${count === 1 ? "" : "s"} for ${getCountryName(currentCountry)}${locationName ? ` (${locationName})` : ''} ${currentYear}${typesDesc}.`
+            : `No holidays found for ${getCountryName(currentCountry)}${locationName ? ` (${locationName})` : ''} ${currentYear}${typesDesc}.`
         )
       } catch (error) {
-        if ((error as Error)?.name === "AbortError" || holidayFetchCancelledRef.current) {
-          return
-        }
+        if ((error as Error)?.name === "AbortError" || holidayFetchCancelledRef.current) return
 
         console.error("Failed to fetch holidays", error)
         const locationName = selectedLocation ? getLocationName(selectedLocation) : null
         setStatusMessage(
-          `Unable to fetch holidays for ${getCountryName(currentCountry)}${
-            locationName ? ` (${locationName})` : ''
-          } ${currentYear}.`
+          `Unable to fetch holidays for ${getCountryName(currentCountry)}${locationName ? ` (${locationName})` : ''} ${currentYear}.`
         )
       } finally {
         holidayFetchControllerRef.current = null
@@ -701,9 +726,7 @@ function App() {
     (day) => {
       const key = dateKey(day)
       const labels = holidayDescriptions[key]
-      if (!labels || labels.length === 0) {
-        return
-      }
+      if (!labels || labels.length === 0) return
 
       const year = day.getFullYear()
       const month = String(day.getMonth() + 1).padStart(2, "0")
@@ -736,14 +759,12 @@ function App() {
     setSelectionMode(mode)
     setModeHoverOpen(false)
 
-    // Save selection mode to localStorage
     try {
       localStorage.setItem(LAST_SELECTION_MODE_KEY, mode)
     } catch (e) {
       console.error('Failed to save selection mode', e)
     }
 
-    // Clear manual selections when switching modes, but keep API holidays
     manualSelectionRef.current = []
     setManualSelectedDates([])
 
@@ -757,40 +778,32 @@ function App() {
     setAllChainsByMonth({})
     setSelectedChainIndexByMonth({})
 
-    // If switching to auto mode, trigger calculate chain (same as clicking Calculate Chain button)
     if (mode === "auto") {
-      // Check if holidays need to be loaded first
       if (autoHolidayKeysRef.current.size === 0) {
-        // Force holiday reload by incrementing the reload counter
         setForceHolidayReload(prev => prev + 1)
         setStatusMessage("Loading public holidays...")
       } else if (autoDates.length > 0) {
-        // Only trigger calculation if we have holidays loaded
         setTimeout(() => {
           handleCalculateChain("auto")
-        }, 100) // Increase timeout to ensure state has updated
+        }, 100)
       } else {
-        // No holidays for current year, but we have some in the ref
         setStatusMessage("No holidays available for current year. Please wait for holidays to load.")
       }
     }
   }
 
   const handleClearAll = () => {
-    resetSelections(true) // Pass true to clear public holidays as well
+    resetSelections(true)
     setClearHoverOpen(false)
-    // Switch to user mode after clearing everything
     setSelectionMode("user")
   }
 
   const handleClearSelection = () => {
-    // Clear only the calculated chains, keep user selections
     setChainResultsByMonth({})
     setAllChainsByMonth({})
     setSelectedChainIndexByMonth({})
     setClearHoverOpen(false)
 
-    // Clear saved chain state
     try {
       localStorage.removeItem(CHAIN_STATE_KEY)
     } catch (e) {
@@ -828,7 +841,6 @@ function App() {
 
     const selectedChain = chains[chainIndex]
 
-    // Update dropdown selection for all months containing this chain
     const nextSelectedIndexes = { ...selectedChainIndexByMonth }
     selectedChain.monthKeys.forEach((key) => {
       const monthChains = allChainsByMonth[key]
@@ -841,7 +853,6 @@ function App() {
     })
     setSelectedChainIndexByMonth(nextSelectedIndexes)
 
-    // Update chainResultsByMonth with the selected chain for ALL its months
     const nextChainResults = { ...chainResultsByMonth }
     selectedChain.monthKeys.forEach((key) => {
       nextChainResults[key] = {
@@ -857,7 +868,6 @@ function App() {
     })
     setChainResultsByMonth(nextChainResults)
 
-    // Save updated state to localStorage
     try {
       const chainState = {
         allChainsByMonth,
@@ -874,88 +884,18 @@ function App() {
     }
   }
 
-  // Restore chain state on initial mount only
-  useEffect(() => {
-    // Only restore on initial mount, not when country/year changes
-    if (!isInitialMount.current) {
-      return
-    }
-
-    isInitialMount.current = false
-
-    try {
-      const savedState = localStorage.getItem(CHAIN_STATE_KEY)
-      if (savedState) {
-        const parsed = JSON.parse(savedState)
-        // Only restore if it matches current country/year/selectionMode
-        if (parsed.country === currentCountry && parsed.year === currentYear && parsed.selectionMode === selectionMode) {
-          // Convert date strings back to Date objects
-          if (parsed.allChainsByMonth) {
-            const restoredAllChains: Record<string, HolidayChainResult[]> = {}
-            Object.entries(parsed.allChainsByMonth).forEach(([monthKey, chains]: [string, any]) => {
-              restoredAllChains[monthKey] = chains.map((chain: any) => ({
-                ...chain,
-                start: new Date(chain.start),
-                end: new Date(chain.end),
-                dates: chain.dates.map((d: string) => new Date(d)),
-                leaveDates: chain.leaveDates.map((d: string) => new Date(d)),
-              }))
-            })
-            setAllChainsByMonth(restoredAllChains)
-          }
-
-          if (parsed.selectedChainIndexByMonth) setSelectedChainIndexByMonth(parsed.selectedChainIndexByMonth)
-
-          if (parsed.chainResultsByMonth) {
-            const restoredChainResults: Record<string, { longest: ChainResult | null; shortest: ChainResult | null }> = {}
-            Object.entries(parsed.chainResultsByMonth).forEach(([monthKey, result]: [string, any]) => {
-              if (result.longest) {
-                restoredChainResults[monthKey] = {
-                  longest: {
-                    ...result.longest,
-                    start: new Date(result.longest.start),
-                    end: new Date(result.longest.end),
-                    dates: result.longest.dates.map((d: string) => new Date(d)),
-                    leaveDays: result.longest.leaveDays.map((d: string) => new Date(d)),
-                  },
-                  shortest: result.shortest ? {
-                    ...result.shortest,
-                    start: new Date(result.shortest.start),
-                    end: new Date(result.shortest.end),
-                    dates: result.shortest.dates.map((d: string) => new Date(d)),
-                    leaveDays: result.shortest.leaveDays.map((d: string) => new Date(d)),
-                  } : null,
-                }
-              }
-            })
-            setChainResultsByMonth(restoredChainResults)
-          }
-
-          if (parsed.chainMode) setChainMode(parsed.chainMode)
-          if (parsed.userLeaveDays) setUserLeaveDays(parsed.userLeaveDays)
-        }
-      }
-    } catch (e) {
-      console.error('Failed to restore chain state', e)
-    }
-  }, [currentCountry, currentYear, selectionMode])
-
   const handleCalculateChain = (modeOverride?: "auto" | "user") => {
     const selectionModeOverride = modeOverride ?? selectionMode
 
-    // Determine which dates to use for calculation based on the effective mode.
-    // This logic is now self-contained and does not depend on a potentially stale `selectedDates` state.
     const datesForCalculation =
       selectionModeOverride === "user"
-        ? // User mode: Combine manual selections with any available public holidays.
-          uniqueDates([
+        ? uniqueDates([
             ...manualSelectedDates,
             ...Array.from(autoHolidayKeysRef.current)
               .map(parseDateKeyToDate)
               .filter((date): date is Date => Boolean(date)),
           ]).map((d) => new Date(d))
-        : // Auto mode: Use ONLY public holidays from the reference, ignoring any manual selections.
-          Array.from(autoHolidayKeysRef.current)
+        : Array.from(autoHolidayKeysRef.current)
             .map(parseDateKeyToDate)
             .filter((date): date is Date => Boolean(date))
             .map((d) => new Date(d))
@@ -995,9 +935,9 @@ function App() {
       computeTimeoutRef.current = null
 
       const startDate = new Date(currentYear, 0, 1)
-      const endDate = new Date(currentYear + 1, 3, 0) // End of April next year
+      const endDate = new Date(currentYear + 1, 3, 0)
 
-      const effectiveMode: HolidayChainMode = chainMode === "optimal" ? "user-total" : "user-total"
+      const effectiveMode: HolidayChainMode = "user-total"
       const effectiveLeaves = chainMode === "optimal" ? 2 : userLeaveDays ?? 2
 
       const chains = calculateHolidayChains({
@@ -1059,17 +999,72 @@ function App() {
     }, SPINNER_DURATION_MS)
   }
 
+  // Restore chain state on initial mount only
+  useEffect(() => {
+    if (!isInitialMount.current) return
+    isInitialMount.current = false
+
+    try {
+      const savedState = localStorage.getItem(CHAIN_STATE_KEY)
+      if (savedState) {
+        const parsed = JSON.parse(savedState)
+        if (parsed.country === currentCountry && parsed.year === currentYear && parsed.selectionMode === selectionMode) {
+          if (parsed.allChainsByMonth) {
+            const restoredAllChains: Record<string, HolidayChainResult[]> = {}
+            Object.entries(parsed.allChainsByMonth).forEach(([monthKey, chains]: [string, any]) => {
+              restoredAllChains[monthKey] = chains.map((chain: any) => ({
+                ...chain,
+                start: new Date(chain.start),
+                end: new Date(chain.end),
+                dates: chain.dates.map((d: string) => new Date(d)),
+                leaveDates: chain.leaveDates.map((d: string) => new Date(d)),
+              }))
+            })
+            setAllChainsByMonth(restoredAllChains)
+          }
+
+          if (parsed.selectedChainIndexByMonth) setSelectedChainIndexByMonth(parsed.selectedChainIndexByMonth)
+
+          if (parsed.chainResultsByMonth) {
+            const restoredChainResults: Record<string, { longest: ChainResult | null; shortest: ChainResult | null }> = {}
+            Object.entries(parsed.chainResultsByMonth).forEach(([monthKey, result]: [string, any]) => {
+              if (result.longest) {
+                restoredChainResults[monthKey] = {
+                  longest: {
+                    ...result.longest,
+                    start: new Date(result.longest.start),
+                    end: new Date(result.longest.end),
+                    dates: result.longest.dates.map((d: string) => new Date(d)),
+                    leaveDays: result.longest.leaveDays.map((d: string) => new Date(d)),
+                  },
+                  shortest: result.shortest ? {
+                    ...result.shortest,
+                    start: new Date(result.shortest.start),
+                    end: new Date(result.shortest.end),
+                    dates: result.shortest.dates.map((d: string) => new Date(d)),
+                    leaveDays: result.shortest.leaveDays.map((d: string) => new Date(d)),
+                  } : null,
+                }
+              }
+            })
+            setChainResultsByMonth(restoredChainResults)
+          }
+
+          if (parsed.chainMode) setChainMode(parsed.chainMode)
+          if (parsed.userLeaveDays) setUserLeaveDays(parsed.userLeaveDays)
+        }
+      }
+    } catch (e) {
+      console.error('Failed to restore chain state', e)
+    }
+  }, [currentCountry, currentYear, selectionMode])
+
   useEffect(() => {
     return () => {
-      if (computeTimeoutRef.current) {
-        clearTimeout(computeTimeoutRef.current)
-      }
-      if (hideTimeoutRef.current) {
-        clearTimeout(hideTimeoutRef.current)
-      }
-      if (ctrlClickHintTimeoutRef.current) {
-        clearTimeout(ctrlClickHintTimeoutRef.current)
-      }
+      if (computeTimeoutRef.current) clearTimeout(computeTimeoutRef.current)
+      if (hideTimeoutRef.current) clearTimeout(hideTimeoutRef.current)
+      if (ctrlClickHintTimeoutRef.current) clearTimeout(ctrlClickHintTimeoutRef.current)
+      if (ctrlShiftClickHintTimeoutRef.current) clearTimeout(ctrlShiftClickHintTimeoutRef.current)
       cancelHolidayFetch({ silent: true })
     }
   }, [cancelHolidayFetch])
@@ -1094,9 +1089,7 @@ function App() {
       updateHeaderHeight()
     })
 
-    if (headerRef.current) {
-      observer.observe(headerRef.current)
-    }
+    if (headerRef.current) observer.observe(headerRef.current)
 
     return () => {
       observer.disconnect()
@@ -1131,7 +1124,6 @@ function App() {
                 </SelectContent>
               </Select>
 
-              {/* Location/State dropdown - only show if country has states */}
               {hasStates(currentCountry) && (
                 <Select
                   value={selectedLocation || "all"}
@@ -1172,7 +1164,6 @@ function App() {
                 </SelectContent>
               </Select>
 
-              {/* Holiday Types multi-select dropdown */}
               <DropdownMenu open={typesDropdownOpen} onOpenChange={handleTypesDropdownOpenChange}>
                 <DropdownMenuTrigger asChild>
                   <Button
@@ -1204,9 +1195,7 @@ function App() {
                       return (
                         <DropdownMenuItem
                           key={type.value}
-                          onSelect={(e) => {
-                            e.preventDefault()
-                          }}
+                          onSelect={(e) => { e.preventDefault() }}
                           onClick={(e) => {
                             e.preventDefault()
                             const newTypes = isSelected
@@ -1231,19 +1220,10 @@ function App() {
                     })}
                   </div>
                   <div className="border-t p-2 flex gap-2 bg-background">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleTypesClear}
-                      className="flex-1 rounded-none"
-                    >
+                    <Button variant="outline" size="sm" onClick={handleTypesClear} className="flex-1 rounded-none">
                       Clear
                     </Button>
-                    <Button
-                      size="sm"
-                      onClick={handleTypesApply}
-                      className="flex-1 rounded-none"
-                    >
+                    <Button size="sm" onClick={handleTypesApply} className="flex-1 rounded-none">
                       Apply
                     </Button>
                   </div>
@@ -1326,10 +1306,7 @@ function App() {
 
         <div className="flex-1 flex flex-col overflow-hidden">
           <div className="container mx-auto px-4 pt-4 pb-2">
-            <div
-              className="legend-grid legend-grid--sticky"
-              style={{ top: `${legendTopOffset}px` }}
-            >
+            <div className="legend-grid legend-grid--sticky" style={{ top: `${legendTopOffset}px` }}>
               <div className="legend-grid-cell">
                 <div className="legend-item">
                   <span className="legend-cube legend-cube-holiday" aria-hidden="true" />
@@ -1391,8 +1368,7 @@ function App() {
               </h2>
               <p className="text-sm text-muted-foreground">
                 {isLoadingHolidays
-                  ? loadingMessage ??
-                    `Fetching holidays for ${getCountryName(currentCountry)} ${currentYear}...`
+                  ? loadingMessage ?? `Fetching holidays for ${getCountryName(currentCountry)} ${currentYear}...`
                   : "Calculating the optimal holiday chain. Please wait a moment."}
               </p>
             </div>
@@ -1439,33 +1415,18 @@ function App() {
                 placeholder="Enter consecutive days"
                 value={dialogInput}
                 onChange={(e) => setDialogInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    handleDialogCalculate()
-                  }
-                }}
+                onKeyDown={(e) => { if (e.key === "Enter") handleDialogCalculate() }}
                 data-testid="leave-days-input"
                 className="rounded-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               />
-              {dialogError && (
-                <p className="text-sm text-destructive">{dialogError}</p>
-              )}
+              {dialogError && <p className="text-sm text-destructive">{dialogError}</p>}
             </div>
           </div>
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={handleDialogCancel}
-              data-testid="dialog-cancel-button"
-              className="rounded-none"
-            >
+            <Button variant="outline" onClick={handleDialogCancel} data-testid="dialog-cancel-button" className="rounded-none">
               Cancel
             </Button>
-            <Button
-              onClick={handleDialogCalculate}
-              data-testid="dialog-calculate-button"
-              className="rounded-none"
-            >
+            <Button onClick={handleDialogCalculate} data-testid="dialog-calculate-button" className="rounded-none">
               Set Mode
             </Button>
           </DialogFooter>
@@ -1480,19 +1441,9 @@ function App() {
             {Object.entries(holidayDescriptions).map(([key, labels]) => {
               const date = parseDateKeyToDate(key)
               if (!date) return null
-
-              const dateStr = date.toLocaleDateString(undefined, {
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric'
-              })
-
+              const dateStr = date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
               return labels.map((label, idx) => (
-                <CommandItem
-                  key={`${key}-${idx}`}
-                  value={`${label} ${dateStr}`}
-                  onSelect={() => handleSearchSelect(key, label)}
-                >
+                <CommandItem key={`${key}-${idx}`} value={`${label} ${dateStr}`} onSelect={() => handleSearchSelect(key, label)}>
                   <div className="flex flex-col">
                     <span className="font-medium">{label}</span>
                     <span className="text-xs text-muted-foreground">{dateStr}</span>
@@ -1504,7 +1455,6 @@ function App() {
         </CommandList>
       </CommandDialog>
 
-      {/* Fixed mode selection button at bottom of screen */}
       <HoverCard open={modeHoverOpen} onOpenChange={setModeHoverOpen}>
         <HoverCardTrigger asChild>
           <Button
@@ -1513,37 +1463,24 @@ function App() {
             className="fixed bottom-6 right-20 z-50 h-12 w-12 rounded-none border-2 shadow-lg hover:bg-accent"
             aria-label="Selection mode settings"
           >
-            {selectionMode === "auto" ? (
-              <Sparkles className="h-6 w-6" />
-            ) : (
-              <User className="h-6 w-6" />
-            )}
+            {selectionMode === "auto" ? <Sparkles className="h-6 w-6" /> : <User className="h-6 w-6" />}
           </Button>
         </HoverCardTrigger>
-        <HoverCardContent
-          className="w-64 rounded-none"
-          side="top"
-          sideOffset={10}
-          align="end"
-        >
+        <HoverCardContent className="w-64 rounded-none" side="top" sideOffset={10} align="end">
           <div className="space-y-3">
             <h4 className="text-sm font-semibold">Selection Mode</h4>
             <div className="space-y-2">
               <button
                 onClick={() => handleSelectionModeChange("auto")}
                 className={`w-full text-left rounded-none px-3 py-2 text-sm transition-colors ${
-                  selectionMode === "auto"
-                    ? "bg-primary text-primary-foreground"
-                    : "hover:bg-accent hover:text-accent-foreground"
+                  selectionMode === "auto" ? "bg-primary text-primary-foreground" : "hover:bg-accent hover:text-accent-foreground"
                 }`}
               >
                 <div className="flex items-center gap-2">
                   <Sparkles className="h-4 w-4" />
                   <div className="flex-1">
                     <div className="font-medium">Auto Mode</div>
-                    <div className="text-xs opacity-80">
-                      Public holidays only. Calculate chains with Optimal or Custom days.
-                    </div>
+                    <div className="text-xs opacity-80">Public holidays only. Calculate chains with Optimal or Custom days.</div>
                   </div>
                   {selectionMode === "auto" && <span className="text-xs">✓</span>}
                 </div>
@@ -1551,18 +1488,14 @@ function App() {
               <button
                 onClick={() => handleSelectionModeChange("user")}
                 className={`w-full text-left rounded-none px-3 py-2 text-sm transition-colors ${
-                  selectionMode === "user"
-                    ? "bg-primary text-primary-foreground"
-                    : "hover:bg-accent hover:text-accent-foreground"
+                  selectionMode === "user" ? "bg-primary text-primary-foreground" : "hover:bg-accent hover:text-accent-foreground"
                 }`}
               >
                 <div className="flex items-center gap-2">
                   <User className="h-4 w-4" />
                   <div className="flex-1">
                     <div className="font-medium">User Mode</div>
-                    <div className="text-xs opacity-80">
-                      Manually mark any day as holiday. Full control over selections.
-                    </div>
+                    <div className="text-xs opacity-80">Manually mark any day as holiday. Full control over selections.</div>
                   </div>
                   {selectionMode === "user" && <span className="text-xs">✓</span>}
                 </div>
@@ -1572,7 +1505,6 @@ function App() {
         </HoverCardContent>
       </HoverCard>
 
-      {/* Fixed clear button at bottom of screen */}
       <HoverCard open={clearHoverOpen} onOpenChange={setClearHoverOpen}>
         <HoverCardTrigger asChild>
           <Button
@@ -1584,16 +1516,10 @@ function App() {
             <Trash2 className="h-6 w-6" />
           </Button>
         </HoverCardTrigger>
-        <HoverCardContent
-          className="w-64 rounded-none"
-          side="top"
-          sideOffset={10}
-          align="end"
-        >
+        <HoverCardContent className="w-64 rounded-none" side="top" sideOffset={10} align="end">
           <div className="space-y-3">
             <h4 className="text-sm font-semibold">Clear Options</h4>
             <div className="space-y-2">
-              {/* Only show "Clear Everything" in User mode */}
               {selectionMode === "user" && (
                 <button
                   onClick={handleClearAll}
@@ -1603,9 +1529,7 @@ function App() {
                     <XCircle className="h-4 w-4" />
                     <div className="flex-1">
                       <div className="font-medium">Clear Everything</div>
-                      <div className="text-xs opacity-80">
-                        Clear all holidays including public holidays and chains
-                      </div>
+                      <div className="text-xs opacity-80">Clear all holidays including public holidays and chains</div>
                     </div>
                   </div>
                 </button>
@@ -1620,9 +1544,7 @@ function App() {
                   <div className="flex-1">
                     <div className="font-medium">Clear Chain</div>
                     <div className="text-xs opacity-80">
-                      {hasChains
-                        ? "Clear calculated chains, keep your holiday selections"
-                        : "No chains to clear"}
+                      {hasChains ? "Clear calculated chains, keep your holiday selections" : "No chains to clear"}
                     </div>
                   </div>
                 </div>
@@ -1632,7 +1554,30 @@ function App() {
         </HoverCardContent>
       </HoverCard>
 
-      {/* Ctrl+Click hint banner - fixed at bottom left */}
+      {showCtrlShiftClickHint && (
+        <div
+          className="fixed z-50 border-2 shadow-lg animate-in fade-in slide-in-from-bottom-5 duration-300"
+          style={{
+            left: 'clamp(1.25rem, 4vw, 2.5rem)',
+            bottom: 'calc(clamp(1rem, 3vw, 2rem) + 3.25rem)',
+            padding: 'clamp(0.65rem, 1.5vw, 0.9rem) clamp(0.8rem, 2vw, 1.4rem)',
+            fontSize: '0.8rem',
+            textAlign: 'left',
+            color: 'color-mix(in srgb, var(--muted-foreground) 80%, var(--foreground) 20%)',
+            background: 'color-mix(in srgb, var(--background) 92%, var(--muted) 8%)',
+            backdropFilter: 'blur(6px)',
+            borderRadius: '0',
+            maxWidth: 'min(24rem, 80%)',
+            lineHeight: '1.45',
+          }}
+        >
+          <strong>Pro Tip:</strong> Hold <kbd className="px-1.5 py-0.5 text-xs font-semibold bg-muted rounded">Ctrl</kbd> (or{" "}
+          <kbd className="px-1.5 py-0.5 text-xs font-semibold bg-muted rounded">⌘</kbd>) <span className="px-1">+</span>
+          <kbd className="px-1.5 py-0.5 text-xs font-semibold bg-muted rounded">Shift</kbd> and click another date to
+          remove the entire range in between.
+        </div>
+      )}
+
       {showCtrlClickHint && (
         <div
           className="fixed z-50 border-2 shadow-lg animate-in fade-in slide-in-from-bottom-5 duration-300"
@@ -1730,9 +1675,7 @@ function MonthGridCell({
 
     return () => {
       observer.disconnect()
-      if (timeout !== null) {
-        window.clearTimeout(timeout)
-      }
+      if (timeout !== null) window.clearTimeout(timeout)
     }
   }, [])
 
@@ -1760,9 +1703,7 @@ function MonthGridCell({
                     month={month}
                     className="w-full"
                     modifiers={modifiers}
-                    formatters={{
-                      formatCaption: calendarCaptionFormatter,
-                    }}
+                    formatters={{ formatCaption: calendarCaptionFormatter }}
                     disabled={(date) =>
                       date.getMonth() !== month.getMonth() || date.getFullYear() !== month.getFullYear()
                     }
@@ -1770,53 +1711,40 @@ function MonthGridCell({
                   />
                 </div>
               </HoverCardTrigger>
-              <HoverCardContent
-                className="w-80"
-                data-testid={`month-hover-card-${monthKey}`}
-                side="right"
-                sideOffset={5}
-              >
+              <HoverCardContent className="w-80" data-testid={`month-hover-card-${monthKey}`} side="right" sideOffset={5}>
                 <div className="space-y-2">
                   <h4 className="text-sm font-semibold">Available Chains</h4>
                   <div className="space-y-1">
                     {allChains.map((chain, index) => {
                       const isSelected = index === selectedChainIndex
                       const isBoundary = chain.monthKeys.length > 1
-                      const boundaryMonths = isBoundary
-                        ? chain.monthKeys.filter((key) => key !== monthKey)
-                        : []
+                      const boundaryMonths = isBoundary ? chain.monthKeys.filter((key) => key !== monthKey) : []
 
                       return (
                         <button
                           key={index}
                           data-testid={`chain-option-${index}`}
-                          onClick={() => {
-                            onChainSelect(index)
-                          }}
+                          onClick={() => onChainSelect(index)}
                           className={`w-full text-left rounded-none px-2 py-1.5 text-sm transition-colors ${
-                            isSelected
-                              ? "bg-primary text-primary-foreground"
-                              : "hover:bg-accent hover:text-accent-foreground"
+                            isSelected ? "bg-primary text-primary-foreground" : "hover:bg-accent hover:text-accent-foreground"
                           }`}
                         >
                           <div className="flex items-center justify-between">
-                            <span>
-                              {formatDateRange(chain.start, chain.end)}
-                            </span>
-                            {isSelected && (
-                              <span className="text-xs">✓</span>
-                            )}
+                            <span>{formatDateRange(chain.start, chain.end)}</span>
+                            {isSelected && <span className="text-xs">✓</span>}
                           </div>
                           <div className="text-xs opacity-80">
                             {chain.length} day{chain.length === 1 ? "" : "s"}, {chain.leaves} leave{chain.leaves === 1 ? "" : "s"}
                             {isBoundary && (
                               <span className="ml-1">
-                                {boundaryMonths.map((key) => {
-                                  const [y, m] = key.split("-")
-                                  const monthName = new Date(Number(y), Number(m) - 1).toLocaleDateString(undefined, { month: "short" })
-                                  const direction = key < monthKey ? "←" : "→"
-                                  return ` ${direction} ${monthName}`
-                                }).join("")}
+                                {boundaryMonths
+                                  .map((key) => {
+                                    const [y, m] = key.split("-")
+                                    const monthName = new Date(Number(y), Number(m) - 1).toLocaleDateString(undefined, { month: "short" })
+                                    const direction = key < monthKey ? "←" : "→"
+                                    return ` ${direction} ${monthName}`
+                                  })
+                                  .join("")}
                               </span>
                             )}
                           </div>
@@ -1837,9 +1765,7 @@ function MonthGridCell({
               month={month}
               className="w-full"
               modifiers={modifiers}
-              formatters={{
-                formatCaption: calendarCaptionFormatter,
-              }}
+              formatters={{ formatCaption: calendarCaptionFormatter }}
               disabled={(date) =>
                 date.getMonth() !== month.getMonth() || date.getFullYear() !== month.getFullYear()
               }
