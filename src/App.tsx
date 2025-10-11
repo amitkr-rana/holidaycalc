@@ -888,10 +888,18 @@ function App() {
 
     // Determine which dates to use for calculation based on mode and context:
     // - Auto mode: Always use all public holidays
-    // - User mode: Use only manual selections as "public holiday anchor points"
-    //   The algorithm will then suggest optimal leave days to bridge these anchor points
+    // - User mode:
+    //   - If public holidays cleared (Clear Everything clicked): Use only manual selections
+    //   - If public holidays still loaded: Use both public holidays AND manual selections
     const datesForCalculation = selectionModeOverride === "user"
-      ? manualSelectedDates.map((date) => new Date(date)) // Only manual selections as anchor points
+      ? autoHolidayKeysRef.current.size === 0
+        ? manualSelectedDates.map((date) => new Date(date)) // Only manual selections if PH cleared
+        : uniqueDates([
+            ...manualSelectedDates,
+            ...Array.from(autoHolidayKeysRef.current)
+              .map(parseDateKeyToDate)
+              .filter((date): date is Date => Boolean(date))
+          ]).map((date) => new Date(date)) // Combine manual and public holidays
       : normalizedSelection.map((date) => new Date(date)) // Auto mode: all public holidays
 
     computeTimeoutRef.current = window.setTimeout(() => {
