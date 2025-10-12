@@ -452,43 +452,6 @@ export function HolidayDetailPage() {
                   <p className="detail-description">{selectedHolidayDetails[0].description}</p>
                 )}
               </div>
-              <br />
-              <div className="detail-calendar-nav">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => handleShiftMonth(-1)}
-                  aria-label="Previous month"
-                >
-                  <ChevronLeftIcon className="size-4" />
-                </Button>
-                <span className="detail-calendar-label">{monthLabelFormatter.format(displayMonth)}</span>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => handleShiftMonth(1)}
-                  aria-label="Next month"
-                >
-                  <ChevronRightIcon className="size-4" />
-                </Button>
-              </div>
-              <Calendar
-                mode="single"
-                selected={activeDate ?? undefined}
-                month={displayMonth}
-                onSelect={handleCalendarSelect}
-                classNames={{
-                  month_caption: "hidden",
-                  caption_label: "hidden",
-                }}
-                onMonthChange={(monthDate) => {
-                  setViewMonth(new Date(monthDate.getFullYear(), monthDate.getMonth(), 1))
-                  ensureHolidayData(monthDate.getFullYear())
-                }}
-                showOutsideDays
-                disabled={(date) => !holidayDateKeys.has(dateKey(normalizeDate(date)))}
-                className="w-full"
-              />
             </div>
 
             <div className="calendar-grid-cell detail-grid-cell detail-grid-cell--image">
@@ -557,6 +520,43 @@ export function HolidayDetailPage() {
               )}
             </div>
           </div>
+          {/* --- START: New Section to be Added --- */}
+          <div className="grid grid-cols-1 gap-px border-t-2 border-l-2 border-border bg-border md:grid-cols-3">
+            {/* Ticket Booking Section */}
+            <div className="bg-background p-6 md:col-span-2">
+              <h3 className="text-lg font-semibold text-muted-foreground">
+                Ticket booking
+              </h3>
+              <div className="mt-4 flex min-h-[12rem] items-center justify-center rounded-none border-2 border-dashed border-muted-foreground/30">
+                <p className="text-sm text-muted-foreground">
+                  (Content for booking will go here)
+                </p>
+              </div>
+            </div>
+
+            {/* Cost and Actions Section */}
+            <div className="flex flex-col justify-between bg-background p-6">
+              <div>
+                <h3 className="text-lg font-semibold text-muted-foreground">
+                  Cost
+                </h3>
+                <div className="mt-4 flex min-h-[6rem] items-center justify-center rounded-none border-2 border-dashed border-muted-foreground/30">
+                  <p className="text-sm text-muted-foreground">
+                    (Cost details)
+                  </p>
+                </div>
+              </div>
+              <div className="mt-4 flex justify-end gap-2">
+                <Button variant="secondary" className="rounded-none">
+                  Some button
+                </Button>
+                <Button variant="default" className="rounded-none">
+                  Some button
+                </Button>
+              </div>
+            </div>
+          </div>
+          {/* --- END: New Section to be Added --- */}
         </main>
       </div>
     </ThemeProvider>
