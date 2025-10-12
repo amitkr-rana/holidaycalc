@@ -453,9 +453,9 @@ export function HolidayDetailPage() {
             </div>
           </div>
 
-          <div className="grid h-full min-h-[24rem] w-full grid-cols-1 gap-px border-2 border-border bg-border md:grid-cols-3">
+          <div className="grid h-full min-h-[24rem] w-full grid-cols-1 gap-px border-1 border-border bg-border md:grid-cols-3">
             {/* Trip Planner Section */}
-            <div className="flex h-full flex-col rounded-none border-2 border-border bg-background md:col-span-2">
+            <div className="flex h-full flex-col rounded-none bg-background md:col-span-2">
               {/* Tab Buttons */}
               <div className="flex gap-2 border-b-2 border-border px-6">
                 <Button
