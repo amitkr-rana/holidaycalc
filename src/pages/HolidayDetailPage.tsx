@@ -521,7 +521,7 @@ export function HolidayDetailPage() {
             </div>
           </div>
           {/* --- START: New Section to be Added --- */}
-          <div className="grid grid-cols-1 gap-px border-t-2 border-l-2 border-border bg-border md:grid-cols-3">
+          <div className="grid grid-cols-1 gap-px border-t-2 border-l-2 border-b-2 border-r-2 border-border bg-border md:grid-cols-3">
             {/* Ticket Booking Section */}
             <div className="bg-background p-6 md:col-span-2">
               <h3 className="text-lg font-semibold text-muted-foreground">
