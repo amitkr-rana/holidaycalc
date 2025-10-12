@@ -483,7 +483,7 @@ export function HolidayDetailPage() {
 
               {/* Tab Content */}
               <div className="flex flex-grow items-center justify-center p-6">
-                <div className="flex h-full w-full items-center justify-center rounded-md border-2 border-dashed border-border bg-transparent p-6">
+                <div className="flex h-full w-full items-center justify-center rounded-none border-2 border-dashed border-border bg-transparent p-6">
                   {activeTab === 'flights' && (
                     <p className="text-sm text-foreground/70">
                       (Content for booking flights will go here)

@@ -332,7 +332,7 @@
   }
 
   .detail-grid {
-    margin-top: 2.5rem;
+    margin-top: 0.5rem;
     border-top: 2px solid var(--color-border);
     border-left: 2px solid var(--color-border);
     grid-template-columns: repeat(1, minmax(0, 1fr));
