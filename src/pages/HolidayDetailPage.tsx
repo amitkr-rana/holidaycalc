@@ -2,7 +2,6 @@
 import { useLocation, useNavigate, useParams } from "react-router-dom"
 
 import { Button } from "@/components/ui/button"
-import { Calendar } from "@/components/ui/calendar"
 import { ModeToggle } from "@/components/mode-toggle"
 import { Spinner } from "@/components/ui/spinner"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -16,7 +15,7 @@ import {
   readHolidayCache,
   writeHolidayCache,
 } from "@/lib/holiday-service"
-import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react"
+import { ChevronLeftIcon } from "lucide-react"
 
 const RAW_PEXELS_SEARCH_URL = (import.meta.env.VITE_PEXELS_SEARCH_URL ?? "").trim()
 const PEXELS_SEARCH_ENDPOINT =
@@ -46,7 +45,6 @@ type ImageState =
     }
 
 const INITIAL_IMAGE_STATE: ImageState = { status: "idle" }
-const monthLabelFormatter = new Intl.DateTimeFormat(undefined, { month: "long"})
 
 export function HolidayDetailPage() {
   const { country, year, month, day } = useParams()
@@ -110,10 +108,6 @@ export function HolidayDetailPage() {
 
   const targetYear = displayMonth.getFullYear()
   const holidayData = holidayDataByYear.get(targetYear) ?? null
-  const holidayDateKeys = useMemo(
-    () => new Set(Object.keys(holidayData?.labels ?? {})),
-    [holidayData]
-  )
 
   const ensureHolidayData = async (yearToLoad: number, signal?: AbortSignal) => {
     const cached = readHolidayCache(resolvedCountry, yearToLoad)
@@ -181,63 +175,6 @@ export function HolidayDetailPage() {
     }
     return holidayData.details[selectedDateKey] ?? []
   }, [holidayData, selectedDateKey])
-
-  const navigateToDate = (date: Date, labels: string[]) => {
-    const normalized = normalizeDate(date)
-    const path = `/holiday/${resolvedCountry}/${normalized.getFullYear()}/${String(
-      normalized.getMonth() + 1
-    ).padStart(2, "0")}/${String(normalized.getDate()).padStart(2, "0")}`
-
-    navigate(path, {
-      replace: true,
-      state: {
-        dateKey: dateKey(normalized),
-        labels,
-        countryName,
-      },
-    })
-  }
-
-  const selectHolidayForMonth = (monthDate: Date) => {
-    if (!holidayData) return
-    const monthKey = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1)
-    const matchingKey = Object.keys(holidayData.labels).find((key) => {
-      const candidate = new Date(key)
-      return (
-        candidate.getFullYear() === monthKey.getFullYear() &&
-        candidate.getMonth() === monthKey.getMonth()
-      )
-    })
-
-    if (matchingKey) {
-      const candidate = normalizeDate(new Date(matchingKey))
-      setActiveDate(candidate)
-      const labels = holidayData.labels[matchingKey] ?? []
-      navigateToDate(candidate, labels)
-    }
-  }
-
-  const handleShiftMonth = (delta: number) => {
-    const nextMonth = new Date(displayMonth.getFullYear(), displayMonth.getMonth() + delta, 1)
-    setViewMonth(nextMonth)
-    ensureHolidayData(nextMonth.getFullYear())
-    selectHolidayForMonth(nextMonth)
-  }
-
-  const handleCalendarSelect = (date?: Date) => {
-    if (!date || !holidayData) {
-      return
-    }
-    const normalized = normalizeDate(date)
-    const key = dateKey(normalized)
-    if (!holidayDateKeys.has(key)) {
-      return
-    }
-    setActiveDate(normalized)
-    setViewMonth(new Date(normalized.getFullYear(), normalized.getMonth(), 1))
-    const labels = holidayData.labels[key] ?? []
-    navigateToDate(normalized, labels)
-  }
 
   useEffect(() => {
     if (!activeDate || !selectedLabels.length) {
