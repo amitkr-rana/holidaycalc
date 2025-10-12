@@ -3,7 +3,7 @@ import { formatHolidayTypesForApi } from "@/lib/holiday-types"
 
 export const HOLIDAY_CACHE_PREFIX = "holiday-cache"
 export const HOLIDAY_CACHE_VERSION = 4 // Incremented for new cache structure
-export const CALENDARIFIC_API_KEY = "g2hJuLniy4J5YI5WTkxVw37Lynk72Wuu"
+export const CALENDARIFIC_API_KEY = (import.meta.env.VITE_CALENDARIFIC_API_KEY ?? "").trim()
 export const CALENDARIFIC_ENDPOINT = "https://calendarific.com/api/v2/holidays"
 
 export type HolidayLabelMap = Record<string, string[]>
