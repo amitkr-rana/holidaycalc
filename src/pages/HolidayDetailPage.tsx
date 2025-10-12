@@ -86,6 +86,7 @@ export function HolidayDetailPage() {
   const [statusMessage, setStatusMessage] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [imageState, setImageState] = useState<ImageState>(INITIAL_IMAGE_STATE)
+  const [activeTab, setActiveTab] = useState("flights");
   const pexelsRequestsRef = useRef<Set<string>>(new Set())
 
   useEffect(() => {
@@ -460,6 +461,7 @@ export function HolidayDetailPage() {
                   <img
                     src={imageState.imageUrl}
                     alt={`Holiday imagery for ${selectedLabels[0] ?? formattedDate}`}
+                    className="h-full w-full object-cover"
                   />
                   <figcaption className="detail-image-caption">
                     {imageState.photographer ? (
@@ -488,16 +490,9 @@ export function HolidayDetailPage() {
                 </figure>
               )}
               {imageState.status === "loading" && (
-                <div className="detail-image-loading" aria-live="polite">
-                  <div className="detail-image-loading__stack">
-                    <Skeleton className="detail-image-loading__media" />
-                    <div className="detail-image-loading__meta">
-                      <Skeleton className="detail-image-loading__line" />
-                      <Skeleton className="detail-image-loading__line detail-image-loading__line--short" />
-                    </div>
-                  </div>
+                <Skeleton className="detail-image-loading" aria-live="polite">
                   <span className="sr-only">Fetching holiday photo...</span>
-                </div>
+                </Skeleton>
               )}
               {imageState.status === "error" && (
                 <div className="detail-image-placeholder">
@@ -520,17 +515,54 @@ export function HolidayDetailPage() {
               )}
             </div>
           </div>
-          {/* --- START: New Section to be Added --- */}
-          <div className="grid grid-cols-1 gap-px border-t-2 border-l-2 border-b-2 border-r-2 border-border bg-border md:grid-cols-3">
-            {/* Ticket Booking Section */}
-            <div className="bg-background p-6 md:col-span-2">
-              <h3 className="text-lg font-semibold text-muted-foreground">
-                Ticket booking
-              </h3>
-              <div className="mt-4 flex min-h-[12rem] items-center justify-center rounded-none border-2 border-dashed border-muted-foreground/30">
-                <p className="text-sm text-muted-foreground">
-                  (Content for booking will go here)
-                </p>
+
+          <div className="grid h-full min-h-[24rem] w-full grid-cols-1 gap-px border-2 border-border bg-border md:grid-cols-3">
+            {/* Trip Planner Section */}
+            <div className="flex h-full flex-col rounded-none border-2 border-border bg-background md:col-span-2">
+              {/* Tab Buttons */}
+              <div className="flex gap-2 border-b-2 border-border px-6">
+                <Button
+                  variant="ghost"
+                  className={`h-auto rounded-none border-b-2 px-4 py-4 ${activeTab === 'flights' ? '-mb-px border-primary text-primary' : 'border-transparent text-muted-foreground'} hover:bg-accent/50`}
+                  onClick={() => setActiveTab('flights')}
+                >
+                  Flights
+                </Button>
+                <Button
+                  variant="ghost"
+                  className={`h-auto rounded-none border-b-2 px-4 py-4 ${activeTab === 'hotels' ? '-mb-px border-primary text-primary' : 'border-transparent text-muted-foreground'} hover:bg-accent/50`}
+                  onClick={() => setActiveTab('hotels')}
+                >
+                  Hotels
+                </Button>
+                <Button
+                  variant="ghost"
+                  className={`h-auto rounded-none border-b-2 px-4 py-4 ${activeTab === 'ai' ? '-mb-px border-primary text-primary' : 'border-transparent text-muted-foreground'} hover:bg-accent/50`}
+                  onClick={() => setActiveTab('ai')}
+                >
+                  AI Itinerary
+                </Button>
+              </div>
+
+              {/* Tab Content */}
+              <div className="flex flex-grow items-center justify-center p-6">
+                <div className="flex h-full w-full items-center justify-center rounded-md border-2 border-dashed border-border bg-transparent p-6">
+                  {activeTab === 'flights' && (
+                    <p className="text-sm text-foreground/70">
+                      (Content for booking flights will go here)
+                    </p>
+                  )}
+                  {activeTab === 'hotels' && (
+                    <p className="text-sm text-foreground/70">
+                      (Content for booking hotels will go here)
+                    </p>
+                  )}
+                  {activeTab === 'ai' && (
+                    <p className="text-sm text-foreground/70">
+                      (AI-generated itinerary will go here)
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -556,7 +588,6 @@ export function HolidayDetailPage() {
               </div>
             </div>
           </div>
-          {/* --- END: New Section to be Added --- */}
         </main>
       </div>
     </ThemeProvider>
