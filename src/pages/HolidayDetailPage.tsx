@@ -16,6 +16,7 @@ import {
   writeHolidayCache,
 } from "@/lib/holiday-service"
 import { ChevronLeftIcon } from "lucide-react"
+import { FlightSearchForm } from "@/components/flight-search-form"
 
 const RAW_PEXELS_SEARCH_URL = (import.meta.env.VITE_PEXELS_SEARCH_URL ?? "").trim()
 const PEXELS_SEARCH_ENDPOINT =
@@ -482,24 +483,26 @@ export function HolidayDetailPage() {
               </div>
 
               {/* Tab Content */}
-              <div className="flex flex-grow items-center justify-center p-6">
-                <div className="flex h-full w-full items-center justify-center rounded-none border-2 border-dashed border-border bg-transparent p-6">
-                  {activeTab === 'flights' && (
-                    <p className="text-sm text-foreground/70">
-                      (Content for booking flights will go here)
-                    </p>
-                  )}
-                  {activeTab === 'hotels' && (
+              <div className="flex flex-grow p-6">
+                {activeTab === 'flights' && (
+                  <div className="w-full">
+                    <FlightSearchForm defaultDate={activeDate} defaultCountry={resolvedCountry} />
+                  </div>
+                )}
+                {activeTab === 'hotels' && (
+                  <div className="flex h-full w-full items-center justify-center rounded-none border-2 border-dashed border-border bg-transparent p-6">
                     <p className="text-sm text-foreground/70">
                       (Content for booking hotels will go here)
                     </p>
-                  )}
-                  {activeTab === 'ai' && (
+                  </div>
+                )}
+                {activeTab === 'ai' && (
+                  <div className="flex h-full w-full items-center justify-center rounded-none border-2 border-dashed border-border bg-transparent p-6">
                     <p className="text-sm text-foreground/70">
                       (AI-generated itinerary will go here)
                     </p>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             </div>
 
