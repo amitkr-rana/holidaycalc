@@ -2,10 +2,10 @@ import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { Calendar } from "@/components/ui/calendar"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Spinner } from "@/components/ui/spinner"
+import { AirportAutocomplete } from "@/components/ui/airport-autocomplete"
 import { format } from "date-fns"
 import { CalendarIcon, PlaneTakeoff, PlaneLanding } from "lucide-react"
 
@@ -65,14 +65,13 @@ export function FlightSearchForm({ defaultDate, defaultCountry }: FlightSearchFo
             <PlaneTakeoff className="size-4" />
             Departure Airport
           </Label>
-          <Input
+          <AirportAutocomplete
             id="departure"
-            placeholder="e.g., JFK, LAX"
             value={departureAirport}
-            onChange={(e) => setDepartureAirport(e.target.value)}
-            className="uppercase"
+            onChange={(value) => setDepartureAirport(value)}
+            placeholder="Search departure airport..."
           />
-          <p className="text-xs text-muted-foreground">Enter 3-letter airport code</p>
+          <p className="text-xs text-muted-foreground">Search by city or airport name</p>
         </div>
 
         {/* Arrival Airport */}
@@ -81,14 +80,13 @@ export function FlightSearchForm({ defaultDate, defaultCountry }: FlightSearchFo
             <PlaneLanding className="size-4" />
             Arrival Airport
           </Label>
-          <Input
+          <AirportAutocomplete
             id="arrival"
-            placeholder="e.g., LHR, CDG"
             value={arrivalAirport}
-            onChange={(e) => setArrivalAirport(e.target.value)}
-            className="uppercase"
+            onChange={(value) => setArrivalAirport(value)}
+            placeholder="Search arrival airport..."
           />
-          <p className="text-xs text-muted-foreground">Enter 3-letter airport code</p>
+          <p className="text-xs text-muted-foreground">Search by city or airport name</p>
         </div>
       </div>
 

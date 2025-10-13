@@ -1,5 +1,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
+// In-memory cache for airport search results (infinite duration)
+const cache = new Map<string, any>();
+
 export default async function handler(
   req: VercelRequest,
   res: VercelResponse
@@ -17,30 +20,51 @@ export default async function handler(
     });
   }
 
-  const apiKey = process.env.VITE_SERPAPI_KEY;
+  const apiKey = process.env.VITE_BOOKINGCOM_RAPIDAPI;
 
   if (!apiKey) {
-    return res.status(500).json({ error: 'SerpAPI key not configured' });
+    return res.status(500).json({ error: 'Booking.com RapidAPI key not configured' });
+  }
+
+  // Check cache first (infinite cache - airports don't change)
+  const cacheKey = query.toLowerCase();
+  const cachedResult = cache.get(cacheKey);
+
+  if (cachedResult) {
+    return res.status(200).json({
+      airports: cachedResult,
+      cached: true
+    });
   }
 
   try {
-    const params = new URLSearchParams({
-      engine: 'google_flights',
-      q: query,
-      api_key: apiKey,
-    });
+    const url = `https://booking-com15.p.rapidapi.com/api/v1/flights/searchDestination?query=${encodeURIComponent(query)}`;
+    const options = {
+      method: 'GET',
+      headers: {
+        'x-rapidapi-key': apiKey,
+        'x-rapidapi-host': 'booking-com15.p.rapidapi.com'
+      }
+    };
 
-    const response = await fetch(`https://serpapi.com/search?${params.toString()}`);
+    const response = await fetch(url, options);
 
     if (!response.ok) {
-      throw new Error(`SerpAPI request failed with status ${response.status}`);
+      throw new Error(`Booking.com API request failed with status ${response.status}`);
     }
 
     const data = await response.json();
 
+    // Extract and format airport data
+    const airports = data.data || [];
+
+    // Cache the result (infinite - airports don't change)
+    cache.set(cacheKey, airports);
+
     // Return airports array from the response
     return res.status(200).json({
-      airports: data.airports || []
+      airports: airports,
+      cached: false
     });
   } catch (error) {
     console.error('Error fetching airport data:', error);
