@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { ModeToggle } from "@/components/mode-toggle"
 import { Spinner } from "@/components/ui/spinner"
 import { ThemeProvider } from "@/components/theme-provider"
-import { ChevronLeftIcon, Plane, Clock, Calendar as CalendarIcon } from "lucide-react"
+import { ChevronLeftIcon, Plane, Clock } from "lucide-react"
 import { format } from "date-fns"
 
 interface Flight {
@@ -60,7 +60,6 @@ export function ItineraryPage() {
   const arrival = searchParams.get("arrival")
   const outbound = searchParams.get("outbound")
   const returnDate = searchParams.get("return")
-  const passengers = searchParams.get("passengers") || "1"
   const travelClass = searchParams.get("class") || "1"
 
   useEffect(() => {

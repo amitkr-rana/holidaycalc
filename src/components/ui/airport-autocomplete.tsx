@@ -33,7 +33,7 @@ export function AirportAutocomplete({
   const [airports, setAirports] = useState<Airport[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [inputValue, setInputValue] = useState(value)
-  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null)
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
   // Handle clicks outside to close dropdown

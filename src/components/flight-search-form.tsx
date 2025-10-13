@@ -14,7 +14,7 @@ interface FlightSearchFormProps {
   defaultCountry?: string
 }
 
-export function FlightSearchForm({ defaultDate, defaultCountry }: FlightSearchFormProps) {
+export function FlightSearchForm({ defaultDate }: FlightSearchFormProps) {
   const navigate = useNavigate()
   const [departureAirport, setDepartureAirport] = useState("")
   const [arrivalAirport, setArrivalAirport] = useState("")
