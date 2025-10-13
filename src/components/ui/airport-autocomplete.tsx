@@ -157,7 +157,7 @@ export function AirportAutocomplete({
       />
 
       {isOpen && (
-        <div className="absolute z-50 w-full mt-1 bg-background border rounded-md shadow-lg">
+        <div className="absolute z-50 w-full mt-1 bg-background border rounded-none shadow-lg">
           <Command>
             <CommandList>
               {isLoading && (

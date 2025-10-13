@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useNavigate } from "react-router-dom"
 import { Calendar } from "@/components/ui/calendar"
 import { Button } from "@/components/ui/button"
@@ -25,6 +25,30 @@ export function FlightSearchForm({ defaultDate }: FlightSearchFormProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [showOutboundCalendar, setShowOutboundCalendar] = useState(false)
   const [showReturnCalendar, setShowReturnCalendar] = useState(false)
+
+  const outboundCalendarRef = useRef<HTMLDivElement>(null)
+  const returnCalendarRef = useRef<HTMLDivElement>(null)
+
+  // Close calendars when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        outboundCalendarRef.current &&
+        !outboundCalendarRef.current.contains(event.target as Node)
+      ) {
+        setShowOutboundCalendar(false)
+      }
+      if (
+        returnCalendarRef.current &&
+        !returnCalendarRef.current.contains(event.target as Node)
+      ) {
+        setShowReturnCalendar(false)
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [])
 
   const handleSearch = async () => {
     if (!departureAirport || !arrivalAirport || !outboundDate) {
@@ -94,17 +118,20 @@ export function FlightSearchForm({ defaultDate }: FlightSearchFormProps) {
         {/* Outbound Date */}
         <div className="flex flex-col gap-2">
           <Label>Outbound Date</Label>
-          <div className="relative">
+          <div className="relative" ref={outboundCalendarRef}>
             <Button
               variant="outline"
-              className="w-full justify-start text-left font-normal"
-              onClick={() => setShowOutboundCalendar(!showOutboundCalendar)}
+              className="w-full justify-start text-left font-normal rounded-none"
+              onClick={() => {
+                setShowOutboundCalendar(!showOutboundCalendar)
+                setShowReturnCalendar(false)
+              }}
             >
               <CalendarIcon className="mr-2 size-4" />
               {outboundDate ? format(outboundDate, "PPP") : "Pick a date"}
             </Button>
             {showOutboundCalendar && (
-              <div className="absolute z-50 mt-2 rounded-md border bg-background p-3 shadow-lg">
+              <div className="absolute z-50 mt-2 rounded-none border bg-background p-3 shadow-lg">
                 <Calendar
                   mode="single"
                   selected={outboundDate}
@@ -122,17 +149,20 @@ export function FlightSearchForm({ defaultDate }: FlightSearchFormProps) {
         {/* Return Date */}
         <div className="flex flex-col gap-2">
           <Label>Return Date (Optional)</Label>
-          <div className="relative">
+          <div className="relative" ref={returnCalendarRef}>
             <Button
               variant="outline"
-              className="w-full justify-start text-left font-normal"
-              onClick={() => setShowReturnCalendar(!showReturnCalendar)}
+              className="w-full justify-start text-left font-normal rounded-none"
+              onClick={() => {
+                setShowReturnCalendar(!showReturnCalendar)
+                setShowOutboundCalendar(false)
+              }}
             >
               <CalendarIcon className="mr-2 size-4" />
               {returnDate ? format(returnDate, "PPP") : "Pick a date"}
             </Button>
             {showReturnCalendar && (
-              <div className="absolute z-50 mt-2 rounded-md border bg-background p-3 shadow-lg">
+              <div className="absolute z-50 mt-2 rounded-none border bg-background p-3 shadow-lg">
                 <Calendar
                   mode="single"
                   selected={returnDate}
