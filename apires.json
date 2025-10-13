@@ -1,0 +1,1578 @@
+{
+    "data": {
+        "topFlights": [
+            {
+                "price": 6281,
+                "detailToken": "eyJ0IjoiQ2pSSWMxVjVWMjVOUmtGQmFVMUJRVlp2Y0dkQ1J5MHRMUzB0TFMwdExTMTJkR0ppTkVGQlFVRkJSMnAwV1hKelEwb3RlalJCRWdaSldERXlORGdhQ2dpSk1SQUFHZ05KVGxJNEhIQ3FOdz09IiwiZCI6IklYUiIsImEiOiJCTFIiLCJkZCI6IjIwMjUtMTAtMjAiLCJhZCI6IjIwMjUtMTAtMjAiLCJiIjpbeyIxIjoiSVhSIiwiMiI6IkJMUiIsIjMiOiJJWCIsIjQiOiIxMjQ4IiwiNSI6IjIwMjUtMTAtMjAiLCI2IjoiMjAyNS0xMC0yMCJ9XSwidHkiOiJPTkVfV0FZIn0=",
+                "airlineCode": "IX",
+                "airlineNames": [
+                    "Air India Express"
+                ],
+                "segments": [
+                    {
+                        "departureAirportCode": "IXR",
+                        "departureAirportName": "Birsa Munda Airport, Ranchi",
+                        "arrivalAirportName": "Kempegowda International Airport Bengaluru",
+                        "arrivalAirportCode": "BLR",
+                        "durationMinutes": 145,
+                        "departureTime": "10:00",
+                        "arrivalTime": "12:25",
+                        "cabinClass": 1,
+                        "seatPitch": null,
+                        "airlineIndex": null,
+                        "aircraftType": null,
+                        "aircraftName": "Airbus A320neo",
+                        "overnight": false,
+                        "delayed": null,
+                        "departureDate": "2025-10-20",
+                        "arrivalDate": "2025-10-20",
+                        "airline": {
+                            "airlineCode": "IX",
+                            "flightNumber": "1248",
+                            "airlineName": "Air India Express"
+                        },
+                        "seatWidth": null,
+                        "flightId": 115938,
+                        "someFlag": 1
+                    }
+                ],
+                "departureAirportCode": "IXR",
+                "departureDate": "2025-10-20",
+                "departureTime": "10:00",
+                "arrivalAirportCode": "BLR",
+                "arrivalDate": "2025-10-20",
+                "arrivalTime": "12:25",
+                "duration": 145,
+                "stops": null,
+                "isCodeShare": false,
+                "hasTransit": null,
+                "transferAirports": null,
+                "fareId": null,
+                "metaData": null,
+                "baggage": null,
+                "airline": [
+                    {
+                        "airlineCode": "IX",
+                        "airlineName": "Air India Express",
+                        "link": "https://www.airindiaexpress.com/support/faqs/special-guests"
+                    }
+                ],
+                "isAvailable": false
+            },
+            {
+                "price": 6282,
+                "detailToken": "eyJ0IjoiQ2pSSWMxVjVWMjVOUmtGQmFVMUJRVlp2Y0dkQ1J5MHRMUzB0TFMwdExTMTJkR0ppTkVGQlFVRkJSMnAwV1hKelEwb3RlalJCRWdZMlJUWTNPVGthQ2dpS01SQUFHZ05KVGxJNEhIQ3JOdz09IiwiZCI6IklYUiIsImEiOiJCTFIiLCJkZCI6IjIwMjUtMTAtMjAiLCJhZCI6IjIwMjUtMTAtMjAiLCJiIjpbeyIxIjoiSVhSIiwiMiI6IkJMUiIsIjMiOiI2RSIsIjQiOiI2Nzk5IiwiNSI6IjIwMjUtMTAtMjAiLCI2IjoiMjAyNS0xMC0yMCJ9XSwidHkiOiJPTkVfV0FZIn0=",
+                "airlineCode": "6E",
+                "airlineNames": [
+                    "IndiGo"
+                ],
+                "segments": [
+                    {
+                        "departureAirportCode": "IXR",
+                        "departureAirportName": "Birsa Munda Airport, Ranchi",
+                        "arrivalAirportName": "Kempegowda International Airport Bengaluru",
+                        "arrivalAirportCode": "BLR",
+                        "durationMinutes": 135,
+                        "departureTime": "08:40",
+                        "arrivalTime": "10:55",
+                        "cabinClass": 1,
+                        "seatPitch": "28 in",
+                        "airlineIndex": null,
+                        "aircraftType": null,
+                        "aircraftName": "Airbus A320neo",
+                        "overnight": false,
+                        "delayed": null,
+                        "departureDate": "2025-10-20",
+                        "arrivalDate": "2025-10-20",
+                        "airline": {
+                            "airlineCode": "6E",
+                            "flightNumber": "6799",
+                            "airlineName": "IndiGo"
+                        },
+                        "seatWidth": "28 inches",
+                        "flightId": 104819,
+                        "someFlag": 1
+                    }
+                ],
+                "departureAirportCode": "IXR",
+                "departureDate": "2025-10-20",
+                "departureTime": "08:40",
+                "arrivalAirportCode": "BLR",
+                "arrivalDate": "2025-10-20",
+                "arrivalTime": "10:55",
+                "duration": 135,
+                "stops": null,
+                "isCodeShare": false,
+                "hasTransit": null,
+                "transferAirports": null,
+                "fareId": null,
+                "metaData": null,
+                "baggage": null,
+                "airline": [
+                    {
+                        "airlineCode": "6E",
+                        "airlineName": "IndiGo",
+                        "link": "https://www.goindigo.in/information/special-disability-assistance/disability-assistance.html"
+                    }
+                ],
+                "isAvailable": false
+            }
+        ],
+        "otherFlights": [
+            {
+                "price": 6281,
+                "detailToken": "eyJ0IjoiQ2pSSWMxVjVWMjVOUmtGQmFVMUJRVlp2Y0dkQ1J5MHRMUzB0TFMwdExTMTJkR0ppTkVGQlFVRkJSMnAwV1hKelEwb3RlalJCRWdaSldERTFNekFhQ2dpSk1SQUFHZ05KVGxJNEhIQ3FOdz09IiwiZCI6IklYUiIsImEiOiJCTFIiLCJkZCI6IjIwMjUtMTAtMjAiLCJhZCI6IjIwMjUtMTAtMjAiLCJiIjpbeyIxIjoiSVhSIiwiMiI6IkJMUiIsIjMiOiJJWCIsIjQiOiIxNTMwIiwiNSI6IjIwMjUtMTAtMjAiLCI2IjoiMjAyNS0xMC0yMCJ9XSwidHkiOiJPTkVfV0FZIn0=",
+                "airlineCode": "IX",
+                "airlineNames": [
+                    "Air India Express"
+                ],
+                "segments": [
+                    {
+                        "departureAirportCode": "IXR",
+                        "departureAirportName": "Birsa Munda Airport, Ranchi",
+                        "arrivalAirportName": "Kempegowda International Airport Bengaluru",
+                        "arrivalAirportCode": "BLR",
+                        "durationMinutes": 145,
+                        "departureTime": "16:20",
+                        "arrivalTime": "18:45",
+                        "cabinClass": 1,
+                        "seatPitch": null,
+                        "airlineIndex": null,
+                        "aircraftType": null,
+                        "aircraftName": "Airbus A320",
+                        "overnight": false,
+                        "delayed": null,
+                        "departureDate": "2025-10-20",
+                        "arrivalDate": "2025-10-20",
+                        "airline": {
+                            "airlineCode": "IX",
+                            "flightNumber": "1530",
+                            "airlineName": "Air India Express"
+                        },
+                        "seatWidth": null,
+                        "flightId": 139896,
+                        "someFlag": 2
+                    }
+                ],
+                "departureAirportCode": "IXR",
+                "departureDate": "2025-10-20",
+                "departureTime": "16:20",
+                "arrivalAirportCode": "BLR",
+                "arrivalDate": "2025-10-20",
+                "arrivalTime": "18:45",
+                "duration": 145,
+                "stops": null,
+                "isCodeShare": false,
+                "hasTransit": null,
+                "transferAirports": null,
+                "fareId": null,
+                "metaData": null,
+                "baggage": null,
+                "airline": [
+                    {
+                        "airlineCode": "IX",
+                        "airlineName": "Air India Express",
+                        "link": "https://www.airindiaexpress.com/support/faqs/special-guests"
+                    }
+                ],
+                "isAvailable": false
+            },
+            {
+                "price": 6281,
+                "detailToken": "eyJ0IjoiQ2pSSWMxVjVWMjVOUmtGQmFVMUJRVlp2Y0dkQ1J5MHRMUzB0TFMwdExTMTJkR0ppTkVGQlFVRkJSMnAwV1hKelEwb3RlalJCRWdaSldESXhOellhQ2dpSk1SQUFHZ05KVGxJNEhIQ3FOdz09IiwiZCI6IklYUiIsImEiOiJCTFIiLCJkZCI6IjIwMjUtMTAtMjAiLCJhZCI6IjIwMjUtMTAtMjAiLCJiIjpbeyIxIjoiSVhSIiwiMiI6IkJMUiIsIjMiOiJJWCIsIjQiOiIyMTc2IiwiNSI6IjIwMjUtMTAtMjAiLCI2IjoiMjAyNS0xMC0yMCJ9XSwidHkiOiJPTkVfV0FZIn0=",
+                "airlineCode": "IX",
+                "airlineNames": [
+                    "Air India Express"
+                ],
+                "segments": [
+                    {
+                        "departureAirportCode": "IXR",
+                        "departureAirportName": "Birsa Munda Airport, Ranchi",
+                        "arrivalAirportName": "Kempegowda International Airport Bengaluru",
+                        "arrivalAirportCode": "BLR",
+                        "durationMinutes": 145,
+                        "departureTime": "21:05",
+                        "arrivalTime": "23:30",
+                        "cabinClass": 1,
+                        "seatPitch": null,
+                        "airlineIndex": null,
+                        "aircraftType": null,
+                        "aircraftName": "Airbus A320",
+                        "overnight": false,
+                        "delayed": null,
+                        "departureDate": "2025-10-20",
+                        "arrivalDate": "2025-10-20",
+                        "airline": {
+                            "airlineCode": "IX",
+                            "flightNumber": "2176",
+                            "airlineName": "Air India Express"
+                        },
+                        "seatWidth": null,
+                        "flightId": 139896,
+                        "someFlag": 2
+                    }
+                ],
+                "departureAirportCode": "IXR",
+                "departureDate": "2025-10-20",
+                "departureTime": "21:05",
+                "arrivalAirportCode": "BLR",
+                "arrivalDate": "2025-10-20",
+                "arrivalTime": "23:30",
+                "duration": 145,
+                "stops": null,
+                "isCodeShare": false,
+                "hasTransit": null,
+                "transferAirports": null,
+                "fareId": null,
+                "metaData": null,
+                "baggage": null,
+                "airline": [
+                    {
+                        "airlineCode": "IX",
+                        "airlineName": "Air India Express",
+                        "link": "https://www.airindiaexpress.com/support/faqs/special-guests"
+                    }
+                ],
+                "isAvailable": false
+            },
+            {
+                "price": 6784,
+                "detailToken": "eyJ0IjoiQ2pSSWMxVjVWMjVOUmtGQmFVMUJRVlp2Y0dkQ1J5MHRMUzB0TFMwdExTMTJkR0ppTkVGQlFVRkJSMnAwV1hKelEwb3RlalJCRWd3MlJUTTVPSHcyUlRZME1EVWFDZ2lBTlJBQUdnTkpUbEk0SEhEaE93PT0iLCJkIjoiSVhSIiwiYSI6IkJMUiIsImRkIjoiMjAyNS0xMC0yMCIsImFkIjoiMjAyNS0xMC0yMCIsImIiOlt7IjEiOiJJWFIiLCIyIjoiSFlEIiwiMyI6IjZFIiwiNCI6IjM5OCIsIjUiOiIyMDI1LTEwLTIwIiwiNiI6IjIwMjUtMTAtMjAifSx7IjEiOiJIWUQiLCIyIjoiQkxSIiwiMyI6IjZFIiwiNCI6IjY0MDUiLCI1IjoiMjAyNS0xMC0yMCIsIjYiOiIyMDI1LTEwLTIwIn1dLCJ0eSI6Ik9ORV9XQVkifQ==",
+                "airlineCode": "6E",
+                "airlineNames": [
+                    "IndiGo"
+                ],
+                "segments": [
+                    {
+                        "departureAirportCode": "IXR",
+                        "departureAirportName": "Birsa Munda Airport, Ranchi",
+                        "arrivalAirportName": "Rajiv Gandhi International Airport",
+                        "arrivalAirportCode": "HYD",
+                        "durationMinutes": 105,
+                        "departureTime": "10:55",
+                        "arrivalTime": "12:40",
+                        "cabinClass": 1,
+                        "seatPitch": "28 in",
+                        "airlineIndex": null,
+                        "aircraftType": null,
+                        "aircraftName": "Airbus A321neo",
+                        "overnight": false,
+                        "delayed": null,
+                        "departureDate": "2025-10-20",
+                        "arrivalDate": "2025-10-20",
+                        "airline": {
+                            "airlineCode": "6E",
+                            "flightNumber": "398",
+                            "airlineName": "IndiGo"
+                        },
+                        "seatWidth": "28 inches",
+                        "flightId": 80803,
+                        "someFlag": 1
+                    },
+                    {
+                        "departureAirportCode": "HYD",
+                        "departureAirportName": "Rajiv Gandhi International Airport",
+                        "arrivalAirportName": "Kempegowda International Airport Bengaluru",
+                        "arrivalAirportCode": "BLR",
+                        "durationMinutes": 80,
+                        "departureTime": "14:30",
+                        "arrivalTime": "15:50",
+                        "cabinClass": 1,
+                        "seatPitch": "28 in",
+                        "airlineIndex": null,
+                        "aircraftType": null,
+                        "aircraftName": "Airbus A321neo",
+                        "overnight": false,
+                        "delayed": null,
+                        "departureDate": "2025-10-20",
+                        "arrivalDate": "2025-10-20",
+                        "airline": {
+                            "airlineCode": "6E",
+                            "flightNumber": "6405",
+                            "airlineName": "IndiGo"
+                        },
+                        "seatWidth": "28 inches",
+                        "flightId": 46921,
+                        "someFlag": 1
+                    }
+                ],
+                "departureAirportCode": "IXR",
+                "departureDate": "2025-10-20",
+                "departureTime": "10:55",
+                "arrivalAirportCode": "BLR",
+                "arrivalDate": "2025-10-20",
+                "arrivalTime": "15:50",
+                "duration": 295,
+                "stops": null,
+                "isCodeShare": false,
+                "hasTransit": null,
+                "transferAirports": null,
+                "fareId": null,
+                "metaData": null,
+                "baggage": null,
+                "airline": [
+                    {
+                        "airlineCode": "6E",
+                        "airlineName": "IndiGo",
+                        "link": "https://www.goindigo.in/information/special-disability-assistance/disability-assistance.html"
+                    }
+                ],
+                "isAvailable": false
+            },
+            {
+                "price": 6784,
+                "detailToken": "eyJ0IjoiQ2pSSWMxVjVWMjVOUmtGQmFVMUJRVlp2Y0dkQ1J5MHRMUzB0TFMwdExTMTJkR0ppTkVGQlFVRkJSMnAwV1hKelEwb3RlalJCRWdzMlJUTTVPSHcyUlRNeE5Cb0tDSUExRUFBYUEwbE9VamdjY09FNyIsImQiOiJJWFIiLCJhIjoiQkxSIiwiZGQiOiIyMDI1LTEwLTIwIiwiYWQiOiIyMDI1LTEwLTIwIiwiYiI6W3siMSI6IklYUiIsIjIiOiJIWUQiLCIzIjoiNkUiLCI0IjoiMzk4IiwiNSI6IjIwMjUtMTAtMjAiLCI2IjoiMjAyNS0xMC0yMCJ9LHsiMSI6IkhZRCIsIjIiOiJCTFIiLCIzIjoiNkUiLCI0IjoiMzE0IiwiNSI6IjIwMjUtMTAtMjAiLCI2IjoiMjAyNS0xMC0yMCJ9XSwidHkiOiJPTkVfV0FZIn0=",
+                "airlineCode": "6E",
+                "airlineNames": [
+                    "IndiGo"
+                ],
+                "segments": [
+                    {
+                        "departureAirportCode": "IXR",
+                        "departureAirportName": "Birsa Munda Airport, Ranchi",
+                        "arrivalAirportName": "Rajiv Gandhi International Airport",
+                        "arrivalAirportCode": "HYD",
+                        "durationMinutes": 105,
+                        "departureTime": "10:55",
+                        "arrivalTime": "12:40",
+                        "cabinClass": 1,
+                        "seatPitch": "28 in",
+                        "airlineIndex": null,
+                        "aircraftType": null,
+                        "aircraftName": "Airbus A321neo",
+                        "overnight": false,
+                        "delayed": null,
+                        "departureDate": "2025-10-20",
+                        "arrivalDate": "2025-10-20",
+                        "airline": {
+                            "airlineCode": "6E",
+                            "flightNumber": "398",
+                            "airlineName": "IndiGo"
+                        },
+                        "seatWidth": "28 inches",
+                        "flightId": 80803,
+                        "someFlag": 1
+                    },
+                    {
+                        "departureAirportCode": "HYD",
+                        "departureAirportName": "Rajiv Gandhi International Airport",
+                        "arrivalAirportName": "Kempegowda International Airport Bengaluru",
+                        "arrivalAirportCode": "BLR",
+                        "durationMinutes": 75,
+                        "departureTime": "16:30",
+                        "arrivalTime": "17:45",
+                        "cabinClass": 1,
+                        "seatPitch": "28 in",
+                        "airlineIndex": null,
+                        "aircraftType": null,
+                        "aircraftName": "Airbus A321neo",
+                        "overnight": false,
+                        "delayed": null,
+                        "departureDate": "2025-10-20",
+                        "arrivalDate": "2025-10-20",
+                        "airline": {
+                            "airlineCode": "6E",
+                            "flightNumber": "314",
+                            "airlineName": "IndiGo"
+                        },
+                        "seatWidth": "28 inches",
+                        "flightId": 46921,
+                        "someFlag": 1
+                    }
+                ],
+                "departureAirportCode": "IXR",
+                "departureDate": "2025-10-20",
+                "departureTime": "10:55",
+                "arrivalAirportCode": "BLR",
+                "arrivalDate": "2025-10-20",
+                "arrivalTime": "17:45",
+                "duration": 410,
+                "stops": null,
+                "isCodeShare": false,
+                "hasTransit": null,
+                "transferAirports": null,
+                "fareId": null,
+                "metaData": null,
+                "baggage": null,
+                "airline": [
+                    {
+                        "airlineCode": "6E",
+                        "airlineName": "IndiGo",
+                        "link": "https://www.goindigo.in/information/special-disability-assistance/disability-assistance.html"
+                    }
+                ],
+                "isAvailable": false
+            },
+            {
+                "price": 6784,
+                "detailToken": "eyJ0IjoiQ2pSSWMxVjVWMjVOUmtGQmFVMUJRVlp2Y0dkQ1J5MHRMUzB0TFMwdExTMTJkR0ppTkVGQlFVRkJSMnAwV1hKelEwb3RlalJCRWd3MlJUTTVPSHcyUlRZME1UY2FDZ2lBTlJBQUdnTkpUbEk0SEhEaE93PT0iLCJkIjoiSVhSIiwiYSI6IkJMUiIsImRkIjoiMjAyNS0xMC0yMCIsImFkIjoiMjAyNS0xMC0yMCIsImIiOlt7IjEiOiJJWFIiLCIyIjoiSFlEIiwiMyI6IjZFIiwiNCI6IjM5OCIsIjUiOiIyMDI1LTEwLTIwIiwiNiI6IjIwMjUtMTAtMjAifSx7IjEiOiJIWUQiLCIyIjoiQkxSIiwiMyI6IjZFIiwiNCI6IjY0MTciLCI1IjoiMjAyNS0xMC0yMCIsIjYiOiIyMDI1LTEwLTIwIn1dLCJ0eSI6Ik9ORV9XQVkifQ==",
+                "airlineCode": "6E",
+                "airlineNames": [
+                    "IndiGo"
+                ],
+                "segments": [
+                    {
+                        "departureAirportCode": "IXR",
+                        "departureAirportName": "Birsa Munda Airport, Ranchi",
+                        "arrivalAirportName": "Rajiv Gandhi International Airport",
+                        "arrivalAirportCode": "HYD",
+                        "durationMinutes": 105,
+                        "departureTime": "10:55",
+                        "arrivalTime": "12:40",
+                        "cabinClass": 1,
+                        "seatPitch": "28 in",
+                        "airlineIndex": null,
+                        "aircraftType": null,
+                        "aircraftName": "Airbus A321neo",
+                        "overnight": false,
+                        "delayed": null,
+                        "departureDate": "2025-10-20",
+                        "arrivalDate": "2025-10-20",
+                        "airline": {
+                            "airlineCode": "6E",
+                            "flightNumber": "398",
+                            "airlineName": "IndiGo"
+                        },
+                        "seatWidth": "28 inches",
+                        "flightId": 80803,
+                        "someFlag": 1
+                    },
+                    {
+                        "departureAirportCode": "HYD",
+                        "departureAirportName": "Rajiv Gandhi International Airport",
+                        "arrivalAirportName": "Kempegowda International Airport Bengaluru",
+                        "arrivalAirportCode": "BLR",
+                        "durationMinutes": 80,
+                        "departureTime": "17:45",
+                        "arrivalTime": "19:05",
+                        "cabinClass": 1,
+                        "seatPitch": "28 in",
+                        "airlineIndex": null,
+                        "aircraftType": null,
+                        "aircraftName": "Airbus A320neo",
+                        "overnight": false,
+                        "delayed": null,
+                        "departureDate": "2025-10-20",
+                        "arrivalDate": "2025-10-20",
+                        "airline": {
+                            "airlineCode": "6E",
+                            "flightNumber": "6417",
+                            "airlineName": "IndiGo"
+                        },
+                        "seatWidth": "28 inches",
+                        "flightId": 51206,
+                        "someFlag": 2
+                    }
+                ],
+                "departureAirportCode": "IXR",
+                "departureDate": "2025-10-20",
+                "departureTime": "10:55",
+                "arrivalAirportCode": "BLR",
+                "arrivalDate": "2025-10-20",
+                "arrivalTime": "19:05",
+                "duration": 490,
+                "stops": null,
+                "isCodeShare": false,
+                "hasTransit": null,
+                "transferAirports": null,
+                "fareId": null,
+                "metaData": null,
+                "baggage": null,
+                "airline": [
+                    {
+                        "airlineCode": "6E",
+                        "airlineName": "IndiGo",
+                        "link": "https://www.goindigo.in/information/special-disability-assistance/disability-assistance.html"
+                    }
+                ],
+                "isAvailable": false
+            },
+            {
+                "price": 6784,
+                "detailToken": "eyJ0IjoiQ2pSSWMxVjVWMjVOUmtGQmFVMUJRVlp2Y0dkQ1J5MHRMUzB0TFMwdExTMTJkR0ppTkVGQlFVRkJSMnAwV1hKelEwb3RlalJCRWd3MlJUTTVPSHcyUlRZM09ETWFDZ2lBTlJBQUdnTkpUbEk0SEhEaE93PT0iLCJkIjoiSVhSIiwiYSI6IkJMUiIsImRkIjoiMjAyNS0xMC0yMCIsImFkIjoiMjAyNS0xMC0yMCIsImIiOlt7IjEiOiJJWFIiLCIyIjoiSFlEIiwiMyI6IjZFIiwiNCI6IjM5OCIsIjUiOiIyMDI1LTEwLTIwIiwiNiI6IjIwMjUtMTAtMjAifSx7IjEiOiJIWUQiLCIyIjoiQkxSIiwiMyI6IjZFIiwiNCI6IjY3ODMiLCI1IjoiMjAyNS0xMC0yMCIsIjYiOiIyMDI1LTEwLTIwIn1dLCJ0eSI6Ik9ORV9XQVkifQ==",
+                "airlineCode": "6E",
+                "airlineNames": [
+                    "IndiGo"
+                ],
+                "segments": [
+                    {
+                        "departureAirportCode": "IXR",
+                        "departureAirportName": "Birsa Munda Airport, Ranchi",
+                        "arrivalAirportName": "Rajiv Gandhi International Airport",
+                        "arrivalAirportCode": "HYD",
+                        "durationMinutes": 105,
+                        "departureTime": "10:55",
+                        "arrivalTime": "12:40",
+                        "cabinClass": 1,
+                        "seatPitch": "28 in",
+                        "airlineIndex": null,
+                        "aircraftType": null,
+                        "aircraftName": "Airbus A321neo",
+                        "overnight": false,
+                        "delayed": null,
+                        "departureDate": "2025-10-20",
+                        "arrivalDate": "2025-10-20",
+                        "airline": {
+                            "airlineCode": "6E",
+                            "flightNumber": "398",
+                            "airlineName": "IndiGo"
+                        },
+                        "seatWidth": "28 inches",
+                        "flightId": 80803,
+                        "someFlag": 1
+                    },
+                    {
+                        "departureAirportCode": "HYD",
+                        "departureAirportName": "Rajiv Gandhi International Airport",
+                        "arrivalAirportName": "Kempegowda International Airport Bengaluru",
+                        "arrivalAirportCode": "BLR",
+                        "durationMinutes": 80,
+                        "departureTime": "18:50",
+                        "arrivalTime": "20:10",
+                        "cabinClass": 1,
+                        "seatPitch": "28 in",
+                        "airlineIndex": null,
+                        "aircraftType": null,
+                        "aircraftName": "Airbus A320neo",
+                        "overnight": false,
+                        "delayed": null,
+                        "departureDate": "2025-10-20",
+                        "arrivalDate": "2025-10-20",
+                        "airline": {
+                            "airlineCode": "6E",
+                            "flightNumber": "6783",
+                            "airlineName": "IndiGo"
+                        },
+                        "seatWidth": "28 inches",
+                        "flightId": 51206,
+                        "someFlag": 2
+                    }
+                ],
+                "departureAirportCode": "IXR",
+                "departureDate": "2025-10-20",
+                "departureTime": "10:55",
+                "arrivalAirportCode": "BLR",
+                "arrivalDate": "2025-10-20",
+                "arrivalTime": "20:10",
+                "duration": 555,
+                "stops": null,
+                "isCodeShare": false,
+                "hasTransit": null,
+                "transferAirports": null,
+                "fareId": null,
+                "metaData": null,
+                "baggage": null,
+                "airline": [
+                    {
+                        "airlineCode": "6E",
+                        "airlineName": "IndiGo",
+                        "link": "https://www.goindigo.in/information/special-disability-assistance/disability-assistance.html"
+                    }
+                ],
+                "isAvailable": false
+            },
+            {
+                "price": 6784,
+                "detailToken": "eyJ0IjoiQ2pSSWMxVjVWMjVOUmtGQmFVMUJRVlp2Y0dkQ1J5MHRMUzB0TFMwdExTMTJkR0ppTkVGQlFVRkJSMnAwV1hKelEwb3RlalJCRWdzMlJURTVNWHcyUlRrME9Sb0tDSUExRUFBYUEwbE9VamdjY09FNyIsImQiOiJJWFIiLCJhIjoiQkxSIiwiZGQiOiIyMDI1LTEwLTIwIiwiYWQiOiIyMDI1LTEwLTIxIiwiYiI6W3siMSI6IklYUiIsIjIiOiJIWUQiLCIzIjoiNkUiLCI0IjoiMTkxIiwiNSI6IjIwMjUtMTAtMjAiLCI2IjoiMjAyNS0xMC0yMCJ9LHsiMSI6IkhZRCIsIjIiOiJCTFIiLCIzIjoiNkUiLCI0IjoiOTQ5IiwiNSI6IjIwMjUtMTAtMjEiLCI2IjoiMjAyNS0xMC0yMSJ9XSwidHkiOiJPTkVfV0FZIn0=",
+                "airlineCode": "6E",
+                "airlineNames": [
+                    "IndiGo"
+                ],
+                "segments": [
+                    {
+                        "departureAirportCode": "IXR",
+                        "departureAirportName": "Birsa Munda Airport, Ranchi",
+                        "arrivalAirportName": "Rajiv Gandhi International Airport",
+                        "arrivalAirportCode": "HYD",
+                        "durationMinutes": 125,
+                        "departureTime": "21:00",
+                        "arrivalTime": "23:05",
+                        "cabinClass": 1,
+                        "seatPitch": "28 in",
+                        "airlineIndex": null,
+                        "aircraftType": null,
+                        "aircraftName": "Airbus A320",
+                        "overnight": false,
+                        "delayed": null,
+                        "departureDate": "2025-10-20",
+                        "arrivalDate": "2025-10-20",
+                        "airline": {
+                            "airlineCode": "6E",
+                            "flightNumber": "191",
+                            "airlineName": "IndiGo"
+                        },
+                        "seatWidth": "28 inches",
+                        "flightId": 96218,
+                        "someFlag": 2
+                    },
+                    {
+                        "departureAirportCode": "HYD",
+                        "departureAirportName": "Rajiv Gandhi International Airport",
+                        "arrivalAirportName": "Kempegowda International Airport Bengaluru",
+                        "arrivalAirportCode": "BLR",
+                        "durationMinutes": 75,
+                        "departureTime": "null:15",
+                        "arrivalTime": "01:30",
+                        "cabinClass": 1,
+                        "seatPitch": "28 in",
+                        "airlineIndex": null,
+                        "aircraftType": null,
+                        "aircraftName": "Airbus A321neo",
+                        "overnight": false,
+                        "delayed": null,
+                        "departureDate": "2025-10-21",
+                        "arrivalDate": "2025-10-21",
+                        "airline": {
+                            "airlineCode": "6E",
+                            "flightNumber": "949",
+                            "airlineName": "IndiGo"
+                        },
+                        "seatWidth": "28 inches",
+                        "flightId": 46921,
+                        "someFlag": 1
+                    }
+                ],
+                "departureAirportCode": "IXR",
+                "departureDate": "2025-10-20",
+                "departureTime": "21:00",
+                "arrivalAirportCode": "BLR",
+                "arrivalDate": "2025-10-21",
+                "arrivalTime": "01:30",
+                "duration": 270,
+                "stops": 1,
+                "isCodeShare": false,
+                "hasTransit": null,
+                "transferAirports": null,
+                "fareId": null,
+                "metaData": null,
+                "baggage": null,
+                "airline": [
+                    {
+                        "airlineCode": "6E",
+                        "airlineName": "IndiGo",
+                        "link": "https://www.goindigo.in/information/special-disability-assistance/disability-assistance.html"
+                    }
+                ],
+                "isAvailable": false
+            },
+            {
+                "price": 6784,
+                "detailToken": "eyJ0IjoiQ2pSSWMxVjVWMjVOUmtGQmFVMUJRVlp2Y0dkQ1J5MHRMUzB0TFMwdExTMTJkR0ppTkVGQlFVRkJSMnAwV1hKelEwb3RlalJCRWdzMlJURTVNWHcyUlRnNE54b0tDSUExRUFBYUEwbE9VamdjY09FNyIsImQiOiJJWFIiLCJhIjoiQkxSIiwiZGQiOiIyMDI1LTEwLTIwIiwiYWQiOiIyMDI1LTEwLTIxIiwiYiI6W3siMSI6IklYUiIsIjIiOiJIWUQiLCIzIjoiNkUiLCI0IjoiMTkxIiwiNSI6IjIwMjUtMTAtMjAiLCI2IjoiMjAyNS0xMC0yMCJ9LHsiMSI6IkhZRCIsIjIiOiJCTFIiLCIzIjoiNkUiLCI0IjoiODg3IiwiNSI6IjIwMjUtMTAtMjEiLCI2IjoiMjAyNS0xMC0yMSJ9XSwidHkiOiJPTkVfV0FZIn0=",
+                "airlineCode": "6E",
+                "airlineNames": [
+                    "IndiGo"
+                ],
+                "segments": [
+                    {
+                        "departureAirportCode": "IXR",
+                        "departureAirportName": "Birsa Munda Airport, Ranchi",
+                        "arrivalAirportName": "Rajiv Gandhi International Airport",
+                        "arrivalAirportCode": "HYD",
+                        "durationMinutes": 125,
+                        "departureTime": "21:00",
+                        "arrivalTime": "23:05",
+                        "cabinClass": 1,
+                        "seatPitch": "28 in",
+                        "airlineIndex": null,
+                        "aircraftType": null,
+                        "aircraftName": "Airbus A320",
+                        "overnight": false,
+                        "delayed": null,
+                        "departureDate": "2025-10-20",
+                        "arrivalDate": "2025-10-20",
+                        "airline": {
+                            "airlineCode": "6E",
+                            "flightNumber": "191",
+                            "airlineName": "IndiGo"
+                        },
+                        "seatWidth": "28 inches",
+                        "flightId": 96218,
+                        "someFlag": 2
+                    },
+                    {
+                        "departureAirportCode": "HYD",
+                        "departureAirportName": "Rajiv Gandhi International Airport",
+                        "arrivalAirportName": "Kempegowda International Airport Bengaluru",
+                        "arrivalAirportCode": "BLR",
+                        "durationMinutes": 70,
+                        "departureTime": "05:15",
+                        "arrivalTime": "06:25",
+                        "cabinClass": 1,
+                        "seatPitch": "28 in",
+                        "airlineIndex": null,
+                        "aircraftType": null,
+                        "aircraftName": "Airbus A320neo",
+                        "overnight": false,
+                        "delayed": null,
+                        "departureDate": "2025-10-21",
+                        "arrivalDate": "2025-10-21",
+                        "airline": {
+                            "airlineCode": "6E",
+                            "flightNumber": "887",
+                            "airlineName": "IndiGo"
+                        },
+                        "seatWidth": "28 inches",
+                        "flightId": 51206,
+                        "someFlag": 1
+                    }
+                ],
+                "departureAirportCode": "IXR",
+                "departureDate": "2025-10-20",
+                "departureTime": "21:00",
+                "arrivalAirportCode": "BLR",
+                "arrivalDate": "2025-10-21",
+                "arrivalTime": "06:25",
+                "duration": 565,
+                "stops": 1,
+                "isCodeShare": false,
+                "hasTransit": null,
+                "transferAirports": null,
+                "fareId": null,
+                "metaData": null,
+                "baggage": null,
+                "airline": [
+                    {
+                        "airlineCode": "6E",
+                        "airlineName": "IndiGo",
+                        "link": "https://www.goindigo.in/information/special-disability-assistance/disability-assistance.html"
+                    }
+                ],
+                "isAvailable": false
+            },
+            {
+                "price": 6784,
+                "detailToken": "eyJ0IjoiQ2pSSWMxVjVWMjVOUmtGQmFVMUJRVlp2Y0dkQ1J5MHRMUzB0TFMwdExTMTJkR0ppTkVGQlFVRkJSMnAwV1hKelEwb3RlalJCRWdzMlJURTVNWHcyUlRReE14b0tDSUExRUFBYUEwbE9VamdjY09FNyIsImQiOiJJWFIiLCJhIjoiQkxSIiwiZGQiOiIyMDI1LTEwLTIwIiwiYWQiOiIyMDI1LTEwLTIxIiwiYiI6W3siMSI6IklYUiIsIjIiOiJIWUQiLCIzIjoiNkUiLCI0IjoiMTkxIiwiNSI6IjIwMjUtMTAtMjAiLCI2IjoiMjAyNS0xMC0yMCJ9LHsiMSI6IkhZRCIsIjIiOiJCTFIiLCIzIjoiNkUiLCI0IjoiNDEzIiwiNSI6IjIwMjUtMTAtMjEiLCI2IjoiMjAyNS0xMC0yMSJ9XSwidHkiOiJPTkVfV0FZIn0=",
+                "airlineCode": "6E",
+                "airlineNames": [
+                    "IndiGo"
+                ],
+                "segments": [
+                    {
+                        "departureAirportCode": "IXR",
+                        "departureAirportName": "Birsa Munda Airport, Ranchi",
+                        "arrivalAirportName": "Rajiv Gandhi International Airport",
+                        "arrivalAirportCode": "HYD",
+                        "durationMinutes": 125,
+                        "departureTime": "21:00",
+                        "arrivalTime": "23:05",
+                        "cabinClass": 1,
+                        "seatPitch": "28 in",
+                        "airlineIndex": null,
+                        "aircraftType": null,
+                        "aircraftName": "Airbus A320",
+                        "overnight": false,
+                        "delayed": null,
+                        "departureDate": "2025-10-20",
+                        "arrivalDate": "2025-10-20",
+                        "airline": {
+                            "airlineCode": "6E",
+                            "flightNumber": "191",
+                            "airlineName": "IndiGo"
+                        },
+                        "seatWidth": "28 inches",
+                        "flightId": 96218,
+                        "someFlag": 2
+                    },
+                    {
+                        "departureAirportCode": "HYD",
+                        "departureAirportName": "Rajiv Gandhi International Airport",
+                        "arrivalAirportName": "Kempegowda International Airport Bengaluru",
+                        "arrivalAirportCode": "BLR",
+                        "durationMinutes": 75,
+                        "departureTime": "06:35",
+                        "arrivalTime": "07:50",
+                        "cabinClass": 1,
+                        "seatPitch": "28 in",
+                        "airlineIndex": null,
+                        "aircraftType": null,
+                        "aircraftName": "Airbus A320",
+                        "overnight": false,
+                        "delayed": null,
+                        "departureDate": "2025-10-21",
+                        "arrivalDate": "2025-10-21",
+                        "airline": {
+                            "airlineCode": "6E",
+                            "flightNumber": "413",
+                            "airlineName": "IndiGo"
+                        },
+                        "seatWidth": "28 inches",
+                        "flightId": 59385,
+                        "someFlag": 1
+                    }
+                ],
+                "departureAirportCode": "IXR",
+                "departureDate": "2025-10-20",
+                "departureTime": "21:00",
+                "arrivalAirportCode": "BLR",
+                "arrivalDate": "2025-10-21",
+                "arrivalTime": "07:50",
+                "duration": 650,
+                "stops": 1,
+                "isCodeShare": false,
+                "hasTransit": null,
+                "transferAirports": null,
+                "fareId": null,
+                "metaData": null,
+                "baggage": null,
+                "airline": [
+                    {
+                        "airlineCode": "6E",
+                        "airlineName": "IndiGo",
+                        "link": "https://www.goindigo.in/information/special-disability-assistance/disability-assistance.html"
+                    }
+                ],
+                "isAvailable": false
+            },
+            {
+                "price": 7468,
+                "detailToken": "eyJ0IjoiQ2pSSWMxVjVWMjVOUmtGQmFVMUJRVlp2Y0dkQ1J5MHRMUzB0TFMwdExTMTJkR0ppTkVGQlFVRkJSMnAwV1hKelEwb3RlalJCRWd3MlJUSXdPWHcyUlRZMU5qY2FDZ2lzT2hBQUdnTkpUbEk0SEhEbFFRPT0iLCJkIjoiSVhSIiwiYSI6IkJMUiIsImRkIjoiMjAyNS0xMC0yMCIsImFkIjoiMjAyNS0xMC0yMSIsImIiOlt7IjEiOiJJWFIiLCIyIjoiTUFBIiwiMyI6IjZFIiwiNCI6IjIwOSIsIjUiOiIyMDI1LTEwLTIwIiwiNiI6IjIwMjUtMTAtMjAifSx7IjEiOiJNQUEiLCIyIjoiQkxSIiwiMyI6IjZFIiwiNCI6IjY1NjciLCI1IjoiMjAyNS0xMC0yMCIsIjYiOiIyMDI1LTEwLTIxIn1dLCJ0eSI6Ik9ORV9XQVkifQ==",
+                "airlineCode": "6E",
+                "airlineNames": [
+                    "IndiGo"
+                ],
+                "segments": [
+                    {
+                        "departureAirportCode": "IXR",
+                        "departureAirportName": "Birsa Munda Airport, Ranchi",
+                        "arrivalAirportName": "Chennai International Airport",
+                        "arrivalAirportCode": "MAA",
+                        "durationMinutes": 125,
+                        "departureTime": "19:10",
+                        "arrivalTime": "21:15",
+                        "cabinClass": 1,
+                        "seatPitch": "28 in",
+                        "airlineIndex": null,
+                        "aircraftType": null,
+                        "aircraftName": "Airbus A320neo",
+                        "overnight": false,
+                        "delayed": null,
+                        "departureDate": "2025-10-20",
+                        "arrivalDate": "2025-10-20",
+                        "airline": {
+                            "airlineCode": "6E",
+                            "flightNumber": "209",
+                            "airlineName": "IndiGo"
+                        },
+                        "seatWidth": "28 inches",
+                        "flightId": 98651,
+                        "someFlag": 2
+                    },
+                    {
+                        "departureAirportCode": "MAA",
+                        "departureAirportName": "Chennai International Airport",
+                        "arrivalAirportName": "Kempegowda International Airport Bengaluru",
+                        "arrivalAirportCode": "BLR",
+                        "durationMinutes": 75,
+                        "departureTime": "23:45",
+                        "arrivalTime": "01:00",
+                        "cabinClass": 1,
+                        "seatPitch": "28 in",
+                        "airlineIndex": null,
+                        "aircraftType": null,
+                        "aircraftName": "Airbus A320",
+                        "overnight": false,
+                        "delayed": null,
+                        "departureDate": "2025-10-20",
+                        "arrivalDate": "2025-10-21",
+                        "airline": {
+                            "airlineCode": "6E",
+                            "flightNumber": "6567",
+                            "airlineName": "IndiGo"
+                        },
+                        "seatWidth": "28 inches",
+                        "flightId": 46315,
+                        "someFlag": 0
+                    }
+                ],
+                "departureAirportCode": "IXR",
+                "departureDate": "2025-10-20",
+                "departureTime": "19:10",
+                "arrivalAirportCode": "BLR",
+                "arrivalDate": "2025-10-21",
+                "arrivalTime": "01:00",
+                "duration": 350,
+                "stops": 1,
+                "isCodeShare": false,
+                "hasTransit": null,
+                "transferAirports": null,
+                "fareId": null,
+                "metaData": null,
+                "baggage": null,
+                "airline": [
+                    {
+                        "airlineCode": "6E",
+                        "airlineName": "IndiGo",
+                        "link": "https://www.goindigo.in/information/special-disability-assistance/disability-assistance.html"
+                    }
+                ],
+                "isAvailable": false
+            },
+            {
+                "price": 8514,
+                "detailToken": "eyJ0IjoiQ2pSSWMxVjVWMjVOUmtGQmFVMUJRVlp2Y0dkQ1J5MHRMUzB0TFMwdExTMTJkR0ppTkVGQlFVRkJSMnAwV1hKelEwb3RlalJCRWcxSldERXhNRFY4U1ZneE5EQTFHZ29Jd2tJUUFCb0RTVTVTT0J4d2dFcz0iLCJkIjoiSVhSIiwiYSI6IkJMUiIsImRkIjoiMjAyNS0xMC0yMCIsImFkIjoiMjAyNS0xMC0yMCIsImIiOlt7IjEiOiJJWFIiLCIyIjoiREVMIiwiMyI6IklYIiwiNCI6IjExMDUiLCI1IjoiMjAyNS0xMC0yMCIsIjYiOiIyMDI1LTEwLTIwIn0seyIxIjoiREVMIiwiMiI6IkJMUiIsIjMiOiJJWCIsIjQiOiIxNDA1IiwiNSI6IjIwMjUtMTAtMjAiLCI2IjoiMjAyNS0xMC0yMCJ9XSwidHkiOiJPTkVfV0FZIn0=",
+                "airlineCode": "IX",
+                "airlineNames": [
+                    "Air India Express"
+                ],
+                "segments": [
+                    {
+                        "departureAirportCode": "IXR",
+                        "departureAirportName": "Birsa Munda Airport, Ranchi",
+                        "arrivalAirportName": "Indira Gandhi International Airport",
+                        "arrivalAirportCode": "DEL",
+                        "durationMinutes": 110,
+                        "departureTime": "09:45",
+                        "arrivalTime": "11:35",
+                        "cabinClass": 1,
+                        "seatPitch": null,
+                        "airlineIndex": null,
+                        "aircraftType": null,
+                        "aircraftName": "Airbus A320",
+                        "overnight": false,
+                        "delayed": null,
+                        "departureDate": "2025-10-20",
+                        "arrivalDate": "2025-10-20",
+                        "airline": {
+                            "airlineCode": "IX",
+                            "flightNumber": "1105",
+                            "airlineName": "Air India Express"
+                        },
+                        "seatWidth": null,
+                        "flightId": 109094,
+                        "someFlag": 1
+                    },
+                    {
+                        "departureAirportCode": "DEL",
+                        "departureAirportName": "Indira Gandhi International Airport",
+                        "arrivalAirportName": "Kempegowda International Airport Bengaluru",
+                        "arrivalAirportCode": "BLR",
+                        "durationMinutes": 170,
+                        "departureTime": "19:25",
+                        "arrivalTime": "22:15",
+                        "cabinClass": 1,
+                        "seatPitch": null,
+                        "airlineIndex": null,
+                        "aircraftType": null,
+                        "aircraftName": "Boeing 737MAX 8 Passenger",
+                        "overnight": false,
+                        "delayed": null,
+                        "departureDate": "2025-10-20",
+                        "arrivalDate": "2025-10-20",
+                        "airline": {
+                            "airlineCode": "IX",
+                            "flightNumber": "1405",
+                            "airlineName": "Air India Express"
+                        },
+                        "seatWidth": null,
+                        "flightId": 142307,
+                        "someFlag": 2
+                    }
+                ],
+                "departureAirportCode": "IXR",
+                "departureDate": "2025-10-20",
+                "departureTime": "09:45",
+                "arrivalAirportCode": "BLR",
+                "arrivalDate": "2025-10-20",
+                "arrivalTime": "22:15",
+                "duration": 750,
+                "stops": null,
+                "isCodeShare": false,
+                "hasTransit": null,
+                "transferAirports": null,
+                "fareId": null,
+                "metaData": null,
+                "baggage": null,
+                "airline": [
+                    {
+                        "airlineCode": "IX",
+                        "airlineName": "Air India Express",
+                        "link": "https://www.airindiaexpress.com/support/faqs/special-guests"
+                    }
+                ],
+                "isAvailable": false
+            },
+            {
+                "price": 8514,
+                "detailToken": "eyJ0IjoiQ2pSSWMxVjVWMjVOUmtGQmFVMUJRVlp2Y0dkQ1J5MHRMUzB0TFMwdExTMTJkR0ppTkVGQlFVRkJSMnAwV1hKelEwb3RlalJCRWcxSldERXhNRE44U1ZneE5EQTFHZ29Jd2tJUUFCb0RTVTVTT0J4d2dFcz0iLCJkIjoiSVhSIiwiYSI6IkJMUiIsImRkIjoiMjAyNS0xMC0yMCIsImFkIjoiMjAyNS0xMC0yMCIsImIiOlt7IjEiOiJJWFIiLCIyIjoiREVMIiwiMyI6IklYIiwiNCI6IjExMDMiLCI1IjoiMjAyNS0xMC0yMCIsIjYiOiIyMDI1LTEwLTIwIn0seyIxIjoiREVMIiwiMiI6IkJMUiIsIjMiOiJJWCIsIjQiOiIxNDA1IiwiNSI6IjIwMjUtMTAtMjAiLCI2IjoiMjAyNS0xMC0yMCJ9XSwidHkiOiJPTkVfV0FZIn0=",
+                "airlineCode": "IX",
+                "airlineNames": [
+                    "Air India Express"
+                ],
+                "segments": [
+                    {
+                        "departureAirportCode": "IXR",
+                        "departureAirportName": "Birsa Munda Airport, Ranchi",
+                        "arrivalAirportName": "Indira Gandhi International Airport",
+                        "arrivalAirportCode": "DEL",
+                        "durationMinutes": 110,
+                        "departureTime": "13:55",
+                        "arrivalTime": "15:45",
+                        "cabinClass": 1,
+                        "seatPitch": null,
+                        "airlineIndex": null,
+                        "aircraftType": null,
+                        "aircraftName": "Airbus A320",
+                        "overnight": false,
+                        "delayed": null,
+                        "departureDate": "2025-10-20",
+                        "arrivalDate": "2025-10-20",
+                        "airline": {
+                            "airlineCode": "IX",
+                            "flightNumber": "1103",
+                            "airlineName": "Air India Express"
+                        },
+                        "seatWidth": null,
+                        "flightId": 109094,
+                        "someFlag": 1
+                    },
+                    {
+                        "departureAirportCode": "DEL",
+                        "departureAirportName": "Indira Gandhi International Airport",
+                        "arrivalAirportName": "Kempegowda International Airport Bengaluru",
+                        "arrivalAirportCode": "BLR",
+                        "durationMinutes": 170,
+                        "departureTime": "19:25",
+                        "arrivalTime": "22:15",
+                        "cabinClass": 1,
+                        "seatPitch": null,
+                        "airlineIndex": null,
+                        "aircraftType": null,
+                        "aircraftName": "Boeing 737MAX 8 Passenger",
+                        "overnight": false,
+                        "delayed": null,
+                        "departureDate": "2025-10-20",
+                        "arrivalDate": "2025-10-20",
+                        "airline": {
+                            "airlineCode": "IX",
+                            "flightNumber": "1405",
+                            "airlineName": "Air India Express"
+                        },
+                        "seatWidth": null,
+                        "flightId": 142307,
+                        "someFlag": 2
+                    }
+                ],
+                "departureAirportCode": "IXR",
+                "departureDate": "2025-10-20",
+                "departureTime": "13:55",
+                "arrivalAirportCode": "BLR",
+                "arrivalDate": "2025-10-20",
+                "arrivalTime": "22:15",
+                "duration": 500,
+                "stops": null,
+                "isCodeShare": false,
+                "hasTransit": null,
+                "transferAirports": null,
+                "fareId": null,
+                "metaData": null,
+                "baggage": null,
+                "airline": [
+                    {
+                        "airlineCode": "IX",
+                        "airlineName": "Air India Express",
+                        "link": "https://www.airindiaexpress.com/support/faqs/special-guests"
+                    }
+                ],
+                "isAvailable": false
+            },
+            {
+                "price": 8514,
+                "detailToken": "eyJ0IjoiQ2pSSWMxVjVWMjVOUmtGQmFVMUJRVlp2Y0dkQ1J5MHRMUzB0TFMwdExTMTJkR0ppTkVGQlFVRkJSMnAwV1hKelEwb3RlalJCRWcxSldERXhNVFI4U1ZneE5EQTFHZ29Jd2tJUUFCb0RTVTVTT0J4d2dFcz0iLCJkIjoiSVhSIiwiYSI6IkJMUiIsImRkIjoiMjAyNS0xMC0yMCIsImFkIjoiMjAyNS0xMC0yMSIsImIiOlt7IjEiOiJJWFIiLCIyIjoiREVMIiwiMyI6IklYIiwiNCI6IjExMTQiLCI1IjoiMjAyNS0xMC0yMCIsIjYiOiIyMDI1LTEwLTIwIn0seyIxIjoiREVMIiwiMiI6IkJMUiIsIjMiOiJJWCIsIjQiOiIxNDA1IiwiNSI6IjIwMjUtMTAtMjEiLCI2IjoiMjAyNS0xMC0yMSJ9XSwidHkiOiJPTkVfV0FZIn0=",
+                "airlineCode": "IX",
+                "airlineNames": [
+                    "Air India Express"
+                ],
+                "segments": [
+                    {
+                        "departureAirportCode": "IXR",
+                        "departureAirportName": "Birsa Munda Airport, Ranchi",
+                        "arrivalAirportName": "Indira Gandhi International Airport",
+                        "arrivalAirportCode": "DEL",
+                        "durationMinutes": 120,
+                        "departureTime": "20:20",
+                        "arrivalTime": "22:20",
+                        "cabinClass": 1,
+                        "seatPitch": null,
+                        "airlineIndex": null,
+                        "aircraftType": null,
+                        "aircraftName": "Boeing 737MAX 8 Passenger",
+                        "overnight": false,
+                        "delayed": null,
+                        "departureDate": "2025-10-20",
+                        "arrivalDate": "2025-10-20",
+                        "airline": {
+                            "airlineCode": "IX",
+                            "flightNumber": "1114",
+                            "airlineName": "Air India Express"
+                        },
+                        "seatWidth": null,
+                        "flightId": 97119,
+                        "someFlag": 1
+                    },
+                    {
+                        "departureAirportCode": "DEL",
+                        "departureAirportName": "Indira Gandhi International Airport",
+                        "arrivalAirportName": "Kempegowda International Airport Bengaluru",
+                        "arrivalAirportCode": "BLR",
+                        "durationMinutes": 170,
+                        "departureTime": "19:25",
+                        "arrivalTime": "22:15",
+                        "cabinClass": 1,
+                        "seatPitch": null,
+                        "airlineIndex": null,
+                        "aircraftType": null,
+                        "aircraftName": "Boeing 737MAX 8 Passenger",
+                        "overnight": false,
+                        "delayed": null,
+                        "departureDate": "2025-10-21",
+                        "arrivalDate": "2025-10-21",
+                        "airline": {
+                            "airlineCode": "IX",
+                            "flightNumber": "1405",
+                            "airlineName": "Air India Express"
+                        },
+                        "seatWidth": null,
+                        "flightId": 142307,
+                        "someFlag": 2
+                    }
+                ],
+                "departureAirportCode": "IXR",
+                "departureDate": "2025-10-20",
+                "departureTime": "20:20",
+                "arrivalAirportCode": "BLR",
+                "arrivalDate": "2025-10-21",
+                "arrivalTime": "22:15",
+                "duration": 1555,
+                "stops": 1,
+                "isCodeShare": false,
+                "hasTransit": null,
+                "transferAirports": null,
+                "fareId": null,
+                "metaData": null,
+                "baggage": null,
+                "airline": [
+                    {
+                        "airlineCode": "IX",
+                        "airlineName": "Air India Express",
+                        "link": "https://www.airindiaexpress.com/support/faqs/special-guests"
+                    }
+                ],
+                "isAvailable": false
+            },
+            {
+                "price": 12914,
+                "detailToken": "eyJ0IjoiQ2pSSWMxVjVWMjVOUmtGQmFVMUJRVlp2Y0dkQ1J5MHRMUzB0TFMwdExTMTJkR0ppTkVGQlFVRkJSMnAwV1hKelEwb3RlalJCRWhSSldERXlNemg4U1ZneE1qTTRmRWxZTVRFek5ob0tDUEprRUFBYUEwbE9VamdjY09GeCIsImQiOiJJWFIiLCJhIjoiQkxSIiwiZGQiOiIyMDI1LTEwLTIwIiwiYWQiOiIyMDI1LTEwLTIwIiwiYiI6W3siMSI6IklYUiIsIjIiOiJCT00iLCIzIjoiSVgiLCI0IjoiMTIzOCIsIjUiOiIyMDI1LTEwLTIwIiwiNiI6IjIwMjUtMTAtMjAifSx7IjEiOiJCT00iLCIyIjoiQkJJIiwiMyI6IklYIiwiNCI6IjEyMzgiLCI1IjoiMjAyNS0xMC0yMCIsIjYiOiIyMDI1LTEwLTIwIn0seyIxIjoiQkJJIiwiMiI6IkJMUiIsIjMiOiJJWCIsIjQiOiIxMTM2IiwiNSI6IjIwMjUtMTAtMjAiLCI2IjoiMjAyNS0xMC0yMCJ9XSwidHkiOiJPTkVfV0FZIn0=",
+                "airlineCode": "IX",
+                "airlineNames": [
+                    "Air India Express"
+                ],
+                "segments": [
+                    {
+                        "departureAirportCode": "IXR",
+                        "departureAirportName": "Birsa Munda Airport, Ranchi",
+                        "arrivalAirportName": "Chhatrapati Shivaji Maharaj International Airport Mumbai",
+                        "arrivalAirportCode": "BOM",
+                        "durationMinutes": 150,
+                        "departureTime": "08:45",
+                        "arrivalTime": "11:15",
+                        "cabinClass": 1,
+                        "seatPitch": null,
+                        "airlineIndex": null,
+                        "aircraftType": null,
+                        "aircraftName": "Boeing 737MAX 8 Passenger",
+                        "overnight": false,
+                        "delayed": null,
+                        "departureDate": "2025-10-20",
+                        "arrivalDate": "2025-10-20",
+                        "airline": {
+                            "airlineCode": "IX",
+                            "flightNumber": "1238",
+                            "airlineName": "Air India Express"
+                        },
+                        "seatWidth": null,
+                        "flightId": 120352,
+                        "someFlag": 1
+                    },
+                    {
+                        "departureAirportCode": "BOM",
+                        "departureAirportName": "Chhatrapati Shivaji Maharaj International Airport Mumbai",
+                        "arrivalAirportName": "Biju Patnaik International Airport",
+                        "arrivalAirportCode": "BBI",
+                        "durationMinutes": 145,
+                        "departureTime": "12:05",
+                        "arrivalTime": "14:30",
+                        "cabinClass": 1,
+                        "seatPitch": null,
+                        "airlineIndex": null,
+                        "aircraftType": null,
+                        "aircraftName": "Boeing 737MAX 8 Passenger",
+                        "overnight": false,
+                        "delayed": null,
+                        "departureDate": "2025-10-20",
+                        "arrivalDate": "2025-10-20",
+                        "airline": {
+                            "airlineCode": "IX",
+                            "flightNumber": "1238",
+                            "airlineName": "Air India Express"
+                        },
+                        "seatWidth": null,
+                        "flightId": 121096,
+                        "someFlag": 1
+                    },
+                    {
+                        "departureAirportCode": "BBI",
+                        "departureAirportName": "Biju Patnaik International Airport",
+                        "arrivalAirportName": "Kempegowda International Airport Bengaluru",
+                        "arrivalAirportCode": "BLR",
+                        "durationMinutes": 135,
+                        "departureTime": "17:50",
+                        "arrivalTime": "20:05",
+                        "cabinClass": 1,
+                        "seatPitch": null,
+                        "airlineIndex": null,
+                        "aircraftType": null,
+                        "aircraftName": "Boeing 737MAX 8 Passenger",
+                        "overnight": false,
+                        "delayed": null,
+                        "departureDate": "2025-10-20",
+                        "arrivalDate": "2025-10-20",
+                        "airline": {
+                            "airlineCode": "IX",
+                            "flightNumber": "1136",
+                            "airlineName": "Air India Express"
+                        },
+                        "seatWidth": null,
+                        "flightId": 108177,
+                        "someFlag": 2
+                    }
+                ],
+                "departureAirportCode": "IXR",
+                "departureDate": "2025-10-20",
+                "departureTime": "08:45",
+                "arrivalAirportCode": "BLR",
+                "arrivalDate": "2025-10-20",
+                "arrivalTime": "20:05",
+                "duration": 680,
+                "stops": null,
+                "isCodeShare": false,
+                "hasTransit": null,
+                "transferAirports": null,
+                "fareId": null,
+                "metaData": null,
+                "baggage": null,
+                "airline": [
+                    {
+                        "airlineCode": "IX",
+                        "airlineName": "Air India Express",
+                        "link": "https://www.airindiaexpress.com/support/faqs/special-guests"
+                    }
+                ],
+                "isAvailable": false
+            }
+        ],
+        "filters": {
+            "alliances": [
+                {
+                    "code": "ONEWORLD",
+                    "name": "Oneworld"
+                },
+                {
+                    "code": "SKYTEAM",
+                    "name": "SkyTeam"
+                },
+                {
+                    "code": "STAR_ALLIANCE",
+                    "name": "Star Alliance"
+                }
+            ],
+            "airlines": [
+                {
+                    "code": "AI",
+                    "name": "Air India"
+                },
+                {
+                    "code": "IX",
+                    "name": "Air India Express"
+                },
+                {
+                    "code": "QP",
+                    "name": "Akasa Air"
+                },
+                {
+                    "code": "6E",
+                    "name": "IndiGo"
+                }
+            ],
+            "airports": [
+                {
+                    "code": "BBI",
+                    "name": "Bhubaneswar"
+                },
+                {
+                    "code": "MAA",
+                    "name": "Chennai"
+                },
+                {
+                    "code": "HYD",
+                    "name": "Hyderabad"
+                },
+                {
+                    "code": "BOM",
+                    "name": "Mumbai"
+                },
+                {
+                    "code": "DEL",
+                    "name": "New Delhi"
+                }
+            ]
+        },
+        "priceHistory": [
+            {
+                "time": 1755196200000,
+                "price": 6574
+            },
+            {
+                "time": 1755282600000,
+                "price": 6574
+            },
+            {
+                "time": 1755369000000,
+                "price": 6574
+            },
+            {
+                "time": 1755455400000,
+                "price": 6574
+            },
+            {
+                "time": 1755541800000,
+                "price": 6574
+            },
+            {
+                "time": 1755628200000,
+                "price": 6574
+            },
+            {
+                "time": 1755714600000,
+                "price": 6574
+            },
+            {
+                "time": 1755801000000,
+                "price": 6574
+            },
+            {
+                "time": 1755887400000,
+                "price": 6574
+            },
+            {
+                "time": 1755973800000,
+                "price": 6574
+            },
+            {
+                "time": 1756060200000,
+                "price": 6574
+            },
+            {
+                "time": 1756146600000,
+                "price": 6574
+            },
+            {
+                "time": 1756233000000,
+                "price": 6574
+            },
+            {
+                "time": 1756319400000,
+                "price": 6574
+            },
+            {
+                "time": 1756405800000,
+                "price": 6574
+            },
+            {
+                "time": 1756492200000,
+                "price": 6574
+            },
+            {
+                "time": 1756578600000,
+                "price": 6574
+            },
+            {
+                "time": 1756665000000,
+                "price": 6574
+            },
+            {
+                "time": 1756751400000,
+                "price": 6574
+            },
+            {
+                "time": 1756837800000,
+                "price": 6574
+            },
+            {
+                "time": 1756924200000,
+                "price": 6574
+            },
+            {
+                "time": 1757010600000,
+                "price": 6574
+            },
+            {
+                "time": 1757097000000,
+                "price": 6574
+            },
+            {
+                "time": 1757183400000,
+                "price": 6574
+            },
+            {
+                "time": 1757269800000,
+                "price": 6574
+            },
+            {
+                "time": 1757356200000,
+                "price": 6574
+            },
+            {
+                "time": 1757442600000,
+                "price": 6574
+            },
+            {
+                "time": 1757529000000,
+                "price": 6574
+            },
+            {
+                "time": 1757615400000,
+                "price": 6802
+            },
+            {
+                "time": 1757701800000,
+                "price": 6972
+            },
+            {
+                "time": 1757788200000,
+                "price": 6802
+            },
+            {
+                "time": 1757874600000,
+                "price": 6802
+            },
+            {
+                "time": 1757961000000,
+                "price": 6802
+            },
+            {
+                "time": 1758047400000,
+                "price": 7205
+            },
+            {
+                "time": 1758133800000,
+                "price": 7283
+            },
+            {
+                "time": 1758220200000,
+                "price": 7283
+            },
+            {
+                "time": 1758306600000,
+                "price": 7283
+            },
+            {
+                "time": 1758393000000,
+                "price": 7283
+            },
+            {
+                "time": 1758479400000,
+                "price": 6835
+            },
+            {
+                "time": 1758565800000,
+                "price": 6835
+            },
+            {
+                "time": 1758652200000,
+                "price": 6835
+            },
+            {
+                "time": 1758738600000,
+                "price": 6998
+            },
+            {
+                "time": 1758825000000,
+                "price": 7115
+            },
+            {
+                "time": 1758911400000,
+                "price": 6835
+            },
+            {
+                "time": 1758997800000,
+                "price": 6835
+            },
+            {
+                "time": 1759084200000,
+                "price": 6574
+            },
+            {
+                "time": 1759170600000,
+                "price": 6574
+            },
+            {
+                "time": 1759257000000,
+                "price": 6097
+            },
+            {
+                "time": 1759343400000,
+                "price": 6151
+            },
+            {
+                "time": 1759429800000,
+                "price": 6453
+            },
+            {
+                "time": 1759516200000,
+                "price": 6453
+            },
+            {
+                "time": 1759602600000,
+                "price": 6453
+            },
+            {
+                "time": 1759689000000,
+                "price": 6453
+            },
+            {
+                "time": 1759775400000,
+                "price": 6453
+            },
+            {
+                "time": 1759861800000,
+                "price": 6453
+            },
+            {
+                "time": 1759948200000,
+                "price": 6453
+            },
+            {
+                "time": 1760034600000,
+                "price": 6387
+            },
+            {
+                "time": 1760121000000,
+                "price": 6281
+            },
+            {
+                "time": 1760207400000,
+                "price": 6281
+            },
+            {
+                "time": 1760293800000,
+                "price": 6281
+            },
+            {
+                "time": 1760380200000,
+                "price": 6281
+            }
+        ]
+    },
+    "status": true,
+    "message": "Successful"
+}
