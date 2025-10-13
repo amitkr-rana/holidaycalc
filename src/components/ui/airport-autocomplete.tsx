@@ -2,13 +2,14 @@ import { useState, useEffect, useRef } from "react"
 import { Input } from "@/components/ui/input"
 import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from "@/components/ui/command"
 import { Plane } from "lucide-react"
+import airportsData from "../../../airports.json"
 
 interface Airport {
   id: string
   name: string
   code?: string
-  city?: string
-  country?: string
+  location?: string
+  iata?: string
 }
 
 interface AirportAutocompleteProps {
@@ -19,7 +20,16 @@ interface AirportAutocompleteProps {
   id?: string
 }
 
-// Client-side cache for airport searches (infinite duration - airports don't change)
+// Load and parse airports from JSON file
+const allAirports: Airport[] = airportsData.data.map((airport: any) => ({
+  id: airport.id || airport.iata || airport.skyId,
+  name: airport.name,
+  code: airport.iata || airport.skyId,
+  iata: airport.iata,
+  location: airport.location,
+}))
+
+// Client-side cache for airport searches
 const airportCache = new Map<string, Airport[]>()
 
 export function AirportAutocomplete({
@@ -48,14 +58,14 @@ export function AirportAutocomplete({
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
 
-  // Fetch airport suggestions
-  const fetchAirports = async (query: string) => {
+  // Search airports locally
+  const searchAirports = (query: string) => {
     if (query.length < 2) {
       setAirports([])
       return
     }
 
-    // Check client-side cache first (infinite cache - airports don't change)
+    // Check cache first
     const cacheKey = query.toLowerCase()
     const cachedResult = airportCache.get(cacheKey)
 
@@ -68,36 +78,26 @@ export function AirportAutocomplete({
     setIsLoading(true)
 
     try {
-      // Direct API call (same for dev and prod)
-      const apiKey = import.meta.env.VITE_BOOKINGCOM_RAPIDAPI
-      const url = `https://booking-com15.p.rapidapi.com/api/v1/flights/searchDestination?query=${encodeURIComponent(query)}`
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          'x-rapidapi-key': apiKey,
-          'x-rapidapi-host': 'booking-com15.p.rapidapi.com'
-        }
-      })
+      const queryLower = query.toLowerCase()
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch airports')
-      }
+      // Search through airports by name, code, or location
+      const results = allAirports
+        .filter(airport => {
+          const nameMatch = airport.name?.toLowerCase().includes(queryLower)
+          const codeMatch = airport.code?.toLowerCase().includes(queryLower)
+          const iataMatch = airport.iata?.toLowerCase().includes(queryLower)
+          const locationMatch = airport.location?.toLowerCase().includes(queryLower)
 
-      const rawData = await response.json()
-      const formattedAirports: Airport[] = (rawData.data || []).map((airport: any) => ({
-        id: airport.id || airport.code || airport.iata,
-        name: airport.name || airport.label,
-        code: airport.code || airport.iata,
-        city: airport.city,
-        country: airport.country
-      }))
+          return nameMatch || codeMatch || iataMatch || locationMatch
+        })
+        .slice(0, 20) // Limit to 20 results
 
-      setAirports(formattedAirports)
+      setAirports(results)
 
-      // Cache the result on client side (infinite - airports don't change)
-      airportCache.set(cacheKey, formattedAirports)
+      // Cache the result
+      airportCache.set(cacheKey, results)
     } catch (error) {
-      console.error('Error fetching airports:', error)
+      console.error('Error searching airports:', error)
       setAirports([])
     } finally {
       setIsLoading(false)
@@ -113,7 +113,7 @@ export function AirportAutocomplete({
     if (inputValue.length >= 2) {
       setIsOpen(true)
       debounceTimerRef.current = setTimeout(() => {
-        fetchAirports(inputValue)
+        searchAirports(inputValue)
       }, 300)
     } else {
       setAirports([])
@@ -184,9 +184,9 @@ export function AirportAutocomplete({
                           {airport.code && `${airport.code} - `}
                           {airport.name}
                         </span>
-                        {(airport.city || airport.country) && (
+                        {airport.location && (
                           <span className="text-xs text-muted-foreground">
-                            {[airport.city, airport.country].filter(Boolean).join(', ')}
+                            {airport.location}
                           </span>
                         )}
                       </div>
