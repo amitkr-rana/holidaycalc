@@ -30,6 +30,10 @@ dist-ssr
 /playwright/.cache/
 /playwright/.auth/
 
-#.girignore
+#.gitignore
 *.env*
 /.claude/
+
+# Python cache and byte code
+/__pycache__/
+
