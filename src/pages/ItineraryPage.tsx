@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { ChevronLeftIcon, Plane } from "lucide-react"
 import { format, getDay } from "date-fns"
+import { AirlineLogo } from "@/components/ui/airline-logo";
 
 interface FlightSegment {
   departureAirportCode: string
