@@ -1,5 +1,7 @@
 # React + TypeScript + Vite
 
+Airport Support : 28,276 airports across 234 countries and 6065 Airlinwa
+
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
 Currently, two official plugins are available:
