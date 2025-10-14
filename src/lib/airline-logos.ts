@@ -14,8 +14,9 @@ const iataToIcao: { [key: string]: string } = Object.entries(
 export const getAirlineLogoUrl = (iataCode: string): string => {
   const icaoCode = iataToIcao[iataCode];
   if (icaoCode) {
-    return `/airline-logos/${icaoCode}.png`;
+    // Corrected path: "airlines-logos" instead of "airline-logos"
+    return `/airlines-logos/${icaoCode}.png`;
   }
   // Return the path to your fallback image
-  return "/path/to/your/fallback-image.png"; // Make sure this path is correct
+  return "/plane.svg";
 };

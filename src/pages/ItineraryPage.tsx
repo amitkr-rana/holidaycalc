@@ -54,6 +54,7 @@ interface GoogleFlightsApiResponse {
 
 interface ProcessedFlight {
   airline: string
+  airlineCode: string
   flightNumber: string
   scheduledDepartureTime: string
   scheduledArrivalTime: string
@@ -224,6 +225,7 @@ export function ItineraryPage() {
 
           return {
             airline: firstSegment.airline.airlineName,
+            airlineCode: firstSegment.airline.airlineCode,
             flightNumber: firstSegment.airline.flightNumber,
             scheduledDepartureTime: formatTime(option.departureTime || firstSegment.departureTime),
             scheduledArrivalTime: formatTime(option.arrivalTime || lastSegment.arrivalTime),
@@ -418,9 +420,11 @@ export function ItineraryPage() {
                           <div className="flex flex-1 items-center gap-8 pr-2">
                             {/* Time and Airline */}
                             <div className="flex items-center gap-4 min-w-[180px]">
-                              <div className="flex h-10 w-10 items-center justify-center bg-muted">
-                                <Plane className="size-5 text-muted-foreground" />
-                              </div>
+                              <AirlineLogo
+                                airlineCode={flight.airlineCode}
+                                airlineName={flight.airline}
+                                className="h-10 w-10"
+                              />
                               <div className="text-left flex-1">
                                 <div className="text-base font-medium">
                                   {flight.scheduledDepartureTime} – {flight.scheduledArrivalTime}
