@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react"
 import { Input } from "@/components/ui/input"
 import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from "@/components/ui/command"
 import { Plane } from "lucide-react"
-import airportsData from "../../../airports.json"
+import airportsData from "../../../all_airports_formatted.json"
 
 interface Airport {
   id: string
@@ -10,6 +10,24 @@ interface Airport {
   code?: string
   location?: string
   iata?: string
+  lat?: number
+  lon?: number
+  tz?: string
+}
+
+// Define the structure of the imported JSON data
+interface AirportData {
+  data: Array<{
+    icao: string;
+    iata: string;
+    name: string;
+    city: string;
+    subd: string;
+    country: string;
+    lat: number;
+    lon: number;
+    tz: string;
+  }>
 }
 
 interface AirportAutocompleteProps {
@@ -21,12 +39,15 @@ interface AirportAutocompleteProps {
 }
 
 // Load and parse airports from JSON file
-const allAirports: Airport[] = airportsData.data.map((airport: any) => ({
-  id: airport.id || airport.iata || airport.skyId,
+const allAirports: Airport[] = (airportsData as AirportData).data.map((airport: any) => ({
+  id: airport.iata || airport.icao,
   name: airport.name,
-  code: airport.iata || airport.skyId,
+  code: airport.iata || airport.icao,
   iata: airport.iata,
-  location: airport.location,
+  location: [airport.city, airport.subd, airport.country].filter(Boolean).join(", "),
+  lat: airport.lat,
+  lon: airport.lon,
+  tz: airport.tz,
 }))
 
 // Client-side cache for airport searches
@@ -111,13 +132,11 @@ export function AirportAutocomplete({
     }
 
     if (inputValue.length >= 2) {
-      setIsOpen(true)
       debounceTimerRef.current = setTimeout(() => {
         searchAirports(inputValue)
       }, 300)
     } else {
       setAirports([])
-      setIsOpen(false)
     }
 
     return () => {
@@ -136,6 +155,11 @@ export function AirportAutocomplete({
     const newValue = e.target.value
     setInputValue(newValue)
     onChange(newValue)
+    if (newValue.length > 0) {
+      setIsOpen(true)
+    } else {
+      setIsOpen(false)
+    }
   }
 
   const handleSelectAirport = (airport: Airport) => {
@@ -151,6 +175,9 @@ export function AirportAutocomplete({
         id={id}
         value={inputValue}
         onChange={handleInputChange}
+        onFocus={() => {
+          if (inputValue.length > 0) setIsOpen(true)
+        }}
         placeholder={placeholder}
         className={`${className} uppercase`}
         autoComplete="off"
@@ -159,7 +186,7 @@ export function AirportAutocomplete({
       {isOpen && (
         <div className="absolute z-50 w-full mt-1 bg-background border rounded-none shadow-lg">
           <Command>
-            <CommandList>
+            <CommandList className="scrollbar-hidden">
               {isLoading && (
                 <div className="py-6 text-center text-sm text-muted-foreground">
                   Searching airports...
