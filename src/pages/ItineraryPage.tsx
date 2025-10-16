@@ -388,7 +388,16 @@ export function ItineraryPage() {
                     </div>
                     <div className="flex-1 flex flex-col items-start">
                         <span className="text-sm font-medium">{flight.stops === 0 ? "Nonstop" : `${flight.stops} stop${flight.stops > 1 ? 's' : ''}`}</span>
-                        {flight.stops > 0 && flight.segments.length > 1 && (<span className="text-xs text-muted-foreground">{flight.segments[0].arrivalAirportCode}</span>)}
+                        {flight.stops > 0 && flight.segments.length > 1 && (
+                          <span className="text-xs text-muted-foreground">
+                            {flight.stops === 1
+                              ? flight.segments[0].arrivalAirportCode
+                              : flight.stops === 2
+                              ? `${flight.segments[0].arrivalAirportCode}, ${flight.segments[1].arrivalAirportCode}`
+                              : `${flight.segments[0].arrivalAirportCode}, and ${flight.stops - 1} others`
+                            }
+                          </span>
+                        )}
                     </div>
                     <div className="flex items-center gap-2">
                         {flight.price && (<span className="text-lg font-semibold mr-2">{getCurrencySymbol(currency)}{flight.price.toLocaleString('en-US')}</span>)}
@@ -426,20 +435,27 @@ export function ItineraryPage() {
                         </div>
                       </div>
                       <div className="bg-muted/50 p-3 text-sm border-t border-border mt-2 mb-4 ml-7">
-                        <div className="space-y-1">
-                          <div>
-                            <span className="font-medium">{segment.airline}</span>
-                            <span className="text-muted-foreground"> · {segment.travelClass}</span>
-                            <span className="text-muted-foreground"> · Flight {segment.flightNumber}</span>
+                        <div className="flex items-center gap-3">
+                          <AirlineLogo
+                            airlineCode={segment.airlineCode || ''}
+                            airlineName={segment.airline}
+                            className="h-8 w-8 flex-shrink-0"
+                          />
+                          <div className="space-y-1 flex-1">
+                            <div>
+                              <span className="font-medium">{segment.airline}</span>
+                              <span className="text-muted-foreground"> · {segment.travelClass}</span>
+                              <span className="text-muted-foreground"> · Flight {segment.flightNumber}</span>
+                            </div>
+                            {segment.aircraftName && (<div className="text-xs text-muted-foreground">{segment.aircraftName}</div>)}
                           </div>
-                          {segment.aircraftName && (<div className="text-xs text-muted-foreground">{segment.aircraftName}</div>)}
                         </div>
                       </div>
                       {segmentIdx < flight.segments.length - 1 && (
                         <div className="flex items-center gap-4 mb-4">
                           <div className="flex-1 border-2 border-dashed border-muted-foreground/40 px-4 py-3 text-sm ml-7">
                             <span className="font-medium text-muted-foreground">
-                              {calculateLayover(segment.arrivalTime, flight.segments[segmentIdx + 1].departureTime)} layover · {segment.arrivalAirportName}
+                              {calculateLayover(segment.arrivalTime, flight.segments[segmentIdx + 1].departureTime)} layover · {segment.arrivalAirportName} ({segment.arrivalAirportCode})
                             </span>
                           </div>
                         </div>
