@@ -169,7 +169,7 @@ export function ItineraryPage() {
             stops: "0",
         });
 
-        const apiKey = import.meta.env.VITE_BOOKINGCOM_RAPIDAPI;
+        const apiKey = import.meta.env.VITE_FLIGHT_SCRAPER_SKY_RAPIDAPI;
         const url = `https://flights-sky.p.rapidapi.com/google/flights/search-one-way?${params.toString()}`;
         const response = await fetch(url, { signal: controller.signal, headers: { "x-rapidapi-key": apiKey, "x-rapidapi-host": "flights-sky.p.rapidapi.com" } });
         if (!response.ok) throw new Error(`Failed to fetch flights: ${response.statusText}`);
