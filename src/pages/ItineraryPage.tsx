@@ -202,11 +202,10 @@ export function ItineraryPage() {
           params.append("return_date", returnDate);
         }
 
-        // Use proxy in development, direct URL in production
-        const isDevelopment = import.meta.env.DEV;
-        const baseUrl = isDevelopment
+        // Use Vite proxy in development, Vercel API in production
+        const baseUrl = import.meta.env.DEV
           ? '/api/flights'
-          : 'https://sunidhiyadav69.pythonanywhere.com/flight-result';
+          : '/api/flights';
         const url = `${baseUrl}?${params.toString()}`;
         console.log('Fetching flights from:', url);
 
