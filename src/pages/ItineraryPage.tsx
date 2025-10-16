@@ -84,6 +84,7 @@ interface ProcessedFlightSegment {
   airlineCode?: string;
   aircraftName?: string;
   travelClass: string;
+  emissionsKg?: number;
 }
 
 interface ProcessedFlight {
@@ -101,6 +102,11 @@ interface ProcessedFlight {
   stops: number;
   segments: ProcessedFlightSegment[];
   totalDuration: number;
+  carbonEmissions?: {
+    thisFlightKg: number;
+    typicalForRouteKg: number;
+    differencePercent: number;
+  };
 }
 
 const flightCache = new Map<string, { top: ProcessedFlight[], other: ProcessedFlight[], timestamp: number }>();
@@ -139,6 +145,23 @@ export function ItineraryPage() {
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
     return `${hours} hr ${mins} min`;
+  };
+  const formatEmissionDifference = (differencePercent?: number) => {
+    if (differencePercent === undefined || Number.isNaN(differencePercent)) {
+      return "";
+    }
+
+    if (differencePercent === 0) {
+      return "Typical emissions";
+    }
+
+    const absolutePercent = Math.abs(differencePercent);
+    const formattedPercent = new Intl.NumberFormat("en-US", {
+      maximumFractionDigits: 0,
+    }).format(absolutePercent);
+    const sign = differencePercent > 0 ? "+" : "-";
+
+    return `${sign}${formattedPercent}% than usual`;
   };
   const formatTime = (datetime: string) => {
     try {
@@ -200,7 +223,6 @@ export function ItineraryPage() {
       const cachedData = flightCache.get(cacheKey);
 
       if (cachedData && Date.now() - cachedData.timestamp < CACHE_DURATION) {
-        console.log("Using cached flight data");
         setTopFlights(cachedData.top);
         setOtherFlights(cachedData.other);
         setStatus(cachedData.top.length > 0 || cachedData.other.length > 0 ? 'success' : 'empty');
@@ -233,7 +255,6 @@ export function ItineraryPage() {
           ? '/api/flights'  // Uses Vite proxy for convenience in dev
           : 'https://sunidhiyadav69.pythonanywhere.com/flight-result';  // Direct call in production (CORS enabled on server)
         const url = `${baseUrl}?${params.toString()}`;
-        console.log('Fetching flights from:', url);
 
         const response = await fetch(url, {
           signal: controller.signal,
@@ -243,11 +264,9 @@ export function ItineraryPage() {
           }
         });
 
-        console.log('Response status:', response.status);
         if (!response.ok) throw new Error(`Failed to fetch flights: ${response.statusText}`);
 
         const data: SerpApiResponse = await response.json();
-        console.log('Received flight data:', data);
         if (!data.best_flights && !data.other_flights) throw new Error("No flight data available");
 
         const extractAirlineCode = (flightNumber: string): string => {
@@ -257,7 +276,19 @@ export function ItineraryPage() {
 
         const processFlightOptions = (options: SerpFlightOption[]): ProcessedFlight[] => {
           return options
-            .filter(option => option.flights && Array.isArray(option.flights) && option.flights.length > 0)
+            .filter(option => {
+              // Filter out flights with missing critical data
+              if (!option.flights || !Array.isArray(option.flights) || option.flights.length === 0) return false;
+
+              const firstSegment = option.flights[0];
+              const lastSegment = option.flights[option.flights.length - 1];
+
+              // Check if departure/arrival times and price exist
+              if (!firstSegment?.departure_airport?.time || !lastSegment?.arrival_airport?.time) return false;
+              if (!option.price || option.price <= 0) return false;
+
+              return true;
+            })
             .map(option => {
             const firstSegment = option.flights[0];
             const lastSegment = option.flights[option.flights.length - 1];
@@ -272,6 +303,16 @@ export function ItineraryPage() {
               const arrTimeParts = segment.arrival_airport?.time?.split(' ') || ['', ''];
               const [depDate] = depTimeParts;
               const [arrDate] = arrTimeParts;
+              const emissionExtension = segment.extensions?.find(ext =>
+                ext.toLowerCase().includes("carbon emissions estimate")
+              );
+              const emissionsKg = emissionExtension
+                ? (() => {
+                    const numeric = emissionExtension.replace(/[^0-9.]/g, "");
+                    const parsed = parseFloat(numeric);
+                    return Number.isFinite(parsed) ? parsed : undefined;
+                  })()
+                : undefined;
 
               return {
                 departureAirportCode: segment.departure_airport.id,
@@ -288,8 +329,17 @@ export function ItineraryPage() {
                 airlineCode: extractAirlineCode(segment.flight_number),
                 aircraftName: segment.airplane,
                 travelClass: segment.travel_class,
+                emissionsKg,
               };
             });
+
+            const carbonEmissions = option.carbon_emissions
+              ? {
+                  thisFlightKg: option.carbon_emissions.this_flight / 1000,
+                  typicalForRouteKg: option.carbon_emissions.typical_for_this_route / 1000,
+                  differencePercent: option.carbon_emissions.difference_percent,
+                }
+              : undefined;
 
             return {
                 airline: firstSegment.airline,
@@ -306,6 +356,7 @@ export function ItineraryPage() {
                 stops: stopsCount,
                 segments: processedSegments,
                 totalDuration: option.total_duration,
+                carbonEmissions,
             };
           });
         };
@@ -326,10 +377,8 @@ export function ItineraryPage() {
 
       } catch (err) {
         if (err instanceof Error && err.name === 'AbortError') {
-          console.log("Request was cancelled");
           return;
         }
-        console.error("Error fetching flights:", err);
         setError(err instanceof Error ? err.message : "Failed to fetch flight data");
         setStatus('error');
       }
@@ -370,11 +419,16 @@ export function ItineraryPage() {
   const FlightList = ({ flights }: { flights: ProcessedFlight[] }) => (
     <motion.div layout variants={containerVariants} initial="hidden" animate="visible" className="border-b border-border">
       <Accordion type="single" collapsible className="space-y-0">
-        {flights.map((flight, index) => (
-          <motion.div key={`${flight.airlineCode}-${flight.flightNumber}-${flight.scheduledDepartureTime}`} layout variants={itemVariants}>
-            <AccordionItem value={`flight-${index}`} className="border border-border bg-background hover:border-transparent hover:outline hover:outline-1 hover:outline-primary hover:outline-offset-[-1px] transition-colors">
+        {flights.map((flight, index) => {
+          const emissionsDifferenceLabel = flight.carbonEmissions
+            ? formatEmissionDifference(flight.carbonEmissions.differencePercent)
+            : "";
+
+          return (
+            <motion.div key={`${flight.departureAirportCode}-${flight.arrivalAirportCode}-${flight.scheduledDepartureTime}-${index}`} layout variants={itemVariants}>
+              <AccordionItem value={`flight-${index}`} className="border border-border bg-background hover:border-transparent hover:outline hover:outline-1 hover:outline-primary hover:outline-offset-[-1px] transition-colors">
               <AccordionTrigger className="px-6 py-4 hover:no-underline">
-                <div className="flex flex-1 items-center gap-8 pr-2">
+                <div className="flex flex-1 items-center pr-2">
                     <div className="flex items-center gap-4 min-w-[180px]">
                         <AirlineLogo airlineCode={flight.airlineCode} airlineName={flight.airline} className="h-10 w-10"/>
                         <div className="text-left flex-1">
@@ -382,26 +436,51 @@ export function ItineraryPage() {
                             <div className="text-xs text-muted-foreground">{flight.airline}</div>
                         </div>
                     </div>
-                    <div className="flex flex-col items-start min-w-[140px]">
-                        <span className="text-sm font-medium">{formatDuration(flight.totalDuration)}</span>
-                        <span className="text-xs text-muted-foreground">{departure} – {arrival}</span>
-                    </div>
-                    <div className="flex-1 flex flex-col items-start">
-                        <span className="text-sm font-medium">{flight.stops === 0 ? "Nonstop" : `${flight.stops} stop${flight.stops > 1 ? 's' : ''}`}</span>
-                        {flight.stops > 0 && flight.segments.length > 1 && (
-                          <span className="text-xs text-muted-foreground">
-                            {flight.stops === 1
-                              ? flight.segments[0].arrivalAirportCode
-                              : flight.stops === 2
-                              ? `${flight.segments[0].arrivalAirportCode}, ${flight.segments[1].arrivalAirportCode}`
-                              : `${flight.segments[0].arrivalAirportCode}, and ${flight.stops - 1} others`
-                            }
-                          </span>
+                    <div className="flex flex-1 items-center justify-evenly">
+                      <div className="flex flex-col items-center">
+                          <span className="text-sm font-medium">{formatDuration(flight.totalDuration)}</span>
+                          <span className="text-xs text-muted-foreground">{departure} – {arrival}</span>
+                      </div>
+                      <div className="flex flex-col items-center">
+                          <span className="text-sm font-medium">{flight.stops === 0 ? "Nonstop" : `${flight.stops} stop${flight.stops > 1 ? 's' : ''}`}</span>
+                          {flight.stops > 0 && flight.segments.length > 1 && (
+                            <span className="text-xs text-muted-foreground">
+                              {flight.stops === 1
+                                ? flight.segments[0].arrivalAirportCode
+                                : flight.stops === 2
+                                ? `${flight.segments[0].arrivalAirportCode}, ${flight.segments[1].arrivalAirportCode}`
+                                : `${flight.segments[0].arrivalAirportCode}, and ${flight.stops - 1} others`
+                              }
+                            </span>
+                          )}
+                      </div>
+                      <div className="flex flex-col items-center">
+                        {flight.carbonEmissions ? (
+                          <>
+                            <span className="text-sm font-medium">
+                              Emissions: {new Intl.NumberFormat("en-US", {
+                                minimumFractionDigits: flight.carbonEmissions.thisFlightKg < 100 ? 1 : 0,
+                                maximumFractionDigits: flight.carbonEmissions.thisFlightKg < 100 ? 1 : 0,
+                              }).format(flight.carbonEmissions.thisFlightKg)} kg CO<sub>2</sub>
+                            </span>
+                            {emissionsDifferenceLabel && (
+                              <span className="text-xs text-muted-foreground">
+                                {emissionsDifferenceLabel}
+                              </span>
+                            )}
+                          </>
+                        ) : (
+                          <span className="text-sm text-muted-foreground">Emissions unavailable</span>
                         )}
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                         {flight.price && (<span className="text-lg font-semibold mr-2">{getCurrencySymbol(currency)}{flight.price.toLocaleString('en-US')}</span>)}
-                        <Button size="sm" onClick={(e) => { e.stopPropagation(); console.log("Selected flight:", flight); }}>Select</Button>
+                        <Button size="sm" onClick={(e) => { e.stopPropagation(); }} asChild>
+                          <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); } }}>
+                            Select
+                          </div>
+                        </Button>
                     </div>
                 </div>
               </AccordionTrigger>
@@ -419,7 +498,15 @@ export function ItineraryPage() {
                             <span className="text-base font-semibold">{formatTime(segment.departureTime)}</span>
                             <span className="text-sm">{segment.departureAirportName} ({segment.departureAirportCode})</span>
                           </div>
-                          <div className="text-sm text-muted-foreground">Travel time: {formatDuration(segment.durationMinutes)}</div>
+                          <div className="text-sm text-muted-foreground">
+                            <span className="font-semibold">Travel time:</span> {formatDuration(segment.durationMinutes)}
+                            {typeof segment.emissionsKg === "number" && (
+                              <> · <span className="font-semibold">Emission</span> {new Intl.NumberFormat("en-US", {
+                                minimumFractionDigits: segment.emissionsKg < 100 ? 1 : 0,
+                                maximumFractionDigits: segment.emissionsKg < 100 ? 1 : 0,
+                              }).format(segment.emissionsKg)} kg CO<sub>2</sub></>
+                            )}
+                          </div>
                         </div>
                       </div>
                       <div className="flex items-start gap-4">
@@ -465,8 +552,9 @@ export function ItineraryPage() {
                 </motion.div>
               </AccordionContent>
             </AccordionItem>
-          </motion.div>
-        ))}
+            </motion.div>
+          );
+        })}
       </Accordion>
     </motion.div>
   );
