@@ -1,0 +1,1273 @@
+{
+  "airports": [
+    {
+      "arrival": [
+        {
+          "airport": {
+            "id": "AUS",
+            "name": "Austin-Bergstrom International Airport"
+          },
+          "city": "Austin",
+          "country": "United States",
+          "country_code": "US",
+          "image": "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcRKdjkMcBZuGRD1MjnuLQvdGtpTk0RyjdYs0Z8JsPtfIjer-6VvmfmMLxzvBkeyUrhf_focikfda4rVHg",
+          "thumbnail": "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcSQ73FSj9E8pKaNvjWKyEDQGfLV-pky_onARvOY-zHWvQ-hOuPJSqyyXzvyg4-kGGAcZxdO6T5SYGWBzrX8x6MSPq7gBHsSLzX9MYjFJWA"
+        }
+      ],
+      "departure": [
+        {
+          "airport": {
+            "id": "PEK",
+            "name": "Beijing Capital International Airport"
+          },
+          "city": "Beijing",
+          "country": "China",
+          "country_code": "CN",
+          "image": "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcQ9v_tNYxaummsU2qbFn8zuYzkcG0x6qCvqB2gbBnx-2FVlZZPsnkvUXGk07vxotk-0vRQMUYCjj2d4Wg",
+          "thumbnail": "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcSzsj_yw6o3vb8i54_D21VgI5rTohxexQkZ0TrZKDKJwTSKw2yqnRYLoIcBWIY50BlHo-OPMm68zbUO-qnFvmQmm6jvtWPwo7WOzjNGX_A"
+        }
+      ]
+    },
+    {
+      "arrival": [
+        {
+          "airport": {
+            "id": "PEK",
+            "name": "Beijing Capital International Airport"
+          },
+          "city": "Beijing",
+          "country": "China",
+          "country_code": "CN",
+          "image": "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcQ9v_tNYxaummsU2qbFn8zuYzkcG0x6qCvqB2gbBnx-2FVlZZPsnkvUXGk07vxotk-0vRQMUYCjj2d4Wg",
+          "thumbnail": "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcSzsj_yw6o3vb8i54_D21VgI5rTohxexQkZ0TrZKDKJwTSKw2yqnRYLoIcBWIY50BlHo-OPMm68zbUO-qnFvmQmm6jvtWPwo7WOzjNGX_A"
+        }
+      ],
+      "departure": [
+        {
+          "airport": {
+            "id": "AUS",
+            "name": "Austin-Bergstrom International Airport"
+          },
+          "city": "Austin",
+          "country": "United States",
+          "country_code": "US",
+          "image": "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcRKdjkMcBZuGRD1MjnuLQvdGtpTk0RyjdYs0Z8JsPtfIjer-6VvmfmMLxzvBkeyUrhf_focikfda4rVHg",
+          "thumbnail": "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcSQ73FSj9E8pKaNvjWKyEDQGfLV-pky_onARvOY-zHWvQ-hOuPJSqyyXzvyg4-kGGAcZxdO6T5SYGWBzrX8x6MSPq7gBHsSLzX9MYjFJWA"
+        }
+      ]
+    }
+  ],
+  "best_flights": [
+    {
+      "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/UA.png",
+      "carbon_emissions": {
+        "difference_percent": 16,
+        "this_flight": 1024000,
+        "typical_for_this_route": 885000
+      },
+      "departure_token": "WyJDalJJYWtablgwSmlYMHRxVVZsQlExbERSbmRDUnkwdExTMHRMUzB0TFMxMmRHSnlOVUZCUVVGQlIycDNObEJuU1cxU01XRkJFZ3hWUVRnNE9YeFZRVEl5TkRNYUN3aWtuZ1lRQWhvRFZWTkVPQnh3cEo0RyIsW1siUEVLIiwiMjAyNS0xMC0xNyIsIlNGTyIsbnVsbCwiVUEiLCI4ODkiXSxbIlNGTyIsIjIwMjUtMTAtMTciLCJBVVMiLG51bGwsIlVBIiwiMjI0MyJdXV0=",
+      "flights": [
+        {
+          "airline": "United",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/UA.png",
+          "airplane": "Boeing 777",
+          "arrival_airport": {
+            "id": "SFO",
+            "name": "San Francisco International Airport",
+            "time": "2025-10-17 14:05"
+          },
+          "departure_airport": {
+            "id": "PEK",
+            "name": "Beijing Capital International Airport",
+            "time": "2025-10-17 17:25"
+          },
+          "duration": 700,
+          "extensions": [
+            "Average legroom (31 in)",
+            "Wi-Fi for a fee",
+            "In-seat power & USB outlets",
+            "On-demand video",
+            "Carbon emissions estimate: 774 kg"
+          ],
+          "flight_number": "UA 889",
+          "legroom": "31 in",
+          "overnight": true,
+          "travel_class": "Economy"
+        },
+        {
+          "airline": "United",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/UA.png",
+          "airplane": "Airbus A319",
+          "arrival_airport": {
+            "id": "AUS",
+            "name": "Austin-Bergstrom International Airport",
+            "time": "2025-10-18 00:23"
+          },
+          "departure_airport": {
+            "id": "SFO",
+            "name": "San Francisco International Airport",
+            "time": "2025-10-17 18:47"
+          },
+          "duration": 216,
+          "extensions": [
+            "Average legroom (30 in)",
+            "Wi-Fi for a fee",
+            "In-seat power & USB outlets",
+            "Stream media to your device",
+            "Carbon emissions estimate: 248 kg"
+          ],
+          "flight_number": "UA 2243",
+          "legroom": "30 in",
+          "travel_class": "Economy"
+        }
+      ],
+      "layovers": [
+        {
+          "duration": 282,
+          "id": "SFO",
+          "name": "San Francisco International Airport"
+        }
+      ],
+      "price": 1022,
+      "total_duration": 1198,
+      "type": "Round trip"
+    },
+    {
+      "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/multi.png",
+      "carbon_emissions": {
+        "difference_percent": 9,
+        "this_flight": 966000,
+        "typical_for_this_route": 885000
+      },
+      "departure_token": "WyJDalJJYWtablgwSmlYMHRxVVZsQlExbERSbmRDUnkwdExTMHRMUzB0TFMxMmRHSnlOVUZCUVVGQlIycDNObEJuU1cxU01XRkJFaEpEUVRFNE16VjhWVUU0TlRoOFZVRXpPVEVhQ3dqZWl3c1FBaG9EVlZORU9CeHczb3NMIixbWyJQRUsiLCIyMDI1LTEwLTE3IiwiUFZHIixudWxsLCJDQSIsIjE4MzUiXSxbIlBWRyIsIjIwMjUtMTAtMTciLCJTRk8iLG51bGwsIlVBIiwiODU4Il0sWyJTRk8iLCIyMDI1LTEwLTE3IiwiQVVTIixudWxsLCJVQSIsIjM5MSJdXV0=",
+      "flights": [
+        {
+          "airline": "Air China",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/CA.png",
+          "airplane": "Airbus A330",
+          "arrival_airport": {
+            "id": "PVG",
+            "name": "Shanghai Pudong International Airport",
+            "time": "2025-10-17 09:55"
+          },
+          "departure_airport": {
+            "id": "PEK",
+            "name": "Beijing Capital International Airport",
+            "time": "2025-10-17 07:45"
+          },
+          "duration": 130,
+          "extensions": [
+            "Average legroom (31 in)",
+            "In-seat power outlet",
+            "Carbon emissions estimate: 96 kg"
+          ],
+          "flight_number": "CA 1835",
+          "legroom": "31 in",
+          "ticket_also_sold_by": [
+            "United"
+          ],
+          "travel_class": "Economy"
+        },
+        {
+          "airline": "United",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/UA.png",
+          "airplane": "Boeing 777",
+          "arrival_airport": {
+            "id": "SFO",
+            "name": "San Francisco International Airport",
+            "time": "2025-10-17 08:25"
+          },
+          "departure_airport": {
+            "id": "PVG",
+            "name": "Shanghai Pudong International Airport",
+            "time": "2025-10-17 12:10"
+          },
+          "duration": 675,
+          "extensions": [
+            "Average legroom (31 in)",
+            "Wi-Fi for a fee",
+            "In-seat power & USB outlets",
+            "On-demand video",
+            "Carbon emissions estimate: 690 kg"
+          ],
+          "flight_number": "UA 858",
+          "legroom": "31 in",
+          "often_delayed_by_over_30_min": true,
+          "overnight": true,
+          "travel_class": "Economy"
+        },
+        {
+          "airline": "United",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/UA.png",
+          "airplane": "Boeing 737MAX 9 Passenger",
+          "arrival_airport": {
+            "id": "AUS",
+            "name": "Austin-Bergstrom International Airport",
+            "time": "2025-10-17 16:31"
+          },
+          "departure_airport": {
+            "id": "SFO",
+            "name": "San Francisco International Airport",
+            "time": "2025-10-17 10:55"
+          },
+          "duration": 216,
+          "extensions": [
+            "Average legroom (30 in)",
+            "Wi-Fi for a fee",
+            "In-seat power outlet",
+            "Stream media to your device",
+            "Carbon emissions estimate: 178 kg"
+          ],
+          "flight_number": "UA 391",
+          "legroom": "30 in",
+          "travel_class": "Economy"
+        }
+      ],
+      "layovers": [
+        {
+          "duration": 135,
+          "id": "PVG",
+          "name": "Shanghai Pudong International Airport"
+        },
+        {
+          "duration": 150,
+          "id": "SFO",
+          "name": "San Francisco International Airport"
+        }
+      ],
+      "price": 1818,
+      "total_duration": 1306,
+      "type": "Round trip"
+    },
+    {
+      "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/multi.png",
+      "carbon_emissions": {
+        "difference_percent": -6,
+        "this_flight": 834000,
+        "typical_for_this_route": 885000
+      },
+      "departure_token": "WyJDalJJYWtablgwSmlYMHRxVVZsQlExbERSbmRDUnkwdExTMHRMUzB0TFMxMmRHSnlOVUZCUVVGQlIycDNObEJuU1cxU01XRkJFZ3hEUVRrNU4zeEJRekV3TmpZYUN3ai9wQThRQWhvRFZWTkVPQnh3LzZRUCIsW1siUEVLIiwiMjAyNS0xMC0xNyIsIllWUiIsbnVsbCwiQ0EiLCI5OTciXSxbIllWUiIsIjIwMjUtMTAtMTciLCJBVVMiLG51bGwsIkFDIiwiMTA2NiJdXV0=",
+      "flights": [
+        {
+          "airline": "Air China",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/CA.png",
+          "airplane": "Boeing 777",
+          "arrival_airport": {
+            "id": "YVR",
+            "name": "Vancouver International Airport",
+            "time": "2025-10-17 10:00"
+          },
+          "departure_airport": {
+            "id": "PEK",
+            "name": "Beijing Capital International Airport",
+            "time": "2025-10-17 13:50"
+          },
+          "duration": 670,
+          "extensions": [
+            "Above average legroom (32 in)",
+            "In-seat power outlet",
+            "On-demand video",
+            "Carbon emissions estimate: 585 kg"
+          ],
+          "flight_number": "CA 997",
+          "legroom": "32 in",
+          "overnight": true,
+          "ticket_also_sold_by": [
+            "Air Canada"
+          ],
+          "travel_class": "Economy"
+        },
+        {
+          "airline": "Air Canada",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AC.png",
+          "airplane": "Boeing 737MAX 8 Passenger",
+          "arrival_airport": {
+            "id": "AUS",
+            "name": "Austin-Bergstrom International Airport",
+            "time": "2025-10-17 20:11"
+          },
+          "departure_airport": {
+            "id": "YVR",
+            "name": "Vancouver International Airport",
+            "time": "2025-10-17 13:50"
+          },
+          "duration": 261,
+          "extensions": [
+            "Average legroom (30 in)",
+            "Free Wi-Fi",
+            "In-seat power & USB outlets",
+            "On-demand video",
+            "Carbon emissions estimate: 247 kg"
+          ],
+          "flight_number": "AC 1066",
+          "legroom": "30 in",
+          "travel_class": "Economy"
+        }
+      ],
+      "layovers": [
+        {
+          "duration": 230,
+          "id": "YVR",
+          "name": "Vancouver International Airport"
+        }
+      ],
+      "price": 2505,
+      "total_duration": 1161,
+      "type": "Round trip"
+    }
+  ],
+  "other_flights": [
+    {
+      "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/multi.png",
+      "carbon_emissions": {
+        "difference_percent": -2,
+        "this_flight": 870000,
+        "typical_for_this_route": 885000
+      },
+      "departure_token": "WyJDalJJYWtablgwSmlYMHRxVVZsQlExbERSbmRDUnkwdExTMHRMUzB0TFMxMmRHSnlOVUZCUVVGQlIycDNObEJuU1cxU01XRkJFaEZQV2pNek1ueEJRelkwZkVGRE1UQTJOaG9MQ0tyZ0RSQUNHZ05WVTBRNEhIQ3E0QTA9IixbWyJQRUsiLCIyMDI1LTEwLTE3IiwiSUNOIixudWxsLCJPWiIsIjMzMiJdLFsiSUNOIiwiMjAyNS0xMC0xNyIsIllWUiIsbnVsbCwiQUMiLCI2NCJdLFsiWVZSIiwiMjAyNS0xMC0xNyIsIkFVUyIsbnVsbCwiQUMiLCIxMDY2Il1dXQ==",
+      "flights": [
+        {
+          "airline": "Asiana Airlines",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/OZ.png",
+          "airplane": "Airbus A321",
+          "arrival_airport": {
+            "id": "ICN",
+            "name": "Incheon International Airport",
+            "time": "2025-10-17 13:50"
+          },
+          "departure_airport": {
+            "id": "PEK",
+            "name": "Beijing Capital International Airport",
+            "time": "2025-10-17 10:40"
+          },
+          "duration": 130,
+          "extensions": [
+            "Standard recliner seat",
+            "In-seat power & USB outlets",
+            "On-demand video",
+            "Carbon emissions estimate: 176 kg"
+          ],
+          "flight_number": "OZ 332",
+          "travel_class": "Business Class"
+        },
+        {
+          "airline": "Air Canada",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AC.png",
+          "airplane": "Boeing 787",
+          "arrival_airport": {
+            "id": "YVR",
+            "name": "Vancouver International Airport",
+            "time": "2025-10-17 11:40"
+          },
+          "departure_airport": {
+            "id": "ICN",
+            "name": "Incheon International Airport",
+            "time": "2025-10-17 17:45"
+          },
+          "duration": 595,
+          "extensions": [
+            "Average legroom (31 in)",
+            "Wi-Fi for a fee",
+            "In-seat power & USB outlets",
+            "On-demand video",
+            "Carbon emissions estimate: 445 kg"
+          ],
+          "flight_number": "AC 64",
+          "legroom": "31 in",
+          "overnight": true,
+          "travel_class": "Economy"
+        },
+        {
+          "airline": "Air Canada",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AC.png",
+          "airplane": "Boeing 737MAX 8 Passenger",
+          "arrival_airport": {
+            "id": "AUS",
+            "name": "Austin-Bergstrom International Airport",
+            "time": "2025-10-17 20:11"
+          },
+          "departure_airport": {
+            "id": "YVR",
+            "name": "Vancouver International Airport",
+            "time": "2025-10-17 13:50"
+          },
+          "duration": 261,
+          "extensions": [
+            "Average legroom (30 in)",
+            "Free Wi-Fi",
+            "In-seat power & USB outlets",
+            "On-demand video",
+            "Carbon emissions estimate: 247 kg"
+          ],
+          "flight_number": "AC 1066",
+          "legroom": "30 in",
+          "travel_class": "Economy"
+        }
+      ],
+      "layovers": [
+        {
+          "duration": 235,
+          "id": "ICN",
+          "name": "Incheon International Airport"
+        },
+        {
+          "duration": 130,
+          "id": "YVR",
+          "name": "Vancouver International Airport"
+        }
+      ],
+      "price": 2254,
+      "total_duration": 1351,
+      "type": "Round trip"
+    },
+    {
+      "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/multi.png",
+      "carbon_emissions": {
+        "difference_percent": -3,
+        "this_flight": 856000,
+        "typical_for_this_route": 885000
+      },
+      "departure_token": "WyJDalJJYWtablgwSmlYMHRxVVZsQlExbERSbmRDUnkwdExTMHRMUzB0TFMxMmRHSnlOVUZCUVVGQlIycDNObEJuU1cxU01XRkJFaEpEUVRrNU4zeEJVekl3TXpCOFFWTXpOeklhQ3dqRDZnMFFBaG9EVlZORU9CeHd3K29OIixbWyJQRUsiLCIyMDI1LTEwLTE3IiwiWVZSIixudWxsLCJDQSIsIjk5NyJdLFsiWVZSIiwiMjAyNS0xMC0xNyIsIlNFQSIsbnVsbCwiQVMiLCIyMDMwIl0sWyJTRUEiLCIyMDI1LTEwLTE3IiwiQVVTIixudWxsLCJBUyIsIjM3MiJdXV0=",
+      "flights": [
+        {
+          "airline": "Air China",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/CA.png",
+          "airplane": "Boeing 777",
+          "arrival_airport": {
+            "id": "YVR",
+            "name": "Vancouver International Airport",
+            "time": "2025-10-17 10:00"
+          },
+          "departure_airport": {
+            "id": "PEK",
+            "name": "Beijing Capital International Airport",
+            "time": "2025-10-17 13:50"
+          },
+          "duration": 670,
+          "extensions": [
+            "Above average legroom (32 in)",
+            "In-seat power outlet",
+            "On-demand video",
+            "Carbon emissions estimate: 585 kg"
+          ],
+          "flight_number": "CA 997",
+          "legroom": "32 in",
+          "overnight": true,
+          "ticket_also_sold_by": [
+            "Air Canada"
+          ],
+          "travel_class": "Economy"
+        },
+        {
+          "airline": "Alaska",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AS.png",
+          "airplane": "Embraer 175",
+          "arrival_airport": {
+            "id": "SEA",
+            "name": "Seattle–Tacoma International Airport",
+            "time": "2025-10-17 16:41"
+          },
+          "departure_airport": {
+            "id": "YVR",
+            "name": "Vancouver International Airport",
+            "time": "2025-10-17 15:30"
+          },
+          "duration": 71,
+          "extensions": [
+            "Average legroom (31 in)",
+            "Wi-Fi for a fee",
+            "Stream media to your device",
+            "Carbon emissions estimate: 57 kg"
+          ],
+          "flight_number": "AS 2030",
+          "legroom": "31 in",
+          "plane_and_crew_by": "Horizon Air as Alaska Horizon",
+          "travel_class": "Economy"
+        },
+        {
+          "airline": "Alaska",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AS.png",
+          "airplane": "Boeing 737MAX 9 Passenger",
+          "arrival_airport": {
+            "id": "AUS",
+            "name": "Austin-Bergstrom International Airport",
+            "time": "2025-10-17 23:56"
+          },
+          "departure_airport": {
+            "id": "SEA",
+            "name": "Seattle–Tacoma International Airport",
+            "time": "2025-10-17 17:50"
+          },
+          "duration": 246,
+          "extensions": [
+            "Average legroom (31 in)",
+            "Wi-Fi for a fee",
+            "In-seat power & USB outlets",
+            "Stream media to your device",
+            "Carbon emissions estimate: 212 kg"
+          ],
+          "flight_number": "AS 372",
+          "legroom": "31 in",
+          "travel_class": "Economy"
+        }
+      ],
+      "layovers": [
+        {
+          "duration": 330,
+          "id": "YVR",
+          "name": "Vancouver International Airport"
+        },
+        {
+          "duration": 69,
+          "id": "SEA",
+          "name": "Seattle–Tacoma International Airport"
+        }
+      ],
+      "price": 2267,
+      "total_duration": 1386,
+      "type": "Round trip"
+    },
+    {
+      "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/multi.png",
+      "carbon_emissions": {
+        "difference_percent": -5,
+        "this_flight": 842000,
+        "typical_for_this_route": 885000
+      },
+      "departure_token": "WyJDalJJYWtablgwSmlYMHRxVVZsQlExbERSbmRDUnkwdExTMHRMUzB0TFMxMmRHSnlOVUZCUVVGQlIycDNObEJuU1cxU01XRkJFaEZEUVRrNU4zeEJVemt5Tm54QlV6TTNNaG9MQ01QcURSQUNHZ05WVTBRNEhIREQ2ZzA9IixbWyJQRUsiLCIyMDI1LTEwLTE3IiwiWVZSIixudWxsLCJDQSIsIjk5NyJdLFsiWVZSIiwiMjAyNS0xMC0xNyIsIlNFQSIsbnVsbCwiQVMiLCI5MjYiXSxbIlNFQSIsIjIwMjUtMTAtMTciLCJBVVMiLG51bGwsIkFTIiwiMzcyIl1dXQ==",
+      "flights": [
+        {
+          "airline": "Air China",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/CA.png",
+          "airplane": "Boeing 777",
+          "arrival_airport": {
+            "id": "YVR",
+            "name": "Vancouver International Airport",
+            "time": "2025-10-17 10:00"
+          },
+          "departure_airport": {
+            "id": "PEK",
+            "name": "Beijing Capital International Airport",
+            "time": "2025-10-17 13:50"
+          },
+          "duration": 670,
+          "extensions": [
+            "Above average legroom (32 in)",
+            "In-seat power outlet",
+            "On-demand video",
+            "Carbon emissions estimate: 585 kg"
+          ],
+          "flight_number": "CA 997",
+          "legroom": "32 in",
+          "overnight": true,
+          "ticket_also_sold_by": [
+            "Air Canada"
+          ],
+          "travel_class": "Economy"
+        },
+        {
+          "airline": "Alaska",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AS.png",
+          "airplane": "Boeing 737MAX 9 Passenger",
+          "arrival_airport": {
+            "id": "SEA",
+            "name": "Seattle–Tacoma International Airport",
+            "time": "2025-10-17 14:55"
+          },
+          "departure_airport": {
+            "id": "YVR",
+            "name": "Vancouver International Airport",
+            "time": "2025-10-17 13:48"
+          },
+          "duration": 67,
+          "extensions": [
+            "Average legroom (31 in)",
+            "Wi-Fi for a fee",
+            "In-seat power & USB outlets",
+            "Stream media to your device",
+            "Carbon emissions estimate: 43 kg"
+          ],
+          "flight_number": "AS 926",
+          "legroom": "31 in",
+          "travel_class": "Economy"
+        },
+        {
+          "airline": "Alaska",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AS.png",
+          "airplane": "Boeing 737MAX 9 Passenger",
+          "arrival_airport": {
+            "id": "AUS",
+            "name": "Austin-Bergstrom International Airport",
+            "time": "2025-10-17 23:56"
+          },
+          "departure_airport": {
+            "id": "SEA",
+            "name": "Seattle–Tacoma International Airport",
+            "time": "2025-10-17 17:50"
+          },
+          "duration": 246,
+          "extensions": [
+            "Average legroom (31 in)",
+            "Wi-Fi for a fee",
+            "In-seat power & USB outlets",
+            "Stream media to your device",
+            "Carbon emissions estimate: 212 kg"
+          ],
+          "flight_number": "AS 372",
+          "legroom": "31 in",
+          "travel_class": "Economy"
+        }
+      ],
+      "layovers": [
+        {
+          "duration": 228,
+          "id": "YVR",
+          "name": "Vancouver International Airport"
+        },
+        {
+          "duration": 175,
+          "id": "SEA",
+          "name": "Seattle–Tacoma International Airport"
+        }
+      ],
+      "price": 2267,
+      "total_duration": 1386,
+      "type": "Round trip"
+    },
+    {
+      "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/multi.png",
+      "carbon_emissions": {
+        "difference_percent": -4,
+        "this_flight": 853000,
+        "typical_for_this_route": 885000
+      },
+      "departure_token": "WyJDalJJYWtablgwSmlYMHRxVVZsQlExbERSbmRDUnkwdExTMHRMUzB0TFMxMmRHSnlOVUZCUVVGQlIycDNObEJuU1cxU01XRkJFaE5EUVRrNU4zeEJVek15TVROOFFWTXhNemN3R2dzSSt2WU9FQUlhQTFWVFJEZ2NjUHIyRGc9PSIsW1siUEVLIiwiMjAyNS0xMC0xNyIsIllWUiIsbnVsbCwiQ0EiLCI5OTciXSxbIllWUiIsIjIwMjUtMTAtMTciLCJQRFgiLG51bGwsIkFTIiwiMzIxMyJdLFsiUERYIiwiMjAyNS0xMC0xNyIsIkFVUyIsbnVsbCwiQVMiLCIxMzcwIl1dXQ==",
+      "flights": [
+        {
+          "airline": "Air China",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/CA.png",
+          "airplane": "Boeing 777",
+          "arrival_airport": {
+            "id": "YVR",
+            "name": "Vancouver International Airport",
+            "time": "2025-10-17 10:00"
+          },
+          "departure_airport": {
+            "id": "PEK",
+            "name": "Beijing Capital International Airport",
+            "time": "2025-10-17 13:50"
+          },
+          "duration": 670,
+          "extensions": [
+            "Above average legroom (32 in)",
+            "In-seat power outlet",
+            "On-demand video",
+            "Carbon emissions estimate: 585 kg"
+          ],
+          "flight_number": "CA 997",
+          "legroom": "32 in",
+          "overnight": true,
+          "ticket_also_sold_by": [
+            "Air Canada"
+          ],
+          "travel_class": "Economy"
+        },
+        {
+          "airline": "Alaska",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AS.png",
+          "airplane": "Embraer 175",
+          "arrival_airport": {
+            "id": "PDX",
+            "name": "Portland International Airport",
+            "time": "2025-10-17 14:48"
+          },
+          "departure_airport": {
+            "id": "YVR",
+            "name": "Vancouver International Airport",
+            "time": "2025-10-17 13:17"
+          },
+          "duration": 91,
+          "extensions": [
+            "Average legroom (31 in)",
+            "Wi-Fi for a fee",
+            "Stream media to your device",
+            "Carbon emissions estimate: 81 kg"
+          ],
+          "flight_number": "AS 3213",
+          "legroom": "31 in",
+          "plane_and_crew_by": "SkyWest Airlines as Alaska SkyWest",
+          "travel_class": "Economy"
+        },
+        {
+          "airline": "Alaska",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AS.png",
+          "airplane": "Boeing 737MAX 9 Passenger",
+          "arrival_airport": {
+            "id": "AUS",
+            "name": "Austin-Bergstrom International Airport",
+            "time": "2025-10-17 23:39"
+          },
+          "departure_airport": {
+            "id": "PDX",
+            "name": "Portland International Airport",
+            "time": "2025-10-17 17:40"
+          },
+          "duration": 239,
+          "extensions": [
+            "Average legroom (31 in)",
+            "Wi-Fi for a fee",
+            "In-seat power & USB outlets",
+            "Stream media to your device",
+            "Carbon emissions estimate: 185 kg"
+          ],
+          "flight_number": "AS 1370",
+          "legroom": "31 in",
+          "travel_class": "Economy"
+        }
+      ],
+      "layovers": [
+        {
+          "duration": 197,
+          "id": "YVR",
+          "name": "Vancouver International Airport"
+        },
+        {
+          "duration": 172,
+          "id": "PDX",
+          "name": "Portland International Airport"
+        }
+      ],
+      "price": 2447,
+      "total_duration": 1369,
+      "type": "Round trip"
+    },
+    {
+      "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/multi.png",
+      "carbon_emissions": {
+        "difference_percent": -5,
+        "this_flight": 838000,
+        "typical_for_this_route": 885000
+      },
+      "departure_token": "WyJDalJJYWtablgwSmlYMHRxVVZsQlExbERSbmRDUnkwdExTMHRMUzB0TFMxMmRHSnlOVUZCUVVGQlIycDNObEJuU1cxU01XRkJFaEZPU0RrMk5IeFZRVGczTm54VlFUTTVNUm9MQ0xta0R4QUNHZ05WVTBRNEhIQzVwQTg9IixbWyJQRUsiLCIyMDI1LTEwLTE3IiwiSE5EIixudWxsLCJOSCIsIjk2NCJdLFsiSE5EIiwiMjAyNS0xMC0xNyIsIlNGTyIsbnVsbCwiVUEiLCI4NzYiXSxbIlNGTyIsIjIwMjUtMTAtMTciLCJBVVMiLG51bGwsIlVBIiwiMzkxIl1dXQ==",
+      "flights": [
+        {
+          "airline": "ANA",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/NH.png",
+          "airplane": "Boeing 767",
+          "arrival_airport": {
+            "id": "HND",
+            "name": "Haneda Airport",
+            "time": "2025-10-17 12:55"
+          },
+          "departure_airport": {
+            "id": "PEK",
+            "name": "Beijing Capital International Airport",
+            "time": "2025-10-17 08:20"
+          },
+          "duration": 215,
+          "extensions": [
+            "Average legroom (31 in)",
+            "In-seat power & USB outlets",
+            "On-demand video",
+            "Carbon emissions estimate: 205 kg"
+          ],
+          "flight_number": "NH 964",
+          "legroom": "31 in",
+          "travel_class": "Economy"
+        },
+        {
+          "airline": "United",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/UA.png",
+          "airplane": "Boeing 777",
+          "arrival_airport": {
+            "id": "SFO",
+            "name": "San Francisco International Airport",
+            "time": "2025-10-17 09:30"
+          },
+          "departure_airport": {
+            "id": "HND",
+            "name": "Haneda Airport",
+            "time": "2025-10-17 15:50"
+          },
+          "duration": 580,
+          "extensions": [
+            "Average legroom (31 in)",
+            "Wi-Fi for a fee",
+            "In-seat power & USB outlets",
+            "On-demand video",
+            "Carbon emissions estimate: 453 kg"
+          ],
+          "flight_number": "UA 876",
+          "legroom": "31 in",
+          "overnight": true,
+          "travel_class": "Economy"
+        },
+        {
+          "airline": "United",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/UA.png",
+          "airplane": "Boeing 737MAX 9 Passenger",
+          "arrival_airport": {
+            "id": "AUS",
+            "name": "Austin-Bergstrom International Airport",
+            "time": "2025-10-17 16:31"
+          },
+          "departure_airport": {
+            "id": "SFO",
+            "name": "San Francisco International Airport",
+            "time": "2025-10-17 10:55"
+          },
+          "duration": 216,
+          "extensions": [
+            "Average legroom (30 in)",
+            "Wi-Fi for a fee",
+            "In-seat power outlet",
+            "Stream media to your device",
+            "Carbon emissions estimate: 178 kg"
+          ],
+          "flight_number": "UA 391",
+          "legroom": "30 in",
+          "travel_class": "Economy"
+        }
+      ],
+      "layovers": [
+        {
+          "duration": 175,
+          "id": "HND",
+          "name": "Haneda Airport"
+        },
+        {
+          "duration": 85,
+          "id": "SFO",
+          "name": "San Francisco International Airport"
+        }
+      ],
+      "price": 2505,
+      "total_duration": 1271,
+      "type": "Round trip"
+    },
+    {
+      "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/multi.png",
+      "carbon_emissions": {
+        "difference_percent": -5,
+        "this_flight": 843000,
+        "typical_for_this_route": 885000
+      },
+      "departure_token": "WyJDalJJYWtablgwSmlYMHRxVVZsQlExbERSbmRDUnkwdExTMHRMUzB0TFMxMmRHSnlOVUZCUVVGQlIycDNObEJuU1cxU01XRkJFaEpPU0RrMk5IeFZRVGczTm54VlFURXhNVFlhQ3dpNXBBOFFBaG9EVlZORU9CeHd1YVFQIixbWyJQRUsiLCIyMDI1LTEwLTE3IiwiSE5EIixudWxsLCJOSCIsIjk2NCJdLFsiSE5EIiwiMjAyNS0xMC0xNyIsIlNGTyIsbnVsbCwiVUEiLCI4NzYiXSxbIlNGTyIsIjIwMjUtMTAtMTciLCJBVVMiLG51bGwsIlVBIiwiMTExNiJdXV0=",
+      "flights": [
+        {
+          "airline": "ANA",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/NH.png",
+          "airplane": "Boeing 767",
+          "arrival_airport": {
+            "id": "HND",
+            "name": "Haneda Airport",
+            "time": "2025-10-17 12:55"
+          },
+          "departure_airport": {
+            "id": "PEK",
+            "name": "Beijing Capital International Airport",
+            "time": "2025-10-17 08:20"
+          },
+          "duration": 215,
+          "extensions": [
+            "Average legroom (31 in)",
+            "In-seat power & USB outlets",
+            "On-demand video",
+            "Carbon emissions estimate: 205 kg"
+          ],
+          "flight_number": "NH 964",
+          "legroom": "31 in",
+          "travel_class": "Economy"
+        },
+        {
+          "airline": "United",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/UA.png",
+          "airplane": "Boeing 777",
+          "arrival_airport": {
+            "id": "SFO",
+            "name": "San Francisco International Airport",
+            "time": "2025-10-17 09:30"
+          },
+          "departure_airport": {
+            "id": "HND",
+            "name": "Haneda Airport",
+            "time": "2025-10-17 15:50"
+          },
+          "duration": 580,
+          "extensions": [
+            "Average legroom (31 in)",
+            "Wi-Fi for a fee",
+            "In-seat power & USB outlets",
+            "On-demand video",
+            "Carbon emissions estimate: 453 kg"
+          ],
+          "flight_number": "UA 876",
+          "legroom": "31 in",
+          "overnight": true,
+          "ticket_also_sold_by": [
+            "ANA"
+          ],
+          "travel_class": "Economy"
+        },
+        {
+          "airline": "United",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/UA.png",
+          "airplane": "Boeing 737MAX 8 Passenger",
+          "arrival_airport": {
+            "id": "AUS",
+            "name": "Austin-Bergstrom International Airport",
+            "time": "2025-10-17 18:41"
+          },
+          "departure_airport": {
+            "id": "SFO",
+            "name": "San Francisco International Airport",
+            "time": "2025-10-17 13:05"
+          },
+          "duration": 216,
+          "extensions": [
+            "Average legroom (30 in)",
+            "Wi-Fi for a fee",
+            "In-seat power & USB outlets",
+            "On-demand video",
+            "Carbon emissions estimate: 183 kg"
+          ],
+          "flight_number": "UA 1116",
+          "legroom": "30 in",
+          "ticket_also_sold_by": [
+            "ANA"
+          ],
+          "travel_class": "Economy"
+        }
+      ],
+      "layovers": [
+        {
+          "duration": 175,
+          "id": "HND",
+          "name": "Haneda Airport"
+        },
+        {
+          "duration": 215,
+          "id": "SFO",
+          "name": "San Francisco International Airport"
+        }
+      ],
+      "price": 2505,
+      "total_duration": 1401,
+      "type": "Round trip"
+    },
+    {
+      "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/multi.png",
+      "carbon_emissions": {
+        "difference_percent": 6,
+        "this_flight": 937000,
+        "typical_for_this_route": 885000
+      },
+      "departure_token": "WyJDalJJYWtablgwSmlYMHRxVVZsQlExbERSbmRDUnkwdExTMHRMUzB0TFMxMmRHSnlOVUZCUVVGQlIycDNObEJuU1cxU01XRkJFaEZMUlRnMU5ueEVUREkyZkVSTU1UQTRNUm9MQ05TMUR4QUNHZ05WVTBRNEhIRFV0UTg9IixbWyJQRUsiLCIyMDI1LTEwLTE3IiwiSUNOIixudWxsLCJLRSIsIjg1NiJdLFsiSUNOIiwiMjAyNS0xMC0xNyIsIkFUTCIsbnVsbCwiREwiLCIyNiJdLFsiQVRMIiwiMjAyNS0xMC0xNyIsIkFVUyIsbnVsbCwiREwiLCIxMDgxIl1dXQ==",
+      "flights": [
+        {
+          "airline": "Korean Air",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/KE.png",
+          "airplane": "Boeing 787",
+          "arrival_airport": {
+            "id": "ICN",
+            "name": "Incheon International Airport",
+            "time": "2025-10-17 16:30"
+          },
+          "departure_airport": {
+            "id": "PEK",
+            "name": "Beijing Capital International Airport",
+            "time": "2025-10-17 13:30"
+          },
+          "duration": 120,
+          "extensions": [
+            "Above average legroom (32 in)",
+            "In-seat power & USB outlets",
+            "On-demand video",
+            "Carbon emissions estimate: 92 kg"
+          ],
+          "flight_number": "KE 856",
+          "legroom": "32 in",
+          "travel_class": "Economy"
+        },
+        {
+          "airline": "Delta",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/DL.png",
+          "airplane": "Airbus A350",
+          "arrival_airport": {
+            "id": "ATL",
+            "name": "Hartsfield-Jackson Atlanta International Airport",
+            "time": "2025-10-17 19:25"
+          },
+          "departure_airport": {
+            "id": "ICN",
+            "name": "Incheon International Airport",
+            "time": "2025-10-17 18:50"
+          },
+          "duration": 815,
+          "extensions": [
+            "Average legroom (31 in)",
+            "Free Wi-Fi",
+            "In-seat power & USB outlets",
+            "On-demand video",
+            "Carbon emissions estimate: 711 kg"
+          ],
+          "flight_number": "DL 26",
+          "legroom": "31 in",
+          "overnight": true,
+          "ticket_also_sold_by": [
+            "Korean Air"
+          ],
+          "travel_class": "Economy"
+        },
+        {
+          "airline": "Delta",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/DL.png",
+          "airplane": "Airbus A321",
+          "arrival_airport": {
+            "id": "AUS",
+            "name": "Austin-Bergstrom International Airport",
+            "time": "2025-10-17 23:07"
+          },
+          "departure_airport": {
+            "id": "ATL",
+            "name": "Hartsfield-Jackson Atlanta International Airport",
+            "time": "2025-10-17 21:39"
+          },
+          "duration": 148,
+          "extensions": [
+            "Average legroom (31 in)",
+            "Free Wi-Fi",
+            "In-seat power & USB outlets",
+            "Live TV",
+            "Carbon emissions estimate: 133 kg"
+          ],
+          "flight_number": "DL 1081",
+          "legroom": "31 in",
+          "often_delayed_by_over_30_min": true,
+          "ticket_also_sold_by": [
+            "Korean Air"
+          ],
+          "travel_class": "Economy"
+        }
+      ],
+      "layovers": [
+        {
+          "duration": 140,
+          "id": "ICN",
+          "name": "Incheon International Airport"
+        },
+        {
+          "duration": 134,
+          "id": "ATL",
+          "name": "Hartsfield-Jackson Atlanta International Airport"
+        }
+      ],
+      "price": 2527,
+      "total_duration": 1357,
+      "type": "Round trip"
+    },
+    {
+      "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/multi.png",
+      "carbon_emissions": {
+        "difference_percent": -4,
+        "this_flight": 852000,
+        "typical_for_this_route": 885000
+      },
+      "departure_token": "WyJDalJJYWtablgwSmlYMHRxVVZsQlExbERSbmRDUnkwdExTMHRMUzB0TFMxMmRHSnlOVUZCUVVGQlIycDNObEJuU1cxU01XRkJFaEpMUlRnMU5ueEVUREUzTW54RVRESTNNamdhQ3dpQjR4RVFBaG9EVlZORU9CeHdnZU1SIixbWyJQRUsiLCIyMDI1LTEwLTE3IiwiSUNOIixudWxsLCJLRSIsIjg1NiJdLFsiSUNOIiwiMjAyNS0xMC0xNyIsIlNMQyIsbnVsbCwiREwiLCIxNzIiXSxbIlNMQyIsIjIwMjUtMTAtMTciLCJBVVMiLG51bGwsIkRMIiwiMjcyOCJdXV0=",
+      "flights": [
+        {
+          "airline": "Korean Air",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/KE.png",
+          "airplane": "Boeing 787",
+          "arrival_airport": {
+            "id": "ICN",
+            "name": "Incheon International Airport",
+            "time": "2025-10-17 16:30"
+          },
+          "departure_airport": {
+            "id": "PEK",
+            "name": "Beijing Capital International Airport",
+            "time": "2025-10-17 13:30"
+          },
+          "duration": 120,
+          "extensions": [
+            "Above average legroom (32 in)",
+            "In-seat power & USB outlets",
+            "On-demand video",
+            "Carbon emissions estimate: 92 kg"
+          ],
+          "flight_number": "KE 856",
+          "legroom": "32 in",
+          "travel_class": "Economy"
+        },
+        {
+          "airline": "Delta",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/DL.png",
+          "airplane": "Airbus A350",
+          "arrival_airport": {
+            "id": "SLC",
+            "name": "Salt Lake City International Airport",
+            "time": "2025-10-17 15:55"
+          },
+          "departure_airport": {
+            "id": "ICN",
+            "name": "Incheon International Airport",
+            "time": "2025-10-17 19:40"
+          },
+          "duration": 675,
+          "extensions": [
+            "Average legroom (31 in)",
+            "Free Wi-Fi",
+            "In-seat power & USB outlets",
+            "On-demand video",
+            "Carbon emissions estimate: 588 kg"
+          ],
+          "flight_number": "DL 172",
+          "legroom": "31 in",
+          "overnight": true,
+          "ticket_also_sold_by": [
+            "Korean Air"
+          ],
+          "travel_class": "Economy"
+        },
+        {
+          "airline": "Delta",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/DL.png",
+          "airplane": "Airbus A320",
+          "arrival_airport": {
+            "id": "AUS",
+            "name": "Austin-Bergstrom International Airport",
+            "time": "2025-10-17 20:56"
+          },
+          "departure_airport": {
+            "id": "SLC",
+            "name": "Salt Lake City International Airport",
+            "time": "2025-10-17 17:15"
+          },
+          "duration": 161,
+          "extensions": [
+            "Average legroom (31 in)",
+            "Free Wi-Fi",
+            "In-seat power & USB outlets",
+            "Live TV",
+            "Carbon emissions estimate: 171 kg"
+          ],
+          "flight_number": "DL 2728",
+          "legroom": "31 in",
+          "ticket_also_sold_by": [
+            "Korean Air"
+          ],
+          "travel_class": "Economy"
+        }
+      ],
+      "layovers": [
+        {
+          "duration": 190,
+          "id": "ICN",
+          "name": "Incheon International Airport"
+        },
+        {
+          "duration": 80,
+          "id": "SLC",
+          "name": "Salt Lake City International Airport"
+        }
+      ],
+      "price": 2913,
+      "total_duration": 1226,
+      "type": "Round trip"
+    }
+  ],
+  "price_insights": {
+    "lowest_price": 1022,
+    "price_history": [
+      [1755360000, 999],
+      [1755446400, 999],
+      [1755532800, 999],
+      [1755619200, 998],
+      [1755705600, 999],
+      [1755792000, 999],
+      [1755878400, 998],
+      [1755964800, 1000],
+      [1756051200, 1000],
+      [1756137600, 999],
+      [1756224000, 1001],
+      [1756310400, 1001],
+      [1756396800, 1001],
+      [1756483200, 1001],
+      [1756569600, 1004],
+      [1756656000, 1003],
+      [1756742400, 1003],
+      [1756828800, 1003],
+      [1756915200, 1005],
+      [1757001600, 953],
+      [1757088000, 955],
+      [1757174400, 956],
+      [1757260800, 956],
+      [1757347200, 956],
+      [1757433600, 953],
+      [1757520000, 954],
+      [1757606400, 954],
+      [1757692800, 1003],
+      [1757779200, 1002],
+      [1757865600, 1002],
+      [1757952000, 1002],
+      [1758038400, 1003],
+      [1758124800, 1039],
+      [1758211200, 1201],
+      [1758297600, 1039],
+      [1758384000, 1036],
+      [1758470400, 1039],
+      [1758556800, 955],
+      [1758643200, 1101],
+      [1758729600, 1102],
+      [1758816000, 1189],
+      [1758902400, 1188],
+      [1758988800, 1189],
+      [1759075200, 1189],
+      [1759161600, 1281],
+      [1759248000, 1190],
+      [1759334400, 1189],
+      [1759420800, 1189],
+      [1759507200, 1189],
+      [1759593600, 1189],
+      [1759680000, 1189],
+      [1759766400, 1189],
+      [1759852800, 1189],
+      [1759939200, 1209],
+      [1760025600, 1209],
+      [1760112000, 1231],
+      [1760198400, 1234],
+      [1760284800, 1184],
+      [1760371200, 1184],
+      [1760457600, 1526],
+      [1760544000, 1022]
+    ],
+    "price_level": "typical",
+    "typical_price_range": [1000, 1450]
+  },
+  "search_metadata": {
+    "created_at": "2025-10-16 12:45:43 UTC",
+    "google_flights_url": "https://www.google.com/travel/flights?hl=en&gl=us&curr=USD&tfs=CBwQAhoeEgoyMDI1LTEwLTE3agcIARIDUEVLcgcIARIDQVVTGh4SCjIwMjUtMTAtMjNqBwgBEgNBVVNyBwgBEgNQRUtCAQFIAXABmAEB&tfu=EgIIAQ",
+    "id": "68f0e8f77af899cd5d8915f8",
+    "json_endpoint": "https://serpapi.com/searches/b1ab5b354fe86f7a/68f0e8f77af899cd5d8915f8.json",
+    "prettify_html_file": "https://serpapi.com/searches/b1ab5b354fe86f7a/68f0e8f77af899cd5d8915f8.prettify",
+    "processed_at": "2025-10-16 12:45:43 UTC",
+    "raw_html_file": "https://serpapi.com/searches/b1ab5b354fe86f7a/68f0e8f77af899cd5d8915f8.html",
+    "status": "Success",
+    "total_time_taken": 0.98
+  },
+  "search_parameters": {
+    "arrival_id": "AUS",
+    "currency": "USD",
+    "departure_id": "PEK",
+    "engine": "google_flights",
+    "gl": "us",
+    "hl": "en",
+    "outbound_date": "2025-10-17",
+    "return_date": "2025-10-23",
+    "sort_by": "1",
+    "stops": 0,
+    "travel_class": 1,
+    "type": "1"
+  }
+}

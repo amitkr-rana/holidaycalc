@@ -11,8 +11,64 @@ import { ChevronLeftIcon, Plane } from "lucide-react"
 import { format, getDay } from "date-fns"
 import { AirlineLogo } from "@/components/ui/airline-logo";
 
-// --- (Interfaces remain the same) ---
-interface FlightSegment {
+// --- SerpAPI Response Interfaces ---
+interface SerpFlightSegment {
+  airline: string;
+  airline_logo: string;
+  airplane: string;
+  arrival_airport: {
+    id: string;
+    name: string;
+    time: string;
+  };
+  departure_airport: {
+    id: string;
+    name: string;
+    time: string;
+  };
+  duration: number;
+  extensions: string[];
+  flight_number: string;
+  legroom?: string;
+  overnight?: boolean;
+  travel_class: string;
+  often_delayed_by_over_30_min?: boolean;
+  ticket_also_sold_by?: string[];
+  plane_and_crew_by?: string;
+}
+
+interface SerpLayover {
+  duration: number;
+  id: string;
+  name: string;
+}
+
+interface SerpFlightOption {
+  airline_logo: string;
+  carbon_emissions: {
+    difference_percent: number;
+    this_flight: number;
+    typical_for_this_route: number;
+  };
+  departure_token: string;
+  flights: SerpFlightSegment[];
+  layovers: SerpLayover[];
+  price: number;
+  total_duration: number;
+  type: string;
+}
+
+interface SerpApiResponse {
+  airports: any[];
+  best_flights: SerpFlightOption[];
+  other_flights: SerpFlightOption[];
+  price_insights: any;
+  search_metadata: any;
+  search_parameters: any;
+}
+
+// --- Processed Flight Interfaces (for internal use) ---
+interface ProcessedFlightSegment {
   departureAirportCode: string;
   departureAirportName: string;
   arrivalAirportName: string;
@@ -20,39 +76,13 @@ interface FlightSegment {
   durationMinutes: number;
   departureTime: string;
   arrivalTime: string;
-  cabinClass: number;
-  airline: {
-    airlineCode: string;
-    flightNumber: string;
-    airlineName: string;
-  };
   departureDate: string;
   arrivalDate: string;
+  airline: string;
+  flightNumber: string;
+  airlineCode?: string;
   aircraftName?: string;
-}
-
-interface FlightOption {
-  price: number;
-  airlineCode: string;
-  airlineNames: string[];
-  segments: FlightSegment[];
-  departureAirportCode: string;
-  departureDate: string;
-  departureTime: string;
-  arrivalAirportCode: string;
-  arrivalDate: string;
-  arrivalTime: string;
-  duration: number;
-  stops: number | null;
-}
-
-interface GoogleFlightsApiResponse {
-  status: boolean;
-  message: string;
-  data: {
-    topFlights: FlightOption[];
-    otherFlights: FlightOption[];
-  };
+  travelClass: string;
 }
 
 interface ProcessedFlight {
@@ -68,7 +98,7 @@ interface ProcessedFlight {
   arrivalAirportCode: string;
   price?: number;
   stops: number;
-  segments: FlightSegment[];
+  segments: ProcessedFlightSegment[];
   totalDuration: number;
 }
 
@@ -159,39 +189,103 @@ export function ItineraryPage() {
 
       try {
         const params = new URLSearchParams({
-            departureId: departure,
-            arrivalId: arrival,
-            departureDate: outbound,
-            currency: "INR",
-            adults: passengers,
-            cabinClass: travelClassCode,
-            sort: "1",
-            stops: "0",
+            departure_id: departure,
+            arrival_id: arrival,
+            outbound_date: outbound,
+            currency: "USD",
+            hl: "en",
+            gl: "us",
         });
 
-        const apiKey = import.meta.env.VITE_FLIGHT_SCRAPER_SKY_RAPIDAPI;
-        const url = `https://flights-sky.p.rapidapi.com/google/flights/search-one-way?${params.toString()}`;
-        const response = await fetch(url, { signal: controller.signal, headers: { "x-rapidapi-key": apiKey, "x-rapidapi-host": "flights-sky.p.rapidapi.com" } });
+        // Add return_date if it exists
+        if (returnDate) {
+          params.append("return_date", returnDate);
+        }
+
+        // Use proxy in development, direct URL in production
+        const isDevelopment = import.meta.env.DEV;
+        const baseUrl = isDevelopment
+          ? '/api/flights'
+          : 'https://sunidhiyadav69.pythonanywhere.com/flight-result';
+        const url = `${baseUrl}?${params.toString()}`;
+        console.log('Fetching flights from:', url);
+
+        const response = await fetch(url, {
+          signal: controller.signal,
+          headers: {
+            'Accept': 'application/json',
+          }
+        });
+
+        console.log('Response status:', response.status);
         if (!response.ok) throw new Error(`Failed to fetch flights: ${response.statusText}`);
 
-        const data: GoogleFlightsApiResponse = await response.json();
-        if (!data.status || !data.data) throw new Error("No flight data available");
+        const data: SerpApiResponse = await response.json();
+        console.log('Received flight data:', data);
+        if (!data.best_flights && !data.other_flights) throw new Error("No flight data available");
 
-        const processFlightOptions = (options: FlightOption[]): ProcessedFlight[] => options.map(option => {
-            const firstSegment = option.segments[0];
-            const lastSegment = option.segments[option.segments.length - 1];
-            const stopsCount = option.stops !== null ? option.stops : Math.max(0, option.segments.length - 1);
+        const extractAirlineCode = (flightNumber: string): string => {
+          // Extract airline code from flight number (e.g., "UA 889" -> "UA")
+          return flightNumber.split(' ')[0] || '';
+        };
+
+        const processFlightOptions = (options: SerpFlightOption[]): ProcessedFlight[] => {
+          return options
+            .filter(option => option.flights && Array.isArray(option.flights) && option.flights.length > 0)
+            .map(option => {
+            const firstSegment = option.flights[0];
+            const lastSegment = option.flights[option.flights.length - 1];
+            const stopsCount = option.layovers?.length || 0;
+
+            // Extract airline code from first segment's flight number
+            const airlineCode = extractAirlineCode(firstSegment.flight_number);
+
+            // Process segments for internal use
+            const processedSegments: ProcessedFlightSegment[] = option.flights.map(segment => {
+              const depTimeParts = segment.departure_airport?.time?.split(' ') || ['', ''];
+              const arrTimeParts = segment.arrival_airport?.time?.split(' ') || ['', ''];
+              const [depDate] = depTimeParts;
+              const [arrDate] = arrTimeParts;
+
+              return {
+                departureAirportCode: segment.departure_airport.id,
+                departureAirportName: segment.departure_airport.name,
+                arrivalAirportName: segment.arrival_airport.name,
+                arrivalAirportCode: segment.arrival_airport.id,
+                durationMinutes: segment.duration,
+                departureTime: segment.departure_airport.time,
+                arrivalTime: segment.arrival_airport.time,
+                departureDate: depDate,
+                arrivalDate: arrDate,
+                airline: segment.airline,
+                flightNumber: segment.flight_number,
+                airlineCode: extractAirlineCode(segment.flight_number),
+                aircraftName: segment.airplane,
+                travelClass: segment.travel_class,
+              };
+            });
+
             return {
-                airline: firstSegment.airline.airlineName, airlineCode: firstSegment.airline.airlineCode, flightNumber: firstSegment.airline.flightNumber,
-                scheduledDepartureTime: formatTime(option.departureTime || firstSegment.departureTime), scheduledArrivalTime: formatTime(option.arrivalTime || lastSegment.arrivalTime),
-                duration: firstSegment.durationMinutes, departureAirportName: firstSegment.departureAirportName, arrivalAirportName: lastSegment.arrivalAirportName,
-                departureAirportCode: firstSegment.departureAirportCode, arrivalAirportCode: lastSegment.arrivalAirportCode,
-                price: option.price, stops: stopsCount, segments: option.segments, totalDuration: option.duration,
+                airline: firstSegment.airline,
+                airlineCode: airlineCode,
+                flightNumber: firstSegment.flight_number,
+                scheduledDepartureTime: formatTime(firstSegment.departure_airport.time),
+                scheduledArrivalTime: formatTime(lastSegment.arrival_airport.time),
+                duration: firstSegment.duration,
+                departureAirportName: firstSegment.departure_airport.name,
+                arrivalAirportName: lastSegment.arrival_airport.name,
+                departureAirportCode: firstSegment.departure_airport.id,
+                arrivalAirportCode: lastSegment.arrival_airport.id,
+                price: option.price,
+                stops: stopsCount,
+                segments: processedSegments,
+                totalDuration: option.total_duration,
             };
-        });
+          });
+        };
 
-        const processedTopFlights = processFlightOptions(data.data.topFlights || []);
-        const processedOtherFlights = processFlightOptions(data.data.otherFlights || []);
+        const processedTopFlights = processFlightOptions(data.best_flights || []);
+        const processedOtherFlights = processFlightOptions(data.other_flights || []);
 
         setTopFlights(processedTopFlights);
         setOtherFlights(processedOtherFlights);
@@ -271,7 +365,7 @@ export function ItineraryPage() {
                         {flight.stops > 0 && flight.segments.length > 1 && (<span className="text-xs text-muted-foreground">{flight.segments[0].arrivalAirportCode}</span>)}
                     </div>
                     <div className="flex items-center gap-2">
-                        {flight.price && (<span className="text-lg font-semibold mr-2">₹{flight.price.toLocaleString('en-IN')}</span>)}
+                        {flight.price && (<span className="text-lg font-semibold mr-2">${flight.price.toLocaleString('en-US')}</span>)}
                         <Button size="sm" onClick={(e) => { e.stopPropagation(); console.log("Selected flight:", flight); }}>Select</Button>
                     </div>
                 </div>
@@ -308,9 +402,9 @@ export function ItineraryPage() {
                       <div className="bg-muted/50 p-3 text-sm border-t border-border mt-2 mb-4 ml-7">
                         <div className="space-y-1">
                           <div>
-                            <span className="font-medium">{segment.airline.airlineName}</span>
-                            <span className="text-muted-foreground"> · {getTravelClassName(travelClassCode)}</span>
-                            <span className="text-muted-foreground"> · Flight {segment.airline.flightNumber}</span>
+                            <span className="font-medium">{segment.airline}</span>
+                            <span className="text-muted-foreground"> · {segment.travelClass}</span>
+                            <span className="text-muted-foreground"> · Flight {segment.flightNumber}</span>
                           </div>
                           {segment.aircraftName && (<div className="text-xs text-muted-foreground">{segment.aircraftName}</div>)}
                         </div>

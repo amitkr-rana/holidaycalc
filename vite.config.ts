@@ -18,6 +18,11 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/pexels/, ""),
       },
+      "/api/flights": {
+        target: "https://sunidhiyadav69.pythonanywhere.com",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/flights/, "/flight-result"),
+      },
     },
   },
 })
