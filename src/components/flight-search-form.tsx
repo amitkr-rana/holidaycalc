@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Spinner } from "@/components/ui/spinner"
 import { AirportAutocomplete } from "@/components/ui/airport-autocomplete"
+import { getCurrencyForCountry } from "@/lib/currency-map"
 import { format } from "date-fns"
 import { CalendarIcon, PlaneTakeoff, PlaneLanding } from "lucide-react"
 
@@ -14,7 +15,7 @@ interface FlightSearchFormProps {
   defaultCountry?: string
 }
 
-export function FlightSearchForm({ defaultDate }: FlightSearchFormProps) {
+export function FlightSearchForm({ defaultDate, defaultCountry }: FlightSearchFormProps) {
   const navigate = useNavigate()
   const [departureAirport, setDepartureAirport] = useState("")
   const [arrivalAirport, setArrivalAirport] = useState("")
@@ -59,12 +60,16 @@ export function FlightSearchForm({ defaultDate }: FlightSearchFormProps) {
     setIsLoading(true)
 
     try {
+      // Get currency from the selected country (defaultCountry prop)
+      const currency = defaultCountry ? getCurrencyForCountry(defaultCountry) : "USD"
+
       const searchParams = new URLSearchParams({
         departure: departureAirport.toUpperCase(),
         arrival: arrivalAirport.toUpperCase(),
         outbound: format(outboundDate, "yyyy-MM-dd"),
         passengers,
         class: travelClass,
+        currency: currency, // Add currency based on selected country
       })
 
       if (returnDate) {

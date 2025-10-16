@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ChevronLeftIcon, Plane } from "lucide-react"
 import { format, getDay } from "date-fns"
 import { AirlineLogo } from "@/components/ui/airline-logo";
+import { getCurrencySymbol } from "@/lib/currency-map";
 
 // --- SerpAPI Response Interfaces ---
 interface SerpFlightSegment {
@@ -122,6 +123,7 @@ export function ItineraryPage() {
   const returnDate = searchParams.get("return");
   const passengers = searchParams.get("passengers") || "1";
   const travelClassCode = searchParams.get("class") || "1";
+  const currency = searchParams.get("currency") || "USD";
 
   // --- (Helper functions remain the same) ---
   const getTravelClassName = (code: string) => {
@@ -170,7 +172,7 @@ export function ItineraryPage() {
         return;
       }
 
-      const cacheKey = `${departure}-${arrival}-${outbound}-${passengers}-${travelClassCode}`;
+      const cacheKey = `${departure}-${arrival}-${outbound}-${passengers}-${travelClassCode}-${currency}`;
       const cachedData = flightCache.get(cacheKey);
 
       if (cachedData && Date.now() - cachedData.timestamp < CACHE_DURATION) {
@@ -192,7 +194,7 @@ export function ItineraryPage() {
             departure_id: departure,
             arrival_id: arrival,
             outbound_date: outbound,
-            currency: "USD",
+            currency: currency,
             hl: "en",
             gl: "us",
         });
@@ -316,7 +318,7 @@ export function ItineraryPage() {
         abortControllerRef.current.abort();
       }
     };
-  }, [departure, arrival, outbound, passengers, travelClassCode]);
+  }, [departure, arrival, outbound, passengers, travelClassCode, currency]);
 
   useEffect(() => {
     const allFlights = [...topFlights, ...otherFlights];
@@ -365,7 +367,7 @@ export function ItineraryPage() {
                         {flight.stops > 0 && flight.segments.length > 1 && (<span className="text-xs text-muted-foreground">{flight.segments[0].arrivalAirportCode}</span>)}
                     </div>
                     <div className="flex items-center gap-2">
-                        {flight.price && (<span className="text-lg font-semibold mr-2">${flight.price.toLocaleString('en-US')}</span>)}
+                        {flight.price && (<span className="text-lg font-semibold mr-2">{getCurrencySymbol(currency)}{flight.price.toLocaleString('en-US')}</span>)}
                         <Button size="sm" onClick={(e) => { e.stopPropagation(); console.log("Selected flight:", flight); }}>Select</Button>
                     </div>
                 </div>
