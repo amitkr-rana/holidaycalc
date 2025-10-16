@@ -147,17 +147,41 @@ export function ItineraryPage() {
       return datetime;
     }
   };
-  const calculateLayover = (arrivalTime: string, departureTime: string, arrivalDate: string, departureDate: string) => {
-    try {
-      const arrival = new Date(`${arrivalDate} ${arrivalTime}`);
-      const departure = new Date(`${departureDate} ${departureTime}`);
-      const diffMinutes = Math.floor((departure.getTime() - arrival.getTime()) / (1000 * 60));
-      const hours = Math.floor(diffMinutes / 60);
-      const mins = diffMinutes % 60;
-      return `${hours} hr ${mins} min`;
-    } catch {
-      return '';
-    }
+  const calculateLayover = (arrivalDateTime: string, departureDateTime: string) => {
+    const parseDateTime = (value: string) => {
+      if (!value) return null;
+      const trimmed = value.trim();
+
+      const directParse = new Date(trimmed);
+      if (!Number.isNaN(directParse.getTime())) {
+        return directParse;
+      }
+
+      const parts = trimmed.split(/\s+/);
+      if (parts.length >= 2) {
+        const isoCandidate = `${parts[0]}T${parts[1]}`;
+        const parsed = new Date(isoCandidate);
+        if (!Number.isNaN(parsed.getTime())) {
+          return parsed;
+        }
+      }
+
+      return null;
+    };
+
+    const arrival = parseDateTime(arrivalDateTime);
+    const departure = parseDateTime(departureDateTime);
+
+    if (!arrival || !departure) return "";
+
+    const diffMinutes = Math.max(0, Math.floor((departure.getTime() - arrival.getTime()) / (1000 * 60)));
+    const hours = Math.floor(diffMinutes / 60);
+    const mins = diffMinutes % 60;
+
+    if (hours === 0 && mins === 0) return "0 min";
+    if (hours === 0) return `${mins} min`;
+    if (mins === 0) return `${hours} hr`;
+    return `${hours} hr ${mins} min`;
   };
 
   useEffect(() => {
@@ -415,7 +439,7 @@ export function ItineraryPage() {
                         <div className="flex items-center gap-4 mb-4">
                           <div className="flex-1 border-2 border-dashed border-muted-foreground/40 px-4 py-3 text-sm ml-7">
                             <span className="font-medium text-muted-foreground">
-                              {calculateLayover(segment.arrivalTime, flight.segments[segmentIdx + 1].departureTime, segment.arrivalDate, flight.segments[segmentIdx + 1].departureDate)} layover · {segment.arrivalAirportName}
+                              {calculateLayover(segment.arrivalTime, flight.segments[segmentIdx + 1].departureTime)} layover · {segment.arrivalAirportName}
                             </span>
                           </div>
                         </div>
