@@ -202,15 +202,16 @@ export function ItineraryPage() {
           params.append("return_date", returnDate);
         }
 
-        // Use Vite proxy in development, Vercel API in production
+        // Use Vite proxy in development (optional), direct URL in production
         const baseUrl = import.meta.env.DEV
-          ? '/api/flights'
-          : '/api/flights';
+          ? '/api/flights'  // Uses Vite proxy for convenience in dev
+          : 'https://sunidhiyadav69.pythonanywhere.com/flight-result';  // Direct call in production (CORS enabled on server)
         const url = `${baseUrl}?${params.toString()}`;
         console.log('Fetching flights from:', url);
 
         const response = await fetch(url, {
           signal: controller.signal,
+          mode: 'cors',
           headers: {
             'Accept': 'application/json',
           }
