@@ -36,4 +36,5 @@ dist-ssr
 
 # Python cache and byte code
 /__pycache__/
-
+nul
+/Scraper/fli
