@@ -4,7 +4,7 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
 } from "lucide-react"
-import { DayButton, DayPicker, getDefaultClassNames } from "react-day-picker"
+import { DayButton, DayPicker, getDefaultClassNames, useNavigation } from "react-day-picker"
 
 import { cn } from "@/lib/utils"
 import { Button, buttonVariants } from "@/components/ui/button"
@@ -55,6 +55,43 @@ function Calendar({
 
       return <ChevronDownIcon className={cn("size-4", className)} {...props} />
     },
+    MonthCaption: ({ calendarMonth, ...props }) => {
+      const { previousMonth, nextMonth, goToMonth } = useNavigation()
+
+      if (!showNav) {
+        return (
+          <div className="flex items-center justify-center h-(--cell-size) w-full">
+            <h2 className="text-sm font-medium select-none">
+              {calendarMonth.date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+            </h2>
+          </div>
+        )
+      }
+
+      return (
+        <div className="flex items-center justify-center gap-2 h-(--cell-size) w-full" {...props}>
+          <Button
+            variant={buttonVariant}
+            className="size-(--cell-size) p-0 select-none"
+            onClick={() => previousMonth && goToMonth(previousMonth)}
+            disabled={!previousMonth}
+          >
+            <ChevronLeftIcon className="size-4" />
+          </Button>
+          <h2 className="text-sm font-medium select-none">
+            {calendarMonth.date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+          </h2>
+          <Button
+            variant={buttonVariant}
+            className="size-(--cell-size) p-0 select-none"
+            onClick={() => nextMonth && goToMonth(nextMonth)}
+            disabled={!nextMonth}
+          >
+            <ChevronRightIcon className="size-4" />
+          </Button>
+        </div>
+      )
+    },
     DayButton: CalendarDayButton,
     WeekNumber: ({ children, ...props }) => (
       <td {...props}>
@@ -67,6 +104,8 @@ function Calendar({
   }
 
   if (!showNav) {
+    mergedComponents.Nav = () => <></>
+  } else {
     mergedComponents.Nav = () => <></>
   }
 
@@ -96,7 +135,7 @@ function Calendar({
           defaultClassNames.weeks
         ),
         nav: cn(
-          showNav ? "flex items-center justify-between gap-2" : "hidden",
+          showNav ? "flex items-center justify-center gap-2" : "hidden",
           defaultClassNames.nav
         ),
         button_previous: cn(
